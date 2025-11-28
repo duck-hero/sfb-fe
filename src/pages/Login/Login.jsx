@@ -2,9 +2,11 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, Card, Container, CssBaseline, Grid, Stack, TextField, Typography } from '@mui/material';
 import { toast, ToastContainer } from "react-toastify";
-import { useAuth } from '../../context/AuthContext.jsx';
+
 import accountApi from '../../api/accountApi.js';
 import CustomTextField from '../../assets/CustomTextField.jsx';
+import { encryptToken } from '../../api/cryptoService.js';
+import { useAuth } from '../../context/AuthContext.jsx';
 
 
 
@@ -26,91 +28,71 @@ const Login = () => {
         }));
     };
 
+    // const handleLogin = async (e) => {
+
+    //     e.preventDefault();
+    //     try {
+    //         const userData = await accountApi.login(credentials);
+    //         const accessToken = userData.jwToken;
+    //         const refreshToken = userData.refreshToken;
+    //         console.log(userData)
+            
+    //         // Mã hóa tokens
+    //         const encryptedAccessToken = encryptToken(accessToken);
+    //         const encryptedRefreshToken = encryptToken(refreshToken);
+
+    //         // Lưu vào localStorage
+    //         localStorage.setItem("accessToken", encryptedAccessToken);
+    //         localStorage.setItem("refreshToken", encryptedRefreshToken);
+
+    //         navigate("/");
+    //         login(userData);
+          
+    //     } catch (error) {
+    //         // setErrorMessage(error.errors);
+    //         // setErrorMessage("Email hoặc mật khẩu chưa chính xác!");
+    //         toast.error("Email hoặc mật khẩu không chính xác");
+    //     }
+    // };
+
     const handleLogin = async (e) => {
+    e.preventDefault();
 
-        e.preventDefault();
-        try {
-            const userData = await accountApi.login(credentials);
+    try {
+        const res = await accountApi.login(credentials); 
+        const userData = res.data; // Lấy đúng field "data"
+        
+        console.log("API Login:", userData);
 
-            // const accessToken = userData.accessToken;
-            // const refreshToken = userData.refreshToken;
-            // Mã hóa tokens
-            // const encryptedAccessToken = encryptToken(accessToken);
-            // const encryptedRefreshToken = encryptToken(refreshToken);
+        // Nếu tài khoản yêu cầu 2FA
+        if (userData.requires2FA) {
+            // Lưu tạm userId để xác thực 2FA
+            localStorage.setItem("twoFactorUserId", userData.twoFactorUserId);
 
-            // Lưu vào localStorage
-            // localStorage.setItem("accessToken", encryptedAccessToken);
-            // localStorage.setItem("refreshToken", encryptedRefreshToken);
-
-            navigate("/admin/foods");
-            login(userData);
-        } catch (error) {
-            // setErrorMessage(error.errors);
-            // setErrorMessage("Email hoặc mật khẩu chưa chính xác!");
-            toast.error("Email hoặc mật khẩu không chính xác");
+            // Chuyển sang trang nhập mã 2FA
+            return navigate("/verify-2fa");
         }
-    };
 
-    //   return (
-    //     <Container component="main" maxWidth="xs">
-    //       <CssBaseline />
-    //       <div className="flex flex-col items-center">
-    //         {/* <div className="flex justify-center">
-    //           <img src={logo} alt="Admin Logo" className="mb-4 w-20 mt-5" />
-    //         </div> */}
+        // --- Không yêu cầu 2FA → đăng nhập luôn ---
+        const accessToken = userData.jwToken;
+        const refreshToken = userData.refreshToken;
 
-    //         <Typography component="h2" variant="h6">
-    //           Đăng Nhập
-    //         </Typography>
+        // Mã hoá token
+        const encryptedAccessToken = encryptToken(accessToken);
+        const encryptedRefreshToken = encryptToken(refreshToken);
 
-    //         <form onSubmit={handleLogin} className="w-full max-w-lg mt-2">
-    //           <Grid container spacing={2}>
-    //             <Grid item xs={12}>
-    //               <TextField
-    //                 variant="outlined"
-    //                 required
-    //                 fullWidth
-    //                 label="username"
-    //                 type="text"
-    //                 name="userName"
-    //                 autoComplete="username"
-    //                 value={credentials.userName}
-    //                 onChange={handleInputChange}
-    //                 size="small"
-    //                 className="inputField "
-    //                 InputProps={{ fullWidth: true, style: { borderRadius: 20 } }}
-    //               />
-    //             </Grid>
-    //             <Grid item xs={12}>
-    //               <TextField
-    //                 variant="outlined"
-    //                 required
-    //                 fullWidth
-    //                 label="Mật khẩu"
-    //                 type="password"
-    //                 name="password"
-    //                 autoComplete="current-password"
-    //                 value={credentials.password}
-    //                 onChange={handleInputChange}
-    //                 size="small"
-    //                 className="inputField mb-2"
-    //                 InputProps={{ fullWidth: true, style: { borderRadius: 20 } }}
-    //               />
-    //             </Grid>
-    //           </Grid>
-    //           <button
-    //             type="submit"
-    //             fullWidth
-    //             variant="contained"
-    //             className="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 focus:outline-none focus:shadow-outline w-full rounded-3xl"
-    //           >
-    //             Đăng nhập
-    //           </button>
-    //         </form>
-    //       </div>
-    //       <ToastContainer />
-    //     </Container>
-    //   );
+        // Lưu vào localStorage
+        localStorage.setItem("accessToken", encryptedAccessToken);
+        localStorage.setItem("refreshToken", encryptedRefreshToken);
+
+        // update context
+        login(userData);
+
+        navigate("/");
+    } catch (error) {
+        toast.error("Email hoặc mật khẩu không chính xác");
+    }
+};
 
     return (
 

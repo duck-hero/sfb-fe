@@ -11,9 +11,17 @@ export function useAuth() {
 }
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(
-    JSON.parse(localStorage.getItem("user")) || null
-  );
+  // const [user, setUser] = useState(
+  //   JSON.parse(localStorage.getItem("user")) || null
+  // );
+
+
+const storedUser = localStorage.getItem("user");
+const [user, setUser] = useState(
+  storedUser && storedUser !== "null" ? JSON.parse(storedUser) : null
+);
+
+
 
   useEffect(() => {
     // Lắng nghe sự thay đổi của user và cập nhật vào localStorage
