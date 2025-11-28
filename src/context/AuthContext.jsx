@@ -28,14 +28,25 @@ const [user, setUser] = useState(
     localStorage.setItem("user", JSON.stringify(user));
   }, [user]);
 
+  // const login = (userData) => {
+  //   setUser(userData);
+  //   localStorage.setItem("user", JSON.stringify(userData));
+  // };
+
   const login = (userData) => {
-    setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
-  };
+  // Tạo bản sao user nhưng bỏ token
+  const { jwToken, refreshToken, ...userWithoutTokens } = userData;
+
+  setUser(userWithoutTokens);
+  localStorage.setItem("user", JSON.stringify(userWithoutTokens));
+};
+
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
   };
 
   const value = {

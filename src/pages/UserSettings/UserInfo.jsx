@@ -8,6 +8,7 @@ import { ToastContainer, toast } from "react-toastify";
 import TwoFAModal from "./TwoFAModal";
 import Switch from "@mui/material/Switch";
 import Disable2FAModal from "./Disable2FAModal";
+import { useAuth } from "../../context/AuthContext";
 
 function UserInfo() {
   // ---------- ALL HOOKS AT TOP (KHÔNG ĐƯỢC DI CHUYỂN) ----------
@@ -15,7 +16,7 @@ function UserInfo() {
   const [twoFAStatus, setTwoFAStatus] = useState(null);
   const [open2FAModal, setOpen2FAModal] = useState(false);
 const [openDisableModal, setOpenDisableModal] = useState(false);
-
+  const { user, logout } = useAuth();
 
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [secretKey, setSecretKey] = useState("");
@@ -70,7 +71,7 @@ console.log(code);
       toast.success("Kích hoạt 2FA thành công! Đang đăng xuất...");
 
       setTimeout(() => {
-        localStorage.removeItem("token"); // hoặc nơi bạn lưu token
+            logout();
         navigate("/login", { replace: true });
       }, 600);
     } else {
@@ -114,7 +115,7 @@ console.log(code);
       toast.success("Đã tắt xác thực 2FA. Đang đăng xuất...");
 
       setTimeout(() => {
-        localStorage.removeItem("token");
+         logout();
         navigate("/login", { replace: true });
       }, 600);
     } else {

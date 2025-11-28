@@ -69,19 +69,15 @@ Verify2FASetup: async (code) => {
   }
 },
 verify2FACode: async (data) => {
-  console.log("🚀 Dữ liệu gửi đi:", data);
-
   try {
     const response = await axios.post(`${api}/Account/Verify2FACode`, data);
     console.log("✅ Response từ API:", response.data);
     return response.data;
   } catch (error) {
-    console.log("❌ Lỗi khi gọi API:", error.response ? error.response.data : error.message);
     throw error.response ? error.response.data : error.message;
   }
 },
 Disable2FA: async (password) => {
-  
   try {
     const response = await axiosInstance.post(`${api}/Account/Disable2FA`, {
       password: password,
