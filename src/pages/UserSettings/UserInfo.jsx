@@ -7,12 +7,15 @@ import Loading from "../../components/Loading/Loading";
 import { ToastContainer, toast } from "react-toastify";
 import TwoFAModal from "./TwoFAModal";
 import Switch from "@mui/material/Switch";
+import Disable2FAModal from "./Disable2FAModal";
 
 function UserInfo() {
   // ---------- ALL HOOKS AT TOP (KHÔNG ĐƯỢC DI CHUYỂN) ----------
   const [userData, setUserData] = useState(null);
   const [twoFAStatus, setTwoFAStatus] = useState(null);
   const [open2FAModal, setOpen2FAModal] = useState(false);
+const [openDisableModal, setOpenDisableModal] = useState(false);
+
 
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [secretKey, setSecretKey] = useState("");
@@ -103,6 +106,29 @@ console.log(code);
     }
   };
 
+  const handleDisable2FA = async (password) => {
+  try {
+    const res = await accountApi.Disable2FA(password);
+
+    if (res.success) {
+      toast.success("Đã tắt xác thực 2FA. Đang đăng xuất...");
+
+      setTimeout(() => {
+        localStorage.removeItem("token");
+        navigate("/login", { replace: true });
+      }, 600);
+    } else {
+      toast.error(res.message || "Password không chính xác!");
+    }
+  } catch (err) {
+    console.error(err);
+    toast.error(err.description || "Tắt 2FA thất bại!");
+  } finally {
+    setOpenDisableModal(false);
+  }
+};
+
+
   // Nếu chưa load dữ liệu, vẫn return Loading (nhưng hooks đã được khai báo ở trên)
   if (!userData || !twoFAStatus) {
     return <Loading />;
@@ -154,12 +180,14 @@ console.log(code);
                   onClick={(e) => {
                     e.preventDefault();
                     // nếu đã bật: có thể dẫn tới trang quản lý 2FA, nếu chưa bật: mở modal
-                    if (twoFAStatus.is2FAEnabled) {
-                      // TODO: nếu muốn disable -> show confirm
-                      toast.info("2FA đã được bật");
-                    } else {
-                      handleOpen2FAModal();
-                    }
+                  if (twoFAStatus.is2FAEnabled) {
+  // Đang bật → hỏi password để tắt
+  setOpenDisableModal(true);
+} else {
+  // Chưa bật → mở modal kích hoạt
+  handleOpen2FAModal();
+}
+
                   }}
                   color="success"
                 />
@@ -192,6 +220,12 @@ console.log(code);
         onCodeChange={handleCodeChange}
         onActivate={handleEnable2FA}
       />
+      <Disable2FAModal
+  isOpen={openDisableModal}
+  onClose={() => setOpenDisableModal(false)}
+  onSubmit={handleDisable2FA}
+/>
+
     </>
   );
 }

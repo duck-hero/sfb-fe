@@ -60,7 +60,7 @@ const accountApi = {
 Verify2FASetup: async (code) => {
   
   try {
-    const response = await axios.post(`${api}/Account/Verify2FASetup`, {
+    const response = await axiosInstance.post(`${api}/Account/Verify2FASetup`, {
       authenticatorCode: code,
     });
     return response.data;
@@ -69,7 +69,6 @@ Verify2FASetup: async (code) => {
   }
 },
 verify2FACode: async (data) => {
-  // data sẽ có { code, userId, rememberDevice }
   console.log("🚀 Dữ liệu gửi đi:", data);
 
   try {
@@ -78,6 +77,17 @@ verify2FACode: async (data) => {
     return response.data;
   } catch (error) {
     console.log("❌ Lỗi khi gọi API:", error.response ? error.response.data : error.message);
+    throw error.response ? error.response.data : error.message;
+  }
+},
+Disable2FA: async (password) => {
+  
+  try {
+    const response = await axiosInstance.post(`${api}/Account/Disable2FA`, {
+      password: password,
+    });
+    return response.data;
+  } catch (error) {
     throw error.response ? error.response.data : error.message;
   }
 },
