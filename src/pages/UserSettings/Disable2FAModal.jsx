@@ -1,13 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
+import { ClipLoader } from "react-spinners";
 
-export default function Disable2FAModal({ isOpen, onClose, onSubmit }) {
+export default function Disable2FAModal({ isOpen, onClose, onSubmit, loading = false }) {
   const [password, setPassword] = useState("");
+
+  // Reset password khi modal mở/đóng
+  useEffect(() => {
+    if (isOpen) {
+      setPassword("");
+    }
+  }, [isOpen]);
 
   const handleSubmit = () => {
     onSubmit(password);
-    setPassword("");
+    // Không reset password tại đây vì modal sẽ reset khi đóng
   };
 
   return (
@@ -22,7 +30,7 @@ export default function Disable2FAModal({ isOpen, onClose, onSubmit }) {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black/40" />
+          <div className="fixed inset-0 bg-black/30" />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto flex items-center justify-center p-4">
@@ -35,36 +43,54 @@ export default function Disable2FAModal({ isOpen, onClose, onSubmit }) {
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95"
           >
-            <Dialog.Panel className="bg-white rounded-xl shadow p-6 w-full max-w-sm">
-              <Dialog.Title className="text-lg font-bold mb-3">
-                Disable Two-Factor Authentication
+            <Dialog.Panel className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6">
+              <Dialog.Title className="text-lg font-semibold mb-3">
+                Tắt phương thức xác thực 2 yếu tố (2FA)
               </Dialog.Title>
 
               <p className="text-sm text-gray-600 mb-4">
-                Please enter your password to disable 2FA.
+               Vui lòng nhập mật khẩu của bạn để tắt 2FA.
               </p>
 
               <input
                 type="password"
-                className="w-full p-2 border rounded outline-none focus:ring"
-                placeholder="Password"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Mật khẩu"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={loading} // disable input khi loading
               />
 
-              <div className="flex justify-end gap-2 mt-5">
+              <div className="flex justify-end gap-3 mt-5">
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                  disabled={loading}
+                  className={`px-4 py-2 rounded-lg transition ${
+                    loading
+                      ? "bg-gray-200 opacity-50 cursor-not-allowed"
+                      : "bg-gray-200 hover:bg-gray-300"
+                  }`}
                 >
-                  Cancel
+                  Hủy
                 </button>
 
                 <button
                   onClick={handleSubmit}
-                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                  disabled={loading}
+                  className={`px-4 py-2 rounded-lg font-semibold text-white transition ${
+                    loading
+                      ? "bg-red-600 opacity-50 cursor-not-allowed"
+                      : "bg-red-600 hover:bg-red-700"
+                  }`}
                 >
-                  Disable
+                  {loading ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <ClipLoader size={18} color="#fff" />
+                      <span>Đang xác nhận...</span>
+                    </div>
+                  ) : (
+                    "Xác nhận"
+                  )}
                 </button>
               </div>
             </Dialog.Panel>

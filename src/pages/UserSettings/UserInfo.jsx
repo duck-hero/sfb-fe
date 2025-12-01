@@ -6,27 +6,28 @@ import accountApi from "../../api/accountApi";
 import Loading from "../../components/Loading/Loading";
 import { ToastContainer, toast } from "react-toastify";
 import TwoFAModal from "./TwoFAModal";
-import Switch from "@mui/material/Switch";
 import Disable2FAModal from "./Disable2FAModal";
 import { useAuth } from "../../context/AuthContext";
+import Switch from "@mui/material/Switch";
 
 function UserInfo() {
-  // ---------- ALL HOOKS AT TOP (KHÔNG ĐƯỢC DI CHUYỂN) ----------
+  // ---------- HOOKS ----------
   const [userData, setUserData] = useState(null);
   const [twoFAStatus, setTwoFAStatus] = useState(null);
   const [open2FAModal, setOpen2FAModal] = useState(false);
-const [openDisableModal, setOpenDisableModal] = useState(false);
-  const { user, logout } = useAuth();
+  const [openDisableModal, setOpenDisableModal] = useState(false);
 
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [secretKey, setSecretKey] = useState("");
 
-  // 6 ô nhập mã 2FA
-  const [codeInputs, setCodeInputs] = useState(["", "", "", "", "", ""]);
-
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
+ const [loading2FA, setLoading2FA] = useState(false);       // loading cho bật 2FA
+const [loadingDisable2FA, setLoadingDisable2FA] = useState(false); // loading cho tắt 2FA
 
-  // -------------------------------------------------------------
+
+
+  // ---------- FETCH USER & 2FA STATUS ----------
   useEffect(() => {
     const fetchInit = async () => {
       try {
@@ -34,7 +35,6 @@ const [openDisableModal, setOpenDisableModal] = useState(false);
         setUserData(user);
 
         const res2FA = await accountApi.get2FAStatus();
-        // server có thể trả về object { is2FAEnabled: true/false, ... }
         setTwoFAStatus(res2FA);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -46,32 +46,21 @@ const [openDisableModal, setOpenDisableModal] = useState(false);
     fetchInit();
   }, [navigate]);
 
-  // handle change 1 ký tự input
-  const handleCodeChange = (index, value) => {
-    // chỉ lấy chữ số nếu muốn: value = value.replace(/\D/g, "");
-    const newInputs = [...codeInputs];
-    newInputs[index] = value.slice(-1); // giữ 1 ký tự
-    setCodeInputs(newInputs);
-
-    // tự focus ô tiếp theo có thể thêm sau nếu muốn
-  };
-
-  const handleEnable2FA = async () => {
+  // ---------- HANDLER KÍCH HOẠT 2FA ----------
+const handleEnable2FA = async (code) => {
   try {
-    const code = codeInputs.join("");
-
     if (code.length !== 6) {
       toast.error("Mã 2FA phải đủ 6 số!");
       return;
     }
-console.log(code);
+
+    setLoading2FA(true); // bật loading
     const res = await accountApi.Verify2FASetup(code);
 
     if (res.success) {
       toast.success("Kích hoạt 2FA thành công! Đang đăng xuất...");
-
       setTimeout(() => {
-            logout();
+        logout();
         navigate("/login", { replace: true });
       }, 600);
     } else {
@@ -80,25 +69,22 @@ console.log(code);
   } catch (err) {
     console.error(err);
     toast.error("Kích hoạt 2FA thất bại!");
+  } finally {
+    setLoading2FA(false); // tắt loading
   }
 };
 
 
+
+  // ---------- OPEN 2FA MODAL ----------
   const handleOpen2FAModal = async () => {
     try {
-      // gọi backend để tạo sharedKey / qrCodeUri (nếu backend trả cả hai)
       const res = await accountApi.enable2FA();
-
-      // Backend trả qrCodeUri dạng otpauth://... hoặc res.qrCodeUri, res.sharedKey
       const qrImage = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
         res.qrCodeUri ?? res.otpauth
       )}`;
-
       setQrCodeUrl(qrImage);
       setSecretKey(res.sharedKey ?? res.shared_key ?? "");
-
-      // reset input mã khi mở modal
-      setCodeInputs(["", "", "", "", "", ""]);
 
       setOpen2FAModal(true);
     } catch (error) {
@@ -107,15 +93,16 @@ console.log(code);
     }
   };
 
-  const handleDisable2FA = async (password) => {
+  // ---------- DISABLE 2FA ----------
+const handleDisable2FA = async (password) => {
   try {
+    setLoadingDisable2FA(true); // bật loading
     const res = await accountApi.Disable2FA(password);
 
     if (res.success) {
       toast.success("Đã tắt xác thực 2FA. Đang đăng xuất...");
-
       setTimeout(() => {
-         logout();
+        logout();
         navigate("/login", { replace: true });
       }, 600);
     } else {
@@ -125,12 +112,13 @@ console.log(code);
     console.error(err);
     toast.error(err.description || "Tắt 2FA thất bại!");
   } finally {
+    setLoadingDisable2FA(false); // tắt loading
     setOpenDisableModal(false);
   }
 };
 
 
-  // Nếu chưa load dữ liệu, vẫn return Loading (nhưng hooks đã được khai báo ở trên)
+  // ---------- LOADING STATE ----------
   if (!userData || !twoFAStatus) {
     return <Loading />;
   }
@@ -143,6 +131,7 @@ console.log(code);
         <h2 className="text-2xl font-semibold mb-6">Account Settings</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* PROFILE CARD */}
           <div className="bg-white shadow rounded-lg p-6 flex flex-col items-center">
             <div className="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center">
               <span className="text-gray-600 text-4xl">👤</span>
@@ -159,7 +148,9 @@ console.log(code);
             </button>
           </div>
 
+          {/* SETTINGS */}
           <div className="md:col-span-2 space-y-6">
+            {/* Sign-in & Security */}
             <div className="bg-white shadow rounded-lg p-6">
               <h3 className="text-lg font-semibold mb-3">Sign-in & Security</h3>
 
@@ -180,21 +171,18 @@ console.log(code);
                   checked={!!twoFAStatus.is2FAEnabled}
                   onClick={(e) => {
                     e.preventDefault();
-                    // nếu đã bật: có thể dẫn tới trang quản lý 2FA, nếu chưa bật: mở modal
-                  if (twoFAStatus.is2FAEnabled) {
-  // Đang bật → hỏi password để tắt
-  setOpenDisableModal(true);
-} else {
-  // Chưa bật → mở modal kích hoạt
-  handleOpen2FAModal();
-}
-
+                    if (twoFAStatus.is2FAEnabled) {
+                      setOpenDisableModal(true);
+                    } else {
+                      handleOpen2FAModal();
+                    }
                   }}
                   color="success"
                 />
               </div>
             </div>
 
+            {/* Social Sign In */}
             <div className="bg-white shadow rounded-lg p-6">
               <h3 className="text-lg font-semibold mb-3">Social Sign In</h3>
               <p className="text-gray-500 text-sm">
@@ -202,6 +190,7 @@ console.log(code);
               </p>
             </div>
 
+            {/* Trusted Devices */}
             <div className="bg-white shadow rounded-lg p-6">
               <h3 className="text-lg font-semibold mb-3">Trusted Devices</h3>
               <p className="text-gray-500 text-sm">Devices that have accessed your account.</p>
@@ -212,21 +201,26 @@ console.log(code);
         <ToastContainer position="top-center" theme="colored" autoClose={250} />
       </div>
 
-      <TwoFAModal
-        isOpen={open2FAModal}
-        onClose={() => setOpen2FAModal(false)}
-        qrCodeUrl={qrCodeUrl}
-        secretKey={secretKey}
-        codeInputs={codeInputs}
-        onCodeChange={handleCodeChange}
-        onActivate={handleEnable2FA}
-      />
-      <Disable2FAModal
-  isOpen={openDisableModal}
-  onClose={() => setOpenDisableModal(false)}
-  onSubmit={handleDisable2FA}
+      {/* TWO-FA MODAL */}
+<TwoFAModal
+key={open2FAModal ? "open" : "close"}
+  isOpen={open2FAModal}
+  onClose={() => setOpen2FAModal(false)}
+  qrCodeUrl={qrCodeUrl}
+  secretKey={secretKey}
+  onActivate={handleEnable2FA}
+  loading={loading2FA} // ✅ truyền loading
 />
 
+
+      {/* DISABLE 2FA MODAL */}
+      <Disable2FAModal
+        isOpen={openDisableModal}
+        onClose={() => setOpenDisableModal(false)}
+        onSubmit={handleDisable2FA}
+         loading={loadingDisable2FA}
+         key={open2FAModal ? "open" : "close"}
+      />
     </>
   );
 }
