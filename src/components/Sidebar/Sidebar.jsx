@@ -27,12 +27,12 @@ const Sidebar = () => {
         </Link>
 
         <Link
-          to="/sample"
+          to="/bank-management"
           className={`flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 ${
             pathname === "/sample" && active
           }`}
         >
-          <FiFileText /> Sample Page
+          <FiFileText /> Quản lý ngân hàng
         </Link>
 
         <Link
