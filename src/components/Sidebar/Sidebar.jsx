@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { FiHome, FiFileText } from "react-icons/fi";
+import sfbLogo from '../../assets/sfb-logo.png';
 
 const Sidebar = () => {
   const { pathname } = useLocation();
@@ -8,7 +9,12 @@ const Sidebar = () => {
 
   return (
     <div className="w-64 h-screen bg-white shadow-md fixed left-0 top-0 p-5">
-      <h1 className="text-2xl font-bold mb-10">Modernize</h1>
+<div className="flex items-center gap-3 mb-10">
+  <img src={sfbLogo} alt="Logo" className="h-10 w-auto" />
+  <h1 className="text-2xl font-bold text-primary-darkest">sFacebook</h1>
+</div>
+
+
 
       <nav className="space-y-2">
         <Link

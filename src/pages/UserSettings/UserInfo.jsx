@@ -8,6 +8,7 @@ import { ToastContainer, toast } from "react-toastify";
 import TwoFAModal from "./TwoFAModal";
 import Disable2FAModal from "./Disable2FAModal";
 import { useAuth } from "../../context/AuthContext";
+import UserInfoSkeleton from "../../components/Loading/UserInfoSkeleton";
 
 function UserInfo() {
   // ---------- STATES ----------
@@ -186,9 +187,13 @@ const handleOpen2FAModal = async () => {
   };
 
   // ---------- LOADING ----------
+  // if (!userData || twoFAStatus === null) {
+  //   return <Loading />;
+  // }
   if (!userData || twoFAStatus === null) {
-    return <Loading />;
-  }
+  return <UserInfoSkeleton />;
+}
+
 
   // ---------- TOGGLE COMPONENT ----------
   const Toggle = ({ enabled, onToggle }) => (
