@@ -1,14 +1,11 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, Card, Container, CssBaseline, Grid, Stack, TextField, Typography } from '@mui/material';
-import { toast, ToastContainer } from "react-toastify";
-
+import { toast } from "react-toastify";
 import accountApi from '../../api/accountApi.js';
-import CustomTextField from '../../assets/CustomTextField.jsx';
 import { encryptToken } from '../../api/cryptoService.js';
 import { useAuth } from '../../context/AuthContext.jsx';
-
-
+import sfbLogo from '../../assets/sfb-logo.png';
+import { ClipLoader } from 'react-spinners'; // spinner
 
 const Login = () => {
     const { login } = useAuth();
@@ -17,200 +14,111 @@ const Login = () => {
         username: "",
         password: "",
     });
-
+    const [loading, setLoading] = useState(false); // trạng thái loading
     const [errorMessage, setErrorMessage] = useState(null);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setCredentials((prevCredentials) => ({
-            ...prevCredentials,
-            [name]: value,
-        }));
+        setCredentials((prev) => ({ ...prev, [name]: value }));
     };
 
-    // const handleLogin = async (e) => {
-
-    //     e.preventDefault();
-    //     try {
-    //         const userData = await accountApi.login(credentials);
-    //         const accessToken = userData.jwToken;
-    //         const refreshToken = userData.refreshToken;
-    //         console.log(userData)
-            
-    //         // Mã hóa tokens
-    //         const encryptedAccessToken = encryptToken(accessToken);
-    //         const encryptedRefreshToken = encryptToken(refreshToken);
-
-    //         // Lưu vào localStorage
-    //         localStorage.setItem("accessToken", encryptedAccessToken);
-    //         localStorage.setItem("refreshToken", encryptedRefreshToken);
-
-    //         navigate("/");
-    //         login(userData);
-          
-    //     } catch (error) {
-    //         // setErrorMessage(error.errors);
-    //         // setErrorMessage("Email hoặc mật khẩu chưa chính xác!");
-    //         toast.error("Email hoặc mật khẩu không chính xác");
-    //     }
-    // };
-
     const handleLogin = async (e) => {
-    e.preventDefault();
+        e.preventDefault();
+        setLoading(true); // bật loading
+        try {
+            const res = await accountApi.login(credentials); 
+            const userData = res.data;
+            console.log("API Login:", userData);
 
-    try {
-        const res = await accountApi.login(credentials); 
-        const userData = res.data; // Lấy đúng field "data"
-        
-        console.log("API Login:", userData);
+            if (userData.requires2FA) {
+                localStorage.setItem("twoFactorUserId", userData.twoFactorUserId);
+                return navigate("/verify-2fa");
+            }
 
-        // Nếu tài khoản yêu cầu 2FA
-        if (userData.requires2FA) {
-            // Lưu tạm userId để xác thực 2FA
-            localStorage.setItem("twoFactorUserId", userData.twoFactorUserId);
+            const accessToken = userData.jwToken;
+            const refreshToken = userData.refreshToken;
 
-            // Chuyển sang trang nhập mã 2FA
-            return navigate("/verify-2fa");
+            const encryptedAccessToken = encryptToken(accessToken);
+            const encryptedRefreshToken = encryptToken(refreshToken);
+
+            localStorage.setItem("accessToken", encryptedAccessToken);
+            localStorage.setItem("refreshToken", encryptedRefreshToken);
+
+            login(userData);
+            navigate("/");
+
+        } catch (error) {
+            toast.error("Email hoặc mật khẩu không chính xác");
+        } finally {
+            setLoading(false); // tắt loading dù thành công hay thất bại
         }
-
-        // --- Không yêu cầu 2FA → đăng nhập luôn ---
-        const accessToken = userData.jwToken;
-        const refreshToken = userData.refreshToken;
-
-        // Mã hoá token
-        const encryptedAccessToken = encryptToken(accessToken);
-        const encryptedRefreshToken = encryptToken(refreshToken);
-
-        // Lưu vào localStorage
-        localStorage.setItem("accessToken", encryptedAccessToken);
-        localStorage.setItem("refreshToken", encryptedRefreshToken);
-
-        // update context
-        login(userData);
-
-        navigate("/");
-    } catch (error) {
-        toast.error("Email hoặc mật khẩu không chính xác");
-    }
-};
+    };
 
     return (
+        <div className="relative min-h-screen flex items-center justify-center bg-primary-lightest">
+            <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md z-10">
+                <div className="flex justify-center mb-4">
+                    <img src={sfbLogo} alt="SFB Logo" className="w-[48px] h-[48px]" />
+                </div>
 
-        <Container>
-            <Box
-                sx={{
-                    position: "relative",
-                    minHeight: "100vh",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    "&": {
-                        content: '""',
-                        background: "radial-gradient(#d2f1df, #d3d7fa, #bad8f4)",
-                        backgroundSize: "400% 400%",
-                        animation: "gradient 15s ease infinite",
-                        position: "absolute",
-                        height: "100%",
-                        width: "100%",
-                        // opacity: 0.3,
-                        top: 0,
-                        left: 0,
-                    },
-                }}
-            >
-                <Card
-                    elevation={9}
-                    sx={{ p: 4, zIndex: 1, width: "100%", maxWidth: "500px", borderRadius: 3 }}
-                >
+                <h1 className="text-2xl font-semibold text-center mb-1">Đăng nhập</h1>
 
-                    {/* Logo nếu cần */}
+                <form onSubmit={handleLogin} className="space-y-4">
+                    <div>
+                        <label className="font-medium block mb-1">Tài khoản</label>
+                        <input
+                            type="text"
+                            name="username"
+                            value={credentials.username}
+                            onChange={handleInputChange}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                            disabled={loading} // disable input khi loading
+                        />
+                    </div>
 
+                    <div>
+                        <label className="font-medium block mb-1">Mật khẩu</label>
+                        <input
+                            type="password"
+                            name="password"
+                            value={credentials.password}
+                            onChange={handleInputChange}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                            disabled={loading}
+                        />
+                    </div>
 
+                    <button
+                        type="submit"
+                        disabled={loading} // disable button khi loading
+                        className={`w-full py-3 rounded-xl font-semibold transition ${
+                            loading
+                                ? "bg-primary-darkest opacity-50 cursor-not-allowed"
+                                : "bg-primary-dark text-white hover:bg-primary-darkest"
+                        }`}
+                    >
+                        {loading ? (
+                            <div className="flex justify-center items-center">
+                                <ClipLoader size={20} color="#fff" />
+                                <span className="ml-2">Đang đăng nhập...</span>
+                            </div>
+                        ) : (
+                            "Đăng nhập"
+                        )}
+                    </button>
+                </form>
 
-                    <Typography variant="h4" fontWeight="700" textAlign="center" mb={1}>
-                        Đăng Nhập
-                    </Typography>
-                    <Typography variant="subtitle1" color="textSecondary" textAlign="center" mb={3}>
-                        Super Phê bút
-                    </Typography>
-
-                    <form onSubmit={handleLogin}>
-                        <Stack spacing={3}>
-                            <Box>
-                                <Typography
-                                    variant="subtitle1"
-                                    fontWeight={600}
-                                    component="label"
-                                    htmlFor="username"
-                                    mb="5px"
-                                >
-                                    Username
-                                </Typography>
-                                <CustomTextField
-                                    variant="outlined"
-                                    fullWidth
-                                    name="username"
-                                    value={credentials.username}
-                                    onChange={handleInputChange}
-                                    size="small"                       
-                                />
-                            </Box>
-
-                            <Box>
-                                <Typography
-                                    variant="subtitle1"
-                                    fontWeight={600}
-                                    component="label"
-                                    htmlFor="password"
-                                    mb="5px"
-                                >
-                                    Mật khẩu
-                                </Typography>
-                                <CustomTextField
-                                    type="password"
-                                    variant="outlined"
-                                    fullWidth
-                                    name="password"
-                                    value={credentials.password}
-                                    onChange={handleInputChange}
-                                    size="small"
-                                />
-                            </Box>
-
-                            <Button
-                                type="submit"
-                                variant="contained"
-                                color="primary"
-                                size="large"
-                                fullWidth
-                                sx={{ borderRadius: "24px", py: 1.5 }}
-                            >
-                                Đăng nhập
-                            </Button>
-                        </Stack>
-                    </form>
-
-                    <Stack direction="row" spacing={1} justifyContent="center" mt={3}>
-                        
-                        <Typography
-                            component="a"
-                            href="/authentication/register"
-                            fontWeight="500"
-                            sx={{ textDecoration: "none", color: "primary.main" }}
-                        >
-                            Quên mật khẩu
-                        </Typography>
-                    </Stack>
-                </Card>
-            </Box>
-            <ToastContainer />
-        </Container >
-
-);
-
-
-
+                <div className="flex justify-center mt-4">
+                    <a
+                        href="/authentication/register"
+                        className="text-primary-darkest font-medium hover:underline"
+                    >
+                        Quên mật khẩu
+                    </a>
+                </div>
+            </div>
+        </div>
+    );
 };
-
 
 export default Login;
