@@ -1,5 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import bankApi from "../../api/bankApi";
+import DeleteConfirmModal from "../../components/Modal/DeleteConfirmModal";
+import EditBankModal from "./EditBankModal";
+import CreateBankModal from "./CreateBankModal";
+import { toast } from "react-toastify";
+import { Search, Plus, SquarePen, Trash   } from 'lucide-react';
+import TableSkeleton from "../../components/Loading/TableSkeleton";
 
 function BankList() {
   const [banks, setBanks] = useState([]);
@@ -8,110 +14,356 @@ function BankList() {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  const fetchBanks = async (page, size) => {
-    setLoading(true);
+  const [searchCode, setSearchCode] = useState("");
+  const [searchKeyword, setSearchKeyword] = useState("");
+
+
+  // Modal states
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isEditLoading, setIsEditLoading] = useState(false);
+  const [selectedBank, setSelectedBank] = useState(null);
+
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [formData, setFormData] = useState({ id: 0, bankName: "", bankCode: "" });
+  const [saving, setSaving] = useState(false);
+
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [bankToDelete, setBankToDelete] = useState(null);
+
+const [totalItems, setTotalItems] = useState(0);
+
+const [isDeleting, setIsDeleting] = useState(false);
+
+
+  // requestRef để tránh race condition khi mở Edit modal
+  const requestRef = useRef(0);
+
+  // ------------------------- FETCH BANKS -------------------------
+  // const fetchBanks = async (page, size, code = "") => {
+  //   setLoading(true);
+  //   try {
+  //     const response = await bankApi.getBankList(page, size, code);
+  //     setBanks(response?.data || []);
+  //     setTotalPages(response?.totalItems ? Math.ceil(response.totalItems / size) : 1);
+  //     setPageNumber(response?.pageNumber || page);
+  //   } catch (error) {
+  //     console.error("Lỗi khi lấy danh sách ngân hàng:", error);
+  //     toast.error("Lấy danh sách ngân hàng thất bại");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  // ------------------------- FETCH BANKS -------------------------
+const fetchBanks = async (page, size, code = "") => {
+  setLoading(true);
+  try {
+    const response = await bankApi.getBankList(page, size, code);
+    
+    // 1. Cập nhật totalItems
+    setTotalItems(response?.totalItems || 0); 
+
+    setBanks(response?.data || []);
+    setTotalPages(response?.totalItems ? Math.ceil(response.totalItems / size) : 1);
+    setPageNumber(response?.pageNumber || page);
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách ngân hàng:", error);
+    toast.error("Lấy danh sách ngân hàng thất bại");
+  } finally {
+    setLoading(false);
+  }
+};
+
+useEffect(() => {
+  fetchBanks(pageNumber, pageSize, searchKeyword);
+}, [pageNumber, pageSize, searchKeyword]);
+
+
+  const handlePrev = () => pageNumber > 1 && setPageNumber(pageNumber - 1);
+  const handleNext = () => pageNumber < totalPages && setPageNumber(pageNumber + 1);
+  const handlePageSizeChange = (e) => {
+    setPageSize(Number(e.target.value));
+    setPageNumber(1);
+  };
+
+const handleSearch = () => {
+  setPageNumber(1);
+  setSearchKeyword(searchCode.trim());
+};
+
+
+  // ------------------------- EDIT BANK -------------------------
+  const openEditModal = async (id) => {
+    const reqId = ++requestRef.current;
+    setIsEditModalOpen(true);
+    setIsEditLoading(true);
+    setSelectedBank(id);
+    setFormData({ id: 0, bankName: "", bankCode: "" });
+
     try {
-      const response = await bankApi.getBankList(page, size);
-
-      // Lấy danh sách ngân hàng
-      setBanks(response?.data || []);
-
-      // Tính tổng số trang dựa vào totalItems
-      const total = response?.totalItems ? Math.ceil(response.totalItems / size) : 1;
-      setTotalPages(total);
-
-      // Cập nhật pageNumber từ API nếu cần
-      setPageNumber(response?.pageNumber || page);
-    } catch (error) {
-      console.error("Lỗi khi lấy danh sách ngân hàng:", error);
+      const res = await bankApi.getBankById(id);
+      if (requestRef.current !== reqId) return; // bỏ response cũ
+      const bank = res?.data;
+      setFormData({ id: bank?.id ?? 0, bankName: bank?.name ?? "", bankCode: bank?.codeBank ?? "" });
+    } catch (err) {
+      console.error("Lỗi load chi tiết bank:", err);
+      toast.error("Load chi tiết ngân hàng thất bại");
     } finally {
-      setLoading(false);
+      if (requestRef.current === reqId) setIsEditLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchBanks(pageNumber, pageSize);
-  }, [pageNumber, pageSize]);
+  const handleEditChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const handlePrev = () => {
-    if (pageNumber > 1) setPageNumber(pageNumber - 1);
+  const handleEditSave = async () => {
+    setSaving(true);
+    try {
+      await bankApi.updateBank({ id: formData.id, bankName: formData.bankName, bankCode: formData.bankCode });
+      toast.success("Cập nhật ngân hàng thành công");
+      setIsEditModalOpen(false);
+      requestRef.current++;
+      fetchBanks(pageNumber, pageSize, searchCode.trim());
+    } catch (err) {
+      console.error(err);
+      toast.error("Cập nhật thất bại");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleNext = () => {
-    if (pageNumber < totalPages) setPageNumber(pageNumber + 1);
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+    requestRef.current++;
+    setIsEditLoading(false);
   };
 
-  const handlePageSizeChange = (e) => {
-    const newSize = Number(e.target.value);
-    setPageSize(newSize);
-    setPageNumber(1); // reset về trang 1 khi thay đổi pageSize
+  // ------------------------- CREATE BANK -------------------------
+  const openCreateModal = () => {
+    setFormData({ bankName: "", bankCode: "" });
+    setIsCreateModalOpen(true);
   };
 
+  const handleCreateSave = async () => {
+    setSaving(true);
+    try {
+      await bankApi.createBank(formData.bankName, formData.bankCode);
+      toast.success("Thêm ngân hàng thành công");
+      setIsCreateModalOpen(false);
+      fetchBanks(pageNumber, pageSize, searchCode.trim());
+    } catch (err) {
+      console.error(err);
+      toast.error("Thêm thất bại!");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // ------------------------- DELETE BANK -------------------------
+  const handleOpenDelete = (bank) => {
+    setBankToDelete(bank);
+    setOpenDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+     setIsDeleting(true);
+    try {
+      await bankApi.deleteBankById(bankToDelete.id);
+      toast.success("Xóa thành công");
+      fetchBanks(pageNumber, pageSize, searchCode.trim());
+    } catch (err) {
+      console.error(err);
+      toast.error("Xóa thất bại");
+    }
+      setIsDeleting(false);
+    setOpenDeleteModal(false);
+    setBankToDelete(null);
+  };
+
+  // ------------------------- RENDER -------------------------
   return (
-    <div className="p-6">
+    <div className="px-6">
       <h1 className="text-2xl font-bold mb-4">Danh sách ngân hàng</h1>
 
-      <div className="mb-4 flex items-center gap-2">
-        <span>Số bản ghi mỗi trang:</span>
-        <select
-          value={pageSize}
-          onChange={handlePageSizeChange}
-          className="border border-gray-300 rounded px-2 py-1"
-        >
-          <option value={5}>5</option>
-          <option value={10}>10</option>
-          <option value={15}>15</option>
-        </select>
+      <div className="flex justify-between items-center pb-3 border-b border-gray-200">
+  <div className="w-full max-w-3xl">
+      <div 
+        className="flex items-center w-full px-5 py-2 bg-white 
+                   border border-gray-200 rounded-xl shadow-lg 
+                   transition-all duration-300 ease-in-out
+                   focus-within:border-primary-darkest focus-within:ring-4 focus-within:ring-blue-100"
+      >
+        {/* Icon tìm kiếm màu xanh nằm bên trái */}
+        <Search className="h-5 w-5 text-primary-darkest mr-3 flex-shrink-0" />
+        
+        {/* Input field, chiếm hết không gian còn lại */}
+        <input
+          type="text"
+          placeholder="Tìm kiếm theo mã ngân hàng..."
+          value={searchCode}
+          onChange={(e) => setSearchCode(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSearch();
+            }
+          }}
+          // Input không có border và outline riêng, để container quản lý style
+          className="w-full text-gray-800 placeholder-gray-500 bg-transparent 
+                     text-base focus:outline-none"
+        />       
       </div>
+       {/* <button
+
+          className="px-4 py-2 bg-blue-600 text-white rounded"
+
+          onClick={handleSearch}
+
+        >
+
+    <Search />
+
+        </button> */}
+    </div>
+        <button
+          className="  px-5 py-2 rounded-xl font-semibold text-md transition bg-primary-dark text-white hover:bg-primary-darkest"
+          onClick={openCreateModal}
+        >
+          Tạo mới 
+        </button>
+
+
+      </div>
+
+
 
       {loading ? (
-        <p>Đang tải...</p>
+       <TableSkeleton/>
       ) : (
-        <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
-<thead className="bg-gray-100">
+      <div class="overflow-x-auto shadow-lg rounded-xl">
+        <table className="w-full divide-y divide-gray-200">
+          <thead className="bg-white">
+            <tr>
+              <th
+              scope="col"
+              class="px-6 py-3 text-left text-md font-medium text-gray-900 uppercase tracking-wider w-1/12 text-primary-darkest"
+            >#</th>
+             <th
+              scope="col"
+              class="px-6 py-3 text-left text-md font-medium text-gray-900  tracking-wider w-1/4 text-primary-darkest"
+            >Tên ngân hàng</th>
+              <th
+              scope="col"
+              class="px-6 py-3 text-left text-md font-medium text-gray-900  tracking-wider w-1/4 text-primary-darkest"
+            >Mã ngân hàng</th>
+            <th
+              scope="col"
+              class="px-6 py-3 text-left text-md font-medium text-gray-900  tracking-wider w-1/12 text-primary-darkest"
+            >Tùy chọn</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {banks.map((bank, index) => (
+              <tr key={bank.id} className="">
+                <td className="w-1/12 px-6 py-4 whitespace-nowrap text-sm text-gray-500">{(pageNumber - 1) * pageSize + index + 1}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{bank.name}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{bank.codeBank}</td>
+                <td className="w-1/12 px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <button className=" " onClick={() => openEditModal(bank.id)}><SquarePen className="h-5 w-5 text-warning mr-3 ml-2 flex-shrink-0 cursor-pointer"/></button>
+                  <button className="" onClick={() => handleOpenDelete(bank)}><Trash className="h-5 w-5 text-error mr-3 flex-shrink-0"/></button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+
+         <tfoot className="bg-white">
   <tr>
-    <th className="py-2 px-4 border-b text-left">STT</th>
-    <th className="py-2 px-4 border-b text-left">Tên ngân hàng</th>
-    <th className="py-2 px-4 border-b text-left">Mã ngân hàng</th>
+    <td colSpan="4" className="px-6 py-3">
+      <div className="flex justify-end items-center text-sm">
+        {/* Component chọn số lượng hàng trên mỗi trang */}
+        <div className="flex items-center gap-2 mr-6">
+          <span className="text-gray-700">Hiển thị:</span>
+          <select 
+            value={pageSize} 
+            onChange={handlePageSizeChange} 
+            className="border border-gray-300 rounded px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={15}>15</option>
+          </select>
+        </div>
+        
+        {/* Thông tin số lượng hàng đang hiển thị (Đã sử dụng totalItems) */}
+        <span className="text-gray-700 mr-6">
+          {((pageNumber - 1) * pageSize) + 1}–{Math.min(pageNumber * pageSize, totalItems)} trên {totalItems}
+        </span>
+        
+        {/* Các nút điều hướng (Prev/Next) */}
+        <div className="flex items-center gap-2">
+          {/* Nút Previous */}
+          <button
+            onClick={handlePrev}
+            disabled={pageNumber === 1}
+            className={`p-2 rounded-full transition duration-150 ${
+              pageNumber === 1
+                ? 'text-gray-400 cursor-not-allowed'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+          </button>
+
+          {/* Nút Next (Điều kiện disabled được làm gọn hơn một chút) */}
+          <button
+            onClick={handleNext}
+            disabled={pageNumber === totalPages} // SỬ DỤNG totalPages
+            className={`p-2 rounded-full transition duration-150 ${
+              pageNumber === totalPages
+                ? 'text-gray-400 cursor-not-allowed'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+          </button>
+        </div>
+      </div>
+    </td>
   </tr>
-</thead>
-
-<tbody>
-  {banks.map((bank, index) => (
-    <tr key={bank.id} className="hover:bg-gray-50">
-      <td className="py-2 px-4 border-b">
-        {(pageNumber - 1) * pageSize + index + 1} {/* Tính STT */}
-      </td>
-      <td className="py-2 px-4 border-b">{bank.name}</td>
-      <td className="py-2 px-4 border-b">{bank.codeBank}</td>
-    </tr>
-  ))}
-</tbody>
-
+</tfoot>
         </table>
+        
+        </div>
+        
       )}
 
-      <div className="flex justify-between items-center mt-4">
-        <button
-          onClick={handlePrev}
-          disabled={pageNumber === 1}
-          className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
-        >
-          Prev
-        </button>
 
-        <span>
-          Page {pageNumber} / {totalPages}
-        </span>
+      {/* MODALS */}
+      <EditBankModal
+        open={isEditModalOpen}
+        loading={isEditLoading}
+        saving={saving}
+        formData={formData}
+        onChange={handleEditChange}
+        onClose={closeEditModal}
+        onSave={handleEditSave}
+      />
 
-        <button
-          onClick={handleNext}
-          disabled={pageNumber === totalPages}
-          className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
-        >
-          Next
-        </button>
-      </div>
+      <CreateBankModal
+        open={isCreateModalOpen}
+        formData={formData}
+        onChange={handleEditChange}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSave={handleCreateSave}
+        saving={saving}
+      />
+
+      <DeleteConfirmModal
+        open={openDeleteModal}
+        onClose={() => setOpenDeleteModal(false)}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận"
+        message={`Bạn có chắc chắn muốn xóa "${bankToDelete?.name}" không?`}
+          loading={isDeleting} 
+      />
     </div>
   );
 }
