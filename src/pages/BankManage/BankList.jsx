@@ -17,7 +17,6 @@ function BankList() {
   const [searchCode, setSearchCode] = useState("");
   const [searchKeyword, setSearchKeyword] = useState("");
 
-
   // Modal states
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isEditLoading, setIsEditLoading] = useState(false);
@@ -37,22 +36,6 @@ const [isDeleting, setIsDeleting] = useState(false);
 
   // requestRef để tránh race condition khi mở Edit modal
   const requestRef = useRef(0);
-
-  // ------------------------- FETCH BANKS -------------------------
-  // const fetchBanks = async (page, size, code = "") => {
-  //   setLoading(true);
-  //   try {
-  //     const response = await bankApi.getBankList(page, size, code);
-  //     setBanks(response?.data || []);
-  //     setTotalPages(response?.totalItems ? Math.ceil(response.totalItems / size) : 1);
-  //     setPageNumber(response?.pageNumber || page);
-  //   } catch (error) {
-  //     console.error("Lỗi khi lấy danh sách ngân hàng:", error);
-  //     toast.error("Lấy danh sách ngân hàng thất bại");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   // ------------------------- FETCH BANKS -------------------------
 const fetchBanks = async (page, size, code = "") => {
@@ -224,10 +207,10 @@ const handleSearch = () => {
         </button> */}
     </div>
         <button
-          className="  px-5 py-2 rounded-xl font-semibold text-md transition bg-primary-dark text-white hover:bg-primary-darkest"
+          className="  px-5 py-2 rounded-xl font-semibold text-md transition bg-primary-dark text-white hover:bg-primary-darkest cursor-pointer"
           onClick={openCreateModal}
         >
-          Tạo mới 
+             <Plus className="h-5 w-5 inline-block mr-2" />Tạo mới
         </button>
 
 
@@ -268,7 +251,7 @@ const handleSearch = () => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{bank.codeBank}</td>
                 <td className="w-1/12 px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <button className=" " onClick={() => openEditModal(bank.id)}><SquarePen className="h-5 w-5 text-warning mr-3 ml-2 flex-shrink-0 cursor-pointer"/></button>
-                  <button className="" onClick={() => handleOpenDelete(bank)}><Trash className="h-5 w-5 text-error mr-3 flex-shrink-0"/></button>
+                  <button className="" onClick={() => handleOpenDelete(bank)}><Trash className="h-5 w-5 text-error mr-3 flex-shrink-0 cursor-pointer"/></button>
                 </td>
               </tr>
             ))}

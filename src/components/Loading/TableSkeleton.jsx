@@ -30,10 +30,10 @@ export default function TableSkeleton() {
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            <th scope="col" className="px-6 py-3 text-left text-md font-medium text-primary-darkest uppercase tracking-wider w-1/12">#</th>
-            <th scope="col" className="px-6 py-3 text-left text-md font-medium text-primary-darkest tracking-wider w-1/4">Tên ngân hàng</th>
-            <th scope="col" className="px-6 py-3 text-left text-md font-medium text-primary-darkest tracking-wider w-1/4">Mã ngân hàng</th>
-            <th scope="col" className="px-6 py-3 text-left text-md font-medium text-primary-darkest tracking-wider w-1/12">Tùy chọn</th>
+            <th scope="col" className="px-6 py-3 text-left text-md font-medium text-primary-darkest uppercase tracking-wider w-1/12"></th>
+            <th scope="col" className="px-6 py-3 text-left text-md font-medium text-primary-darkest tracking-wider w-1/4"></th>
+            <th scope="col" className="px-6 py-3 text-left text-md font-medium text-primary-darkest tracking-wider w-1/4"></th>
+            <th scope="col" className="px-6 py-3 text-left text-md font-medium text-primary-darkest tracking-wider w-1/12"></th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">

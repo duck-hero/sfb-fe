@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
-import { FiHome, FiFileText } from "react-icons/fi";
 import sfbLogo from '../../assets/sfb-logo.png';
+import { Landmark, LayoutDashboard, IdCard   } from 'lucide-react';
 
 const Sidebar = () => {
   const { pathname } = useLocation();
@@ -23,7 +23,7 @@ const Sidebar = () => {
             pathname === "/" && active
           }`}
         >
-          <FiHome /> Dashboard
+          <LayoutDashboard /> Dashboard
         </Link>
 
         <Link
@@ -32,15 +32,19 @@ const Sidebar = () => {
             pathname === "/sample" && active
           }`}
         >
-          <FiFileText /> Quản lý ngân hàng
+          <Landmark  /> Quản lý ngân hàng
         </Link>
 
-        <Link
-          to="/login"
-          className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100"
+                <Link
+          to="/bank-account-management"
+          className={`flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 ${
+            pathname === "/sample" && active
+          }`}
         >
-          Login
+          <IdCard   /> Quản lý tài khoản ngân hàng
         </Link>
+
+
       </nav>
     </div>
   );
