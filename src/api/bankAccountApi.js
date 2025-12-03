@@ -21,11 +21,6 @@ getBankList: async (pageNumber = 1, pageSize = 10, accountBankNumber, accountBan
     throw error.response ? error.response.data : error.message;
   }
 },
-
-
-
-
-
   // Lấy thông tin tài khoản ngân hàng theo Id
   getBankAccountById: async (id) => {
     try {

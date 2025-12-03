@@ -3,18 +3,6 @@ import { api } from "./api";
 import axiosInstance from "./axiosInstance";
 
 const accountApi = {
-  // getUser: async () => {
-  //   try {
-  //     // Gọi API với header Authorization chứa token
-  //     const response = await axiosInstance.get(`${api}/account/current-user`);
-
-  //     return response.data;
-  //   } catch (error) {
-  //     // Xử lý lỗi và ném lại thông báo lỗi
-  //     throw error.response ? error.response.data : error.message;
-  //   }
-  // },
-
   login: async (credentials) => {
     try {
       const response = await axios.post(`${api}/Account/Authenticate`, credentials);
@@ -88,7 +76,20 @@ Disable2FA: async (password) => {
   }
 },
 
+getUserList: async (pageNumber = 1, pageSize = 10) => {
+  try {
+    const response = await axiosInstance.get(`${api}/Account/GetPagedListUser`, {
+      params: {
+        PageNumber: pageNumber,
+        PageSize: pageSize,
+      },
+    });
 
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+},
 
 
 };

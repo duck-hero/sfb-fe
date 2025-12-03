@@ -7,6 +7,7 @@ import UserInfo from '../pages/UserSettings/UserInfo';
 import Verify2FA from '../pages/Login/Verify2FA';
 import BankList from '../pages/BankManage/BankList';
 import BankAccountList from '../pages/BankAccountManage/BankAccountList';
+import BankCardList from '../pages/BankCardManage/bankCardList';
 
 export default function AppRoutes() {
   return (
@@ -17,6 +18,7 @@ export default function AppRoutes() {
         <Route path="sample" element={<SamplePage />} /> */}
           <Route path="bank-management" element={<BankList />} />
              <Route path="bank-account-management" element={<BankAccountList />} />
+               <Route path="bank-card-management" element={<BankCardList />} />
       </Route>
         <Route path="/login" element={<Login />} />
             <Route path="/verify-2fa" element={<Verify2FA />} />

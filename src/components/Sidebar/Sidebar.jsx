@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import sfbLogo from '../../assets/sfb-logo.png';
-import { Landmark, LayoutDashboard, IdCard   } from 'lucide-react';
+import { Landmark, LayoutDashboard, IdCard, CreditCard    } from 'lucide-react';
 
 const Sidebar = () => {
   const { pathname } = useLocation();
@@ -42,6 +42,14 @@ const Sidebar = () => {
           }`}
         >
           <IdCard   /> Quản lý tài khoản ngân hàng
+        </Link>
+                        <Link
+          to="/bank-card-management"
+          className={`flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 ${
+            pathname === "/sample" && active
+          }`}
+        >
+          <CreditCard   /> Quản lý thẻ ngân hàng
         </Link>
 
 

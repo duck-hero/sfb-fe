@@ -235,10 +235,7 @@ function BankAccountList() {
         <div className="flex items-center w-full max-w-4xl gap-4">
           {/* Input Số tài khoản */}
           <div 
-            className="flex-1 flex items-center px-5 py-2 bg-white 
-                       border border-primary-darkest rounded-xl shadow-lg 
-                       transition-all duration-300 ease-in-out
-                       focus-within:border-primary-darkest focus-within:ring-4 focus-within:ring-blue-100"
+            className="flex-1 flex items-center px-5 py-2 bg-white border border-gray-200 rounded-xl shadow-lg transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-4 focus-within:ring-blue-100"
           >
          
             <input
@@ -253,10 +250,7 @@ function BankAccountList() {
 
           {/* Input Tên chủ tài khoản */}
           <div 
-            className="flex-1 flex items-center px-5 py-2 bg-white 
-                       border border-primary-darkest rounded-xl shadow-lg 
-                       transition-all duration-300 ease-in-out
-                       focus-within:border-primary-darkest focus-within:ring-4 focus-within:ring-blue-100"
+            className="flex-1 flex items-center px-5 py-2 bg-white border border-gray-200 rounded-xl shadow-lg transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-4 focus-within:ring-blue-100"
           >
       
             <input
@@ -271,10 +265,7 @@ function BankAccountList() {
         
           {/* Dropdown Ngân hàng */}
           <div 
-            className="flex-1 flex items-center px-5 py-2 bg-white 
-                       border border-primary-darkest rounded-xl shadow-lg 
-                        transition-all duration-300 ease-in-out
-                       focus-within:border-primary-darkest focus-within:ring-4 focus-within:ring-blue-100"
+            className="flex-1 flex items-center px-5 py-2 bg-white border border-gray-200 rounded-xl shadow-lg transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-4 focus-within:ring-blue-100"
           >
             <select
               value={searchBankId}
