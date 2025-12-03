@@ -76,13 +76,13 @@ export default function CreateBankCardModal({
                     />
                   </div>
 
-                  {/* CCV */}
+                  {/* CVV */}
                   <div>
-                    <label className="block text-sm font-medium mb-1">Mã CCV</label>
+                    <label className="block text-sm font-medium mb-1">Mã CVV</label>
                     <input
                       type="number"
-                      name="ccvCode"
-                      value={formData.ccvCode}
+                      name="cvvCode"
+                      value={formData.cvvCode}
                       onChange={onChange}
                       disabled={saving}
                       placeholder="Nhập mã 3 số mặt sau..."

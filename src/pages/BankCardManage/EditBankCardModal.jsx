@@ -43,30 +43,30 @@ export default function EditBankCardModal({
   userList = [],
   bankAccounts = [],
 }) {
-  // --- STATE CHO CCV (Logic Password) ---
-  const [ccvInput, setCcvInput] = useState("***");
-  const [isCcvEdited, setIsCcvEdited] = useState(false);
+  // --- STATE CHO CVV (Logic Password) ---
+  const [cvvInput, setCvvInput] = useState("***");
+  const [isCvvEdited, setIsCvvEdited] = useState(false);
 
   // --- STATE CHO SỐ THẺ (Logic Click-to-Clear) ---
   const [isCardNumberTouched, setIsCardNumberTouched] = useState(false);
 
   useEffect(() => {
     if (open) {
-      // 1. Reset CCV về dạng ẩn
-      setCcvInput("***");
-      setIsCcvEdited(false);
+      // 1. Reset CVV về dạng ẩn
+      setCvvInput("***");
+      setIsCvvEdited(false);
 
       // 2. Reset trạng thái "đã chạm" của Số thẻ về false
       setIsCardNumberTouched(false);
     }
   }, [open]);
 
-  // Handle thay đổi CCV (Local State)
-  const handleCcvChange = (e) => {
+  // Handle thay đổi CVV (Local State)
+  const handleCvvChange = (e) => {
     const val = e.target.value;
-    setCcvInput(val);
-    setIsCcvEdited(true);
-    onChange({ target: { name: "ccvCode", value: val } });
+    setCvvInput(val);
+    setIsCvvEdited(true);
+    onChange({ target: { name: "cvvCode", value: val } });
   };
 
   // Handle Focus vào SỐ THẺ
@@ -84,9 +84,9 @@ const handleSaveClick = () => {
     // 1. Tạo bản sao của formData hiện tại
     const payload = { ...formData };
 
-    // 2. Xử lý logic CCV ngay trên payload (KHÔNG gọi onChange)
-    if (!isCcvEdited) {
-      payload.ccvCode = null; // Backend sẽ hiểu là không update field này
+    // 2. Xử lý logic CVV ngay trên payload (KHÔNG gọi onChange)
+    if (!isCvvEdited) {
+      payload.cvvCode = null; // Backend sẽ hiểu là không update field này
     }
 
     // 3. Xử lý logic Số thẻ (nếu cần thiết)
@@ -172,32 +172,32 @@ const handleSaveClick = () => {
                         />
                       </div>
 
-                      {/* --- MÃ CCV (Logic Password: Hiện ***, click vào mới clear) --- */}
+                      {/* --- MÃ CVV (Logic Password: Hiện ***, click vào mới clear) --- */}
                       <div>
                         <label className="block text-sm font-medium mb-1">
-                          Mã CCV
+                          Mã CVV
                         </label>
                         <input
                           type="text"
-                          name="ccvCode"
-                          value={ccvInput}
-                          onChange={handleCcvChange}
+                          name="cvvCode"
+                          value={cvvInput}
+                          onChange={handleCvvChange}
                           disabled={saving}
                           onFocus={() => {
-                            if (!isCcvEdited) {
-                              setIsCcvEdited(true);
-                              setCcvInput(""); // Clear hiển thị
+                            if (!isCvvEdited) {
+                              setIsCvvEdited(true);
+                              setCvvInput(""); // Clear hiển thị
                               onChange({
-                                target: { name: "ccvCode", value: "" },
+                                target: { name: "cvvCode", value: "" },
                               }); // Clear data gửi đi
                             }
                           }}
                           className="w-full h-12 border border-gray-300 rounded-xl px-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                         />
                         <p className="text-xs mt-1 text-gray-500">
-                          {isCcvEdited
-                            ? "Đang nhập mã CCV mới..."
-                            : "Nếu không nhập mới, hệ thống sẽ giữ nguyên mã CCV cũ."}
+                          {isCvvEdited
+                            ? "Đang nhập mã CVV mới..."
+                            : "Nếu không nhập mới, hệ thống sẽ giữ nguyên mã CVV cũ."}
                         </p>
                       </div>
 
