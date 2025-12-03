@@ -319,7 +319,7 @@ function BankCardList() {
           <div className="flex-1 flex items-center px-5 py-2 bg-white border border-gray-200 rounded-xl shadow-lg transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-4 focus-within:ring-blue-100">
             <input
               type="text"
-              placeholder="Số thẻ..."
+              placeholder="Tìm theo số thẻ..."
               value={searchCardNumber}
               onChange={(e) => setSearchCardNumber(e.target.value)}
               className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-base focus:outline-none"
@@ -330,7 +330,7 @@ function BankCardList() {
           <div className="flex-1 flex items-center px-5 py-2 bg-white border border-gray-200 rounded-xl shadow-lg transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-4 focus-within:ring-blue-100">
             <input
               type="text"
-              placeholder="Chủ thẻ..."
+              placeholder="Tìm theo tên chủ thẻ..."
               value={searchHolderName}
               onChange={(e) => setSearchHolderName(e.target.value)}
               className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-base focus:outline-none"
@@ -344,7 +344,7 @@ function BankCardList() {
               onChange={(e) => setSearchAssignedTo(e.target.value)}
               className="w-full text-gray-800 placeholder-primary-darkest bg-transparent text-base focus:outline-none"
             >
-              <option value="">-- Người sở hữu --</option>
+              <option value="">-- Quản trị --</option>
               {userList.map((u) => (
                 <option key={u.id} value={u.id}>
                   {u.userName}
@@ -407,7 +407,7 @@ function BankCardList() {
                   scope="col"
                   className="px-6 py-3 text-left text-md font-medium text-gray-900 uppercase tracking-wider text-primary-darkest"
                 >
-                  Người sở hữu
+                  Quản trị
                 </th>
                 <th
                   scope="col"
