@@ -50,20 +50,12 @@ const Sidebar = () => {
           <CreditCard /> Quản lý thẻ ngân hàng
         </Link>
         <Link
-          to="/bm-source-management"
+          to="/bm-management"
           className={`flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 ${
             pathname === "/sample" && active
           }`}
         >
           <Facebook  /> Quản lý BM 
-        </Link>
-                <Link
-          to="/bm-account-management"
-          className={`flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 ${
-            pathname === "/sample" && active
-          }`}
-        >
-          <UserCog /> Quản lý tài khoản BM
         </Link>
       </nav>
     </div>

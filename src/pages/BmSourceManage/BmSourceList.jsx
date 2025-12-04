@@ -191,7 +191,7 @@ function BmSourceList() {
             {/* Input field, chiếm hết không gian còn lại */}
             <input
               type="text"
-              placeholder="Tìm kiếm theo mã ngân hàng..."
+              placeholder="Tìm kiếm theo BM..."
               value={searchCode}
               onChange={(e) => setSearchCode(e.target.value)}
               onKeyDown={(e) => {

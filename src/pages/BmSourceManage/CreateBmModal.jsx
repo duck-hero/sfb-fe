@@ -42,7 +42,7 @@ export default function CreateBmModal({
 
                 {/* Title */}
                 <Dialog.Title className="text-2xl font-semibold text-center mb-5">
-                  Thêm ngân hàng mới
+                  Thêm nguồn BM
                 </Dialog.Title>
 
                 {/* Input fields */}

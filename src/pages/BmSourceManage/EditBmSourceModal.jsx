@@ -73,7 +73,7 @@ export default function EditBmSourceModal({
               <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-8 text-left shadow-xl transition-all">
                 {/* Title */}
                 <Dialog.Title className="text-2xl font-semibold text-center mb-5">
-                  Chỉnh sửa ngân hàng
+                  Chỉnh nguồn BM
                 </Dialog.Title>
 
                 {/* --- Logic hiển thị Skeleton hoặc Form --- */}
