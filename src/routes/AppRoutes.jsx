@@ -28,23 +28,21 @@
 //   );
 // }
 
+import React from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Login from "../pages/Login/Login";
 
-import React from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import Login from '../pages/Login/Login';
-
-import MainLayout from '../layouts/MainLayout';
-import UserInfo from '../pages/UserSettings/UserInfo';
-import Verify2FA from '../pages/Login/Verify2FA';
-import BankList from '../pages/BankManage/BankList';
-import BankAccountList from '../pages/BankAccountManage/BankAccountList';
-import BankCardList from '../pages/BankCardManage/bankCardList';
-import ProtectedRoute from '../context/ProtectedRoute';
-import BmSourceList from '../pages/BMSourceManage/BMSourceList';
-
+import MainLayout from "../layouts/MainLayout";
+import UserInfo from "../pages/UserSettings/UserInfo";
+import Verify2FA from "../pages/Login/Verify2FA";
+import BankList from "../pages/BankManage/BankList";
+import BankAccountList from "../pages/BankAccountManage/BankAccountList";
+import BankCardList from "../pages/BankCardManage/bankCardList";
+import ProtectedRoute from "../context/ProtectedRoute";
+import BmSourceList from "../pages/BmSourceManage/BmSourceList";
+import BmAccountList from "../pages/BmAccountManage/BmAccountList";
 
 // 1. Import ProtectedRoute
-
 
 export default function AppRoutes() {
   return (
@@ -66,14 +64,17 @@ export default function AppRoutes() {
           <Route path="/" element={<MainLayout />}>
             {/* <Route index element={<Dashboard />} /> */}
             <Route path="bank-management" element={<BankList />} />
-            <Route path="bank-account-management" element={<BankAccountList />} />
+            <Route
+              path="bank-account-management"
+              element={<BankAccountList />}
+            />
             <Route path="bank-card-management" element={<BankCardList />} />
-                      <Route path="/bm-source-management" element={<BmSourceList />} /> 
+            <Route path="/bm-source-management" element={<BmSourceList />} />
+            <Route path="/bm-account-management" element={<BmAccountList />} />
           </Route>
-          
+
           {/* 4. Tuyến đường cài đặt /settings cũng cần được bảo vệ */}
-          <Route path="/settings" element={<UserInfo />} /> 
- 
+          <Route path="/settings" element={<UserInfo />} />
         </Route>
 
         {/* 5. Tuyến đường Login và Verify2FA không cần bảo vệ (công khai) */}

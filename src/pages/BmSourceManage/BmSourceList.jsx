@@ -175,7 +175,7 @@ function BmSourceList() {
   // ------------------------- RENDER -------------------------
   return (
     <div className="px-6">
-      <h1 className="text-2xl font-bold mb-4">Danh sách ngân hàng</h1>
+      <h1 className="text-2xl font-bold mb-4">Danh sách BM</h1>
 
       <div className="flex justify-between items-center pb-3 border-b border-gray-200">
         <div className="w-full max-w-3xl">
