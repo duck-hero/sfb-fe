@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import sfbLogo from "../../assets/sfb-logo.png";
-import { Landmark, LayoutDashboard, IdCard, CreditCard, Facebook, UserCog   } from "lucide-react";
+import { Landmark, LayoutDashboard, IdCard, CreditCard, Facebook, UserCog, FolderCog    } from "lucide-react";
 
 const Sidebar = () => {
   const { pathname } = useLocation();
@@ -30,10 +30,10 @@ const Sidebar = () => {
             pathname === "/sample" && active
           }`}
         >
-          <Landmark /> Quản lý ngân hàng
+          <FolderCog  /> Ngân hàng
         </Link>
 
-        <Link
+        {/* <Link
           to="/bank-account-management"
           className={`flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 ${
             pathname === "/sample" && active
@@ -48,7 +48,7 @@ const Sidebar = () => {
           }`}
         >
           <CreditCard /> Quản lý thẻ ngân hàng
-        </Link>
+        </Link> */}
         <Link
           to="/bm-management"
           className={`flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 ${

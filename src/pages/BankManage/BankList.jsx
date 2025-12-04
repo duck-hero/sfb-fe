@@ -244,6 +244,13 @@ const handleSearch = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
+                          {banks.length === 0 && (
+                <tr>
+                   <td colSpan="12" className="px-6 py-4 text-center text-gray-500">
+                      Không tìm thấy dữ liệu
+                   </td>
+                </tr>
+              )}
             {banks.map((bank, index) => (
               <tr key={bank.id} className="">
                 <td className="w-1/12 px-6 py-4 whitespace-nowrap text-sm text-gray-500">{(pageNumber - 1) * pageSize + index + 1}</td>

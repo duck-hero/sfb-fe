@@ -351,6 +351,13 @@ function BankAccountList() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
+                {bankAccounts.length === 0 && (
+                <tr>
+                   <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                      Không tìm thấy dữ liệu
+                   </td>
+                </tr>
+              )}
               {bankAccounts.map((x, index) => (
                 <tr key={x.id}>
                   <td className="w-1/12 px-6 py-4 whitespace-nowrap text-sm text-gray-500">

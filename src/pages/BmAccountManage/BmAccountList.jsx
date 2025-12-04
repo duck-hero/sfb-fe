@@ -293,6 +293,7 @@ const openEditModal = async (id) => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
+                
               {bmAccounts.length > 0 ? (
                 bmAccounts.map((x, index) => (
                   <tr key={x.id} className="hover:bg-gray-50">
@@ -318,9 +319,9 @@ const openEditModal = async (id) => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
-                    Không tìm thấy dữ liệu
-                  </td>
+                   <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                      Không tìm thấy dữ liệu
+                   </td>
                 </tr>
               )}
             </tbody>

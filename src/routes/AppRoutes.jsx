@@ -42,6 +42,7 @@ import ProtectedRoute from "../context/ProtectedRoute";
 import BmSourceList from "../pages/BmSourceManage/BmSourceList";
 import BmAccountList from "../pages/BmAccountManage/BmAccountList";
 import BMManage from "../pages/BmManager/BMManage";
+import BankManagePage from "../pages/BankManagePage/BankManagePage";
 
 // 1. Import ProtectedRoute
 
@@ -64,12 +65,12 @@ export default function AppRoutes() {
           */}
           <Route path="/" element={<MainLayout />}>
             {/* <Route index element={<Dashboard />} /> */}
-            <Route path="bank-management" element={<BankList />} />
-            <Route
+            <Route path="bank-management" element={<BankManagePage />} />
+            {/* <Route
               path="bank-account-management"
               element={<BankAccountList />}
             />
-            <Route path="bank-card-management" element={<BankCardList />} />
+            <Route path="bank-card-management" element={<BankCardList />} /> */}
             <Route path="bm-management" element={<BMManage />} />
           </Route>
 
