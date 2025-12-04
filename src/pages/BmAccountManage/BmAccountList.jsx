@@ -282,10 +282,10 @@ const openEditModal = async (id) => {
                   #
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-md font-medium text-gray-900 tracking-wider w-1/3 text-primary-darkest">
-                  Tên Account
+                  BM
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-md font-medium text-gray-900 tracking-wider w-1/3 text-primary-darkest">
-                  Nguồn BM (Source)
+                  Nguồn (Source)
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-md font-medium text-gray-900 tracking-wider w-1/6 text-primary-darkest">
                   Tùy chọn
