@@ -1,6 +1,8 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { ClipLoader } from "react-spinners";
+import SecurityHelper from "../../utils/crypto";
+
 
 export default function CreateBankCardModal({
   open,
@@ -40,7 +42,6 @@ export default function CreateBankCardModal({
             >
               {/* Cập nhật style Panel giống EditModal */}
               <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-8 text-left shadow-xl transition-all">
-                
                 <Dialog.Title className="text-2xl font-semibold text-center mb-5">
                   Tạo thẻ ngân hàng
                 </Dialog.Title>
@@ -48,7 +49,9 @@ export default function CreateBankCardModal({
                 <div className="flex flex-col gap-4">
                   {/* Card Number */}
                   <div>
-                    <label className="block text-sm font-medium mb-1">Số thẻ</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Số thẻ
+                    </label>
                     <input
                       type="text"
                       name="cardNumber"
@@ -78,7 +81,9 @@ export default function CreateBankCardModal({
 
                   {/* CVV */}
                   <div>
-                    <label className="block text-sm font-medium mb-1">Mã CVV</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Mã CVV
+                    </label>
                     <input
                       type="number"
                       name="cvvCode"
@@ -194,7 +199,6 @@ export default function CreateBankCardModal({
                     )}
                   </button>
                 </div>
-
               </Dialog.Panel>
             </Transition.Child>
           </div>

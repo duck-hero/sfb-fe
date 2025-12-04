@@ -9,6 +9,7 @@ import CreateBankCardModal from "./CreateBankCardModal";
 import bankAccountApi from "../../api/bankAccountApi";
 import EditBankCardModal from "./EditBankCardModal";
 import DetailBankCardModal from "./DetailBankCardModal";
+import SecurityHelper from "../../utils/crypto";
 
 function BankCardList() {
   const [bankCards, setBankCards] = useState([]);
@@ -169,6 +170,7 @@ function BankCardList() {
       if (requestRef.current !== reqId) return;
 
       const data = res?.data;
+
       setFormData({
         id: data.id,
         cardNumber: data.cardNumber,
@@ -237,27 +239,75 @@ function BankCardList() {
     setIsCreateModalOpen(true);
   };
 
+  // const handleCreateSave = async () => {
+  //   setSaving(true);
+  //   try {
+  //               console.log("Create", formData)
+  //     await bankCardApi.createBankCard(
+  //       formData.cardNumber,
+  //       formData.cardHolderName,
+  //       formData.cvvCode,
+  //       formData.issuedDate,
+  //       formData.expirationDate,
+  //       formData.bankAccountId,
+  //       formData.assignedToUserId
+  //     );
+  //     toast.success("Tạo thẻ thành công");
+  //     setIsCreateModalOpen(false);
+  //     fetchCards();
+  //   } catch {
+  //     toast.error("Tạo thất bại");
+  //   } finally {
+  //     setSaving(false);
+  //   }
+  // };
+
   const handleCreateSave = async () => {
     setSaving(true);
-    try {
-      await bankCardApi.createBankCard(
-        formData.cardNumber,
-        formData.cardHolderName,
-        formData.cvvCode,
-        formData.issuedDate,
-        formData.expirationDate,
-        formData.bankAccountId,
-        formData.assignedToUserId
-      );
-      toast.success("Tạo thẻ thành công");
-      setIsCreateModalOpen(false);
-      fetchCards();
-    } catch {
-      toast.error("Tạo thất bại");
-    } finally {
-      setSaving(false);
+    
+    // 1. Tạo bản sao của formData để xử lý mã hóa
+    const payload = { ...formData };
+    
+    // 2. Xử lý Mã hóa CVV (Async/Await)
+    const cvvValue = payload.cvvCode;
+
+    if (cvvValue && String(cvvValue).trim() !== "") {
+        try {
+            // Mã hóa và thay thế giá trị CVV
+            payload.cvvCode = await SecurityHelper.encrypt(String(cvvValue));
+        } catch (error) {
+            console.error("Lỗi mã hóa CVV:", error);
+            toast.error("Lỗi mã hóa dữ liệu. Vui lòng thử lại.");
+            setSaving(false);
+            return; // Dừng quá trình nếu mã hóa thất bại
+        }
     }
-  };
+    
+    try {
+        console.log("Create Payload đã mã hóa:", payload);
+
+        // 3. Gửi payload đã mã hóa vào API
+        await bankCardApi.createBankCard(
+            payload.cardNumber,
+            payload.cardHolderName,
+            payload.cvvCode,
+            payload.issuedDate,
+            payload.expirationDate,
+            payload.bankAccountId,
+            payload.assignedToUserId
+        );
+        
+        toast.success("Tạo thẻ thành công");
+        setIsCreateModalOpen(false);
+        fetchCards();
+    } catch (error) {
+        // Log lỗi chi tiết từ API nếu cần
+        console.error("Lỗi tạo thẻ:", error);
+        toast.error("Tạo thất bại");
+    } finally {
+        setSaving(false);
+    }
+};
 
   // Delete
   const handleOpenDelete = (item) => {
@@ -415,7 +465,6 @@ function BankCardList() {
                 >
                   Số lần thêm
                 </th>
-
                 <th
                   scope="col"
                   className="px-6 py-3 text-center text-md font-medium text-gray-900 uppercase tracking-wider text-primary-darkest"
@@ -455,6 +504,7 @@ function BankCardList() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex items-center justify-center">
                     {x.addTotal}
                   </td>
+
                   {/* --- CẬP NHẬT TRẠNG THÁI (BADGE) --- */}
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center justify-center">

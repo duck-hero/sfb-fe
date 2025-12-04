@@ -58,12 +58,12 @@ getBankCardList: async (pageNumber = 1, pageSize = 10, cardNumber, cardHolderNam
     }
   },
   // Thêm mới thẻ ngân hàng
-createBankCard: async (cardNumber, cardHolderName, ccvCode, issuedDate, expirationDate, bankAccountId, assignedToUserId) => {
+createBankCard: async (cardNumber, cardHolderName, cvvCode, issuedDate, expirationDate, bankAccountId, assignedToUserId) => {
   try {
     const response = await axiosInstance.post(`${api}/BankCard/CreateBankCard`, {
       cardNumber: cardNumber,
       cardHolderName: cardHolderName,
-      ccvCode: ccvCode,
+      cvvCode: cvvCode,
       issuedDate: issuedDate,
       expirationDate: expirationDate,
       bankAccountId: bankAccountId,

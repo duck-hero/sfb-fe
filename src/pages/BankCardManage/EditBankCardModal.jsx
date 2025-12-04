@@ -1,6 +1,7 @@
 import React, { useEffect, useState, Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { ClipLoader } from "react-spinners";
+import SecurityHelper from "../../utils/crypto";
 
 // Skeleton Input (Giữ nguyên)
 const InputSkeleton = () => (
@@ -80,23 +81,39 @@ export default function EditBankCardModal({
   };
 
   // Handle Save
-const handleSaveClick = () => {
-    // 1. Tạo bản sao của formData hiện tại
-    const payload = { ...formData };
+// const handleSaveClick = () => {
+//     // 1. Tạo bản sao của formData hiện tại
+//     const payload = { ...formData };
 
-    // 2. Xử lý logic CVV ngay trên payload (KHÔNG gọi onChange)
-    if (!isCvvEdited) {
-      payload.cvvCode = null; // Backend sẽ hiểu là không update field này
-    }
+//     // 2. Xử lý logic CVV ngay trên payload (KHÔNG gọi onChange)
+//     if (!isCvvEdited) {
+//       payload.cvvCode = null; // Backend sẽ hiểu là không update field này
+//     }
 
-    // 3. Xử lý logic Số thẻ (nếu cần thiết)
-    // Nếu người dùng click vào xóa nhưng không nhập gì (chuỗi rỗng), 
-    // có thể bạn muốn gửi null hoặc giữ nguyên logic tùy backend.
-    // Ở đây giả sử backend chấp nhận chuỗi rỗng hoặc bạn đã validate required.
+//     // 3. Xử lý logic Số thẻ (nếu cần thiết)
+//     // Nếu người dùng click vào xóa nhưng không nhập gì (chuỗi rỗng), 
+//     // có thể bạn muốn gửi null hoặc giữ nguyên logic tùy backend.
+//     // Ở đây giả sử backend chấp nhận chuỗi rỗng hoặc bạn đã validate required.
     
-    // 4. Gọi onSave và truyền payload đã xử lý sang cha
-    onSave(payload); 
-  };
+//     // 4. Gọi onSave và truyền payload đã xử lý sang cha
+//     onSave(payload); 
+//   };
+const handleSaveClick = async () => {
+  const payload = { ...formData };
+
+  // Nếu CVV KHÔNG được chỉnh sửa → không update CVV
+  if (!isCvvEdited) {
+    payload.cvvCode = null;
+  } else {
+    // Nếu có nhập CVV mới → mã hóa
+    if (payload.cvvCode && payload.cvvCode.trim() !== "") {
+      payload.cvvCode = await SecurityHelper.encrypt(payload.cvvCode);
+    }
+  }
+
+  onSave(payload);
+};
+
   const isContentReady = !loading;
 
   return (
