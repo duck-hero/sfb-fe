@@ -5,7 +5,8 @@ import { toast } from "react-toastify";
 import { Search, Plus, SquarePen, Trash } from "lucide-react";
 import TableSkeleton from "../../components/Loading/TableSkeleton";
 import CreateBmModal from "./CreateBmModal";
-import EditBmSourceModal from "d:/Private/Project/Project/sfb/sfb-project/src/pages/BmSourceManage/EditBmSourceModal";
+import EditBmSourceModal from "./EditBmSourceModal";
+
 
 function BmSourceList() {
   const [bmSources, setBmSources] = useState([]);
