@@ -51,6 +51,7 @@ export default function EditBankCardModal({
   // --- STATE CHO SỐ THẺ (Logic Click-to-Clear) ---
   const [isCardNumberTouched, setIsCardNumberTouched] = useState(false);
 
+  
   useEffect(() => {
     if (open) {
       // 1. Reset CVV về dạng ẩn
@@ -71,14 +72,15 @@ export default function EditBankCardModal({
   };
 
   // Handle Focus vào SỐ THẺ
-  const handleCardNumberFocus = () => {
-    // Chỉ xóa trắng trong lần đầu tiên người dùng focus vào ô này
-    if (!isCardNumberTouched) {
-      setIsCardNumberTouched(true);
-      // Xóa giá trị trong formData để người dùng nhập mới
-      onChange({ target: { name: "cardNumber", value: "" } });
-    }
-  };
+// Handle Focus vào SỐ THẺ (Giữ nguyên)
+const handleCardNumberFocus = () => {
+  // Chỉ xóa trắng trong lần đầu tiên người dùng focus vào ô này
+  if (!isCardNumberTouched) {
+    setIsCardNumberTouched(true);
+    // Xóa giá trị trong formData để người dùng nhập mới
+    onChange({ target: { name: "cardNumber", value: "" } });
+  }
+};
 
   // Handle Save
 // const handleSaveClick = () => {
@@ -109,6 +111,9 @@ const handleSaveClick = async () => {
     if (payload.cvvCode && payload.cvvCode.trim() !== "") {
       payload.cvvCode = await SecurityHelper.encrypt(payload.cvvCode);
     }
+  }
+  if (!isCardNumberTouched) {
+    payload.cardNumber = null;
   }
 
   onSave(payload);

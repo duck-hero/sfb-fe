@@ -503,6 +503,7 @@ function BankCardList() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex items-center justify-center">
                     {x.addTotal}
+                     {x.cvvCode}
                   </td>
 
                   {/* --- CẬP NHẬT TRẠNG THÁI (BADGE) --- */}
