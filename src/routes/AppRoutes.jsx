@@ -40,6 +40,8 @@ import BankList from '../pages/BankManage/BankList';
 import BankAccountList from '../pages/BankAccountManage/BankAccountList';
 import BankCardList from '../pages/BankCardManage/bankCardList';
 import ProtectedRoute from '../context/ProtectedRoute';
+import BmSourceList from '../pages/BMSourceManage/BMSourceList';
+
 
 // 1. Import ProtectedRoute
 
@@ -66,11 +68,12 @@ export default function AppRoutes() {
             <Route path="bank-management" element={<BankList />} />
             <Route path="bank-account-management" element={<BankAccountList />} />
             <Route path="bank-card-management" element={<BankCardList />} />
+                      <Route path="/bm-source-management" element={<BmSourceList />} /> 
           </Route>
           
           {/* 4. Tuyến đường cài đặt /settings cũng cần được bảo vệ */}
           <Route path="/settings" element={<UserInfo />} /> 
-          
+ 
         </Route>
 
         {/* 5. Tuyến đường Login và Verify2FA không cần bảo vệ (công khai) */}
