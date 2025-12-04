@@ -55,7 +55,7 @@ const Sidebar = () => {
             pathname === "/sample" && active
           }`}
         >
-          <Facebook  /> Quản lý BM 
+          <Facebook  /> Quản lý FB 
         </Link>
       </nav>
     </div>

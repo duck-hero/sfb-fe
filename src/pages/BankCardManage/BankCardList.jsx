@@ -437,43 +437,43 @@ function BankCardList() {
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-md font-medium text-gray-900 uppercase tracking-wider text-primary-darkest"
+                  className="px-6 py-3 text-left text-md font-medium text-gray-900  tracking-wider text-primary-darkest"
                 >
                   Số thẻ
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-md font-medium text-gray-900 uppercase tracking-wider text-primary-darkest"
+                  className="px-6 py-3 text-left text-md font-medium text-gray-900  tracking-wider text-primary-darkest"
                 >
                   Chủ thẻ
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-md font-medium text-gray-900 uppercase tracking-wider text-primary-darkest"
+                  className="px-6 py-3 text-left text-md font-medium text-gray-900  tracking-wider text-primary-darkest"
                 >
                   Ngày hết hạn
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-md font-medium text-gray-900 uppercase tracking-wider text-primary-darkest"
+                  className="px-6 py-3 text-left text-md font-medium text-gray-900  tracking-wider text-primary-darkest"
                 >
                   Quản trị
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-center text-md font-medium text-gray-900 uppercase tracking-wider text-primary-darkest"
+                  className="px-6 py-3 text-center text-md font-medium text-gray-900  tracking-wider text-primary-darkest"
                 >
                   Số lần thêm
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-center text-md font-medium text-gray-900 uppercase tracking-wider text-primary-darkest"
+                  className="px-6 py-3 text-center text-md font-medium text-gray-900  tracking-wider text-primary-darkest"
                 >
                   Trạng thái
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-center text-md font-medium text-gray-900 uppercase tracking-wider text-primary-darkest"
+                  className="px-6 py-3 text-center text-md font-medium text-gray-900  tracking-wider text-primary-darkest"
                 >
                   Tuỳ chọn
                 </th>
@@ -503,7 +503,7 @@ function BankCardList() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex items-center justify-center">
                     {x.addTotal}
-                     {x.cvvCode}
+                    
                   </td>
 
                   {/* --- CẬP NHẬT TRẠNG THÁI (BADGE) --- */}

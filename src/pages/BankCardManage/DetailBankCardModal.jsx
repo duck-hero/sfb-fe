@@ -188,7 +188,7 @@ console.log(cardData)
                       {/* --- 3. THÔNG TIN NGƯỜI SỞ HỮU --- */}
                       <section className="border-t pt-4">
                         <h3 className="text-base font-semibold text-gray-800 mb-3">
-                          Thông tin Người sở hữu
+                          Thông tin người phụ trách
                         </h3>
                         <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                             {/* Người sở hữu (Tên) */}
