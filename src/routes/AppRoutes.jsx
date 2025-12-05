@@ -37,7 +37,7 @@ import UserInfo from "../pages/UserSettings/UserInfo";
 import Verify2FA from "../pages/Login/Verify2FA";
 import BankList from "../pages/BankManage/BankList";
 import BankAccountList from "../pages/BankAccountManage/BankAccountList";
-import BankCardList from "../pages/BankCardManage/bankCardList";
+import BankCardList from "../pages/BankCardManage/BankCardList";
 import ProtectedRoute from "../context/ProtectedRoute";
 import BmSourceList from "../pages/BmSourceManage/BmSourceList";
 import BmAccountList from "../pages/BmAccountManage/BmAccountList";
