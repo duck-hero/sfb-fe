@@ -81,7 +81,6 @@ export default function DetailBankCardModal({
   onClose,
 }) {
   const isContentReady = !loading;
-console.log(cardData)
   return (
     <Transition appear show={open} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>

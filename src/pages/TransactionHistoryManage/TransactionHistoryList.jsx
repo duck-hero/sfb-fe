@@ -211,7 +211,7 @@ const TransactionHistoryList = () => {
   const [meta, setMeta] = useState(null); // Meta data từ API
 
   // Tab State
-  const [activeTab, setActiveTab] = useState("all"); // "all" hoặc "fb"
+  const [activeTab, setActiveTab] = useState("all"); // "all", "fb", hoặc "other"
 
   // Pagination State
   const [nextCursor, setNextCursor] = useState(null);
@@ -340,7 +340,7 @@ const TransactionHistoryList = () => {
         setTransactions((prev) => {
           return isLoadMore ? [...prev, ...res.data] : res.data;
         });
-        console.log("data", res.data)
+        // console.log("data", res.data)
         // Cập nhật thông tin phân trang
         setNextCursor(res.pageInfo.nextCursor);
         setHasMore(res.pageInfo.hasNextPage);
@@ -359,7 +359,11 @@ const TransactionHistoryList = () => {
 
   // --- EFFECT: CẬP NHẬT FILTER KHI TAB THAY ĐỔI ---
   useEffect(() => {
-    const newValue = activeTab === "fb" ? "true" : "all";
+    let newValue;
+    if (activeTab === "fb") newValue = "true";
+    else if (activeTab === "other") newValue = "false";
+    else newValue = "all"; // "all"
+
     setFilters((prev) => {
       // Chỉ cập nhật nếu giá trị thay đổi để tránh re-render không cần thiết
       if (prev.isFbTransaction === newValue) return prev;
@@ -711,6 +715,17 @@ return (
               >
                 Giao dịch FB
               </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("other")}
+                className={`px-6 py-3 text-sm font-medium transition-colors ${
+                  activeTab === "other"
+                    ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
+                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                }`}
+              >
+                Khác
+              </button>
             </div>
             
             {/* Meta Data - Bên phải */}
@@ -883,7 +898,7 @@ return (
 
                       {/* FB Account ID */}
                       <td className="px-2 py-2 align-middle">
-                        <div className="text-[10px] text-gray-600 truncate" title={item.fbAccountId || "-"}>
+                        <div className={`text-[10px] text-gray-600 truncate ${item.fbAccountId && !item.isSystemFbAccountExist ? 'underline decoration-yellow-500' : ''}`} title={item.fbAccountId ? (!item.isSystemFbAccountExist ? 'FB Account không tồn tại trong hệ thống' : item.fbAccountId) : "-"}>
                              {item.fbAccountId || "-"}
                         </div>
                       </td>
@@ -900,7 +915,9 @@ return (
 
                       {/* Đuôi thẻ */}
                       <td className="px-2 py-2 text-[11px] text-center text-gray-600 align-middle">
-                        {item.cardLastDigits || "-"}
+                        <span className={`${item.cardLastDigits && !item.isSystemCardExist ? 'underline decoration-yellow-500' : ''}`} title={item.cardLastDigits ? (!item.isSystemCardExist ? 'Thẻ không tồn tại trong hệ thống' : item.cardLastDigits) : "-"}>
+                          {item.cardLastDigits || "-"}
+                        </span>
                       </td>
 
                       {/* Trạng thái */}

@@ -287,6 +287,9 @@ const openEditModal = async (id) => {
                 <th scope="col" className="px-6 py-3 text-left text-md font-medium text-gray-900 tracking-wider w-1/3 text-primary-darkest">
                   Nguồn (Source)
                 </th>
+                <th scope="col" className="px-6 py-3 text-left text-md font-medium text-gray-900 tracking-wider w-1/3 text-primary-darkest">
+                  Trạng thái
+                </th>
                 <th scope="col" className="px-6 py-3 text-left text-md font-medium text-gray-900 tracking-wider w-1/6 text-primary-darkest">
                   Tùy chọn
                 </th>
@@ -306,6 +309,9 @@ const openEditModal = async (id) => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {/* Hiển thị tên Source nếu API trả về, nếu không hiển thị ID */}
                       {x.sourceName }
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {x.status }
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex items-center">
                       <button onClick={() => openEditModal(x.id)}>
