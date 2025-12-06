@@ -29,6 +29,8 @@
 // }
 
 import React from "react";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Login from "../pages/Login/Login";
 
@@ -50,6 +52,23 @@ import TransactionHistoryList from "../pages/TransactionHistoryManage/Transactio
 export default function AppRoutes() {
   return (
     <BrowserRouter>
+      {/* ĐẶT TOAST CONTAINER Ở ĐÂY 
+         Nó nằm ngoài <Routes>, nên khi chuyển trang nó vẫn đứng yên đó
+         và không bị mất đi khi component con unmount/loading.
+      */}
+      <ToastContainer
+        position="top-center"
+        autoClose={500}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
+
       <Routes>
         {/*
           2. Tuyến đường cha dùng ProtectedRoute

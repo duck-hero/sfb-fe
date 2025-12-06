@@ -284,10 +284,10 @@ const handleOpen2FAModal = async () => {
 
       {/* MODAL BẬT 2FA */}
       <TwoFAModal
-        key={open2FAModal ? "open" : "close"}
+        // Sửa ở đây: Thêm tiền tố "2fa-" để không bị trùng
+        key={open2FAModal ? "2fa-open" : "2fa-close"} 
         isOpen={open2FAModal}
         onClose={() => {
-          // User HỦY modal -> restore toggle và clear pending
           setOpen2FAModal(false);
           if (pendingToggle !== null) setToggleState(pendingToggle);
           setPendingToggle(null);
@@ -300,10 +300,10 @@ const handleOpen2FAModal = async () => {
 
       {/* MODAL TẮT 2FA */}
       <Disable2FAModal
-        key={openDisableModal ? "open" : "close"}
+        // Sửa ở đây: Thêm tiền tố "disable-" để không bị trùng với thằng trên
+        key={openDisableModal ? "disable-open" : "disable-close"}
         isOpen={openDisableModal}
         onClose={() => {
-          // User HỦY modal -> restore toggle và clear pending
           setOpenDisableModal(false);
           if (pendingToggle !== null) setToggleState(pendingToggle);
           setPendingToggle(null);

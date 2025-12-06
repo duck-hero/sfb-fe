@@ -4,6 +4,7 @@ import DeleteConfirmModal from "../../components/Modal/DeleteConfirmModal";
 import EditBankModal from "./EditBankModal";
 import CreateBankModal from "./CreateBankModal";
 import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { Search, Plus, SquarePen, Trash   } from 'lucide-react';
 import TableSkeleton from "../../components/Loading/TableSkeleton";
 
@@ -205,12 +206,12 @@ const handleSearch = () => {
     <Search />
 
         </button> */}
-    </div>
+  </div>
         <button
           className="  px-5 py-2 rounded-xl font-semibold text-md transition bg-primary-dark text-white hover:bg-primary-darkest cursor-pointer"
           onClick={openCreateModal}
         >
-             <Plus className="h-5 w-5 inline-block mr-2" />Tạo mới
+        <Plus className="h-5 w-5 inline-block mr-2" />Tạo mới
         </button>
 
 

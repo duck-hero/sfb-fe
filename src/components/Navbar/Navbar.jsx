@@ -31,7 +31,7 @@ const Navbar = ({ hasSidebar = true, sidebarWidth = "16rem" }) => {
 
   return (
 <div
-  className={`h-16 bg-white shadow-sm flex items-center px-6 fixed top-0 z-50
+  className={`h-12 bg-white shadow-sm flex items-center px-6 fixed top-0 z-50 transition-all duration-300 ease-in-out
     ${hasSidebar ? "justify-end" : "justify-between"}`}
   style={{
     left: hasSidebar ? sidebarWidth : 0,

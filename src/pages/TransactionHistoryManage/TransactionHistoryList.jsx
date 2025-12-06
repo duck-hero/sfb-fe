@@ -146,12 +146,12 @@ function DateRangePicker({ onChange }) {
   );
 }
 const DateCell = ({ dateString }) => {
-  if (!dateString) return <span className="text-gray-300">-</span>;
+  if (!dateString) return <span className="text-gray-400 text-[11px]">-</span>;
   const d = dayjs(dateString);
   return (
     <div className="flex flex-col leading-tight">
-      <span className="font-semibold text-gray-700">{d.format("HH:mm:ss")}</span>
-      <span className="text-[10px] text-gray-400">{d.format("DD/MM/YYYY")}</span>
+      <span className="font-semibold text-gray-800 text-[11px]">{d.format("HH:mm:ss")}</span>
+      <span className="text-[10px] text-gray-500">{d.format("DD/MM/YYYY")}</span>
     </div>
   );
 };
@@ -206,6 +206,10 @@ const TransactionHistoryList = () => {
   const [bankList, setBankList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [meta, setMeta] = useState(null); // Meta data từ API
+
+  // Tab State
+  const [activeTab, setActiveTab] = useState("all"); // "all" hoặc "fb"
 
   // Pagination State
   const [nextCursor, setNextCursor] = useState(null);
@@ -294,10 +298,14 @@ const TransactionHistoryList = () => {
         setTransactions((prev) => {
           return isLoadMore ? [...prev, ...res.data] : res.data;
         });
-console.log("data", res.data)
+        console.log("data", res.data)
         // Cập nhật thông tin phân trang
         setNextCursor(res.pageInfo.nextCursor);
         setHasMore(res.pageInfo.hasNextPage);
+        // Cập nhật meta data (chỉ cập nhật khi không phải load more)
+        if (!isLoadMore && res.meta) {
+          setMeta(res.meta);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -306,6 +314,19 @@ console.log("data", res.data)
       setIsLoading(false);
     }
   };
+
+  // --- EFFECT: CẬP NHẬT FILTER KHI TAB THAY ĐỔI ---
+  useEffect(() => {
+    const newValue = activeTab === "fb" ? "true" : "all";
+    setFilters((prev) => {
+      // Chỉ cập nhật nếu giá trị thay đổi để tránh re-render không cần thiết
+      if (prev.isFbTransaction === newValue) return prev;
+      return {
+        ...prev,
+        isFbTransaction: newValue,
+      };
+    });
+  }, [activeTab]);
 
   // --- EFFECT: TRIGGER KHI FILTER THAY ĐỔI ---
   // Mỗi khi filters thay đổi, reset list và gọi lại trang 1
@@ -336,7 +357,7 @@ console.log("data", res.data)
   };
 
   // --- RENDER HELPERS ---
-const formatCurrency = (amount) => {
+  const formatCurrency = (amount) => {
     if (amount === null || amount === undefined) return "-";
     return new Intl.NumberFormat('vi-VN', { style: 'decimal', maximumFractionDigits: 0 }).format(amount);
   };
@@ -346,18 +367,60 @@ const formatCurrency = (amount) => {
     return dayjs(dateString).format("HH:mm DD/MM/YYYY");
   };
 
+  // --- META DATA CONFIG (Dễ mở rộng: chỉ cần thêm object vào đây) ---
+  const metaConfig = [
+    {
+      key: 'totalAmountIn', // API có thể trả về totalAmountIn hoặc TotalAmountIn
+      label: 'Tổng tiền nhận',
+      format: (value) => formatCurrency(value),
+      className: 'text-green-600 font-semibold'
+    },
+    {
+      key: 'totalAmountOut',
+      label: 'Tổng tiền trừ',
+      format: (value) => formatCurrency(value),
+      className: 'text-red-600 font-semibold'
+    },
+    {
+      key: 'totalFbAmount',
+      label: 'Tổng chi tiêu FB',
+      format: (value) => formatCurrency(value),
+      className: 'text-blue-600 font-semibold'
+    },
+    {
+      key: 'fbUnreconciledCount',
+      label: 'Số GD chưa đối chiếu FB',
+      format: (value) => value !== null && value !== undefined ? value : '-',
+      className: 'text-orange-600 font-semibold'
+    }
+  ];
+
+  // Helper để lấy giá trị meta (hỗ trợ cả camelCase và PascalCase)
+  const getMetaValue = (meta, key) => {
+    if (!meta) return null;
+    // Thử camelCase trước
+    if (meta[key] !== undefined) return meta[key];
+    // Thử PascalCase
+    const pascalKey = key.charAt(0).toUpperCase() + key.slice(1);
+    if (meta[pascalKey] !== undefined) return meta[pascalKey];
+    return null;
+  };
+
 return (
     <div className="p-6 bg-gray-50 min-h-screen font-sans">
       <h1 className="text-2xl font-bold mb-6 text-gray-800">Lịch sử giao dịch</h1>
 
-      {/* --- FILTER SECTION (Giữ nguyên) --- */}
+      {/* --- DATE FILTER SECTION (Riêng biệt) --- */}
+      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-4">
+        <div className="flex items-center gap-4">
+          <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Thời gian:</label>
+          <DateRangePicker onChange={handleDateRangeChange} />
+        </div>
+      </div>
+
+      {/* --- FILTER & SEARCH SECTION (Nhóm chung) --- */}
       <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-           {/* Date Picker */}
-           <div>
-             <label className="block text-sm font-medium text-gray-700 mb-1">Thời gian</label>
-             <DateRangePicker onChange={handleDateRangeChange} />
-           </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
            {/* Search FB Trans Code */}
            <div>
              <label className="block text-sm font-medium text-gray-700 mb-1">Mã GD Facebook</label>
@@ -396,8 +459,6 @@ return (
                ))}
              </select>
            </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
            {/* Transaction Type */}
            <div>
              <label className="block text-sm font-medium text-gray-700 mb-1">Loại giao dịch</label>
@@ -409,19 +470,6 @@ return (
                <option value="">Tất cả</option>
                <option value="IN">Tiền vào (IN)</option>
                <option value="OUT">Tiền ra (OUT)</option>
-             </select>
-           </div>
-           {/* Is FB Transaction */}
-           <div>
-             <label className="block text-sm font-medium text-gray-700 mb-1">Giao dịch FB?</label>
-             <select
-               className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm"
-               value={filters.isFbTransaction}
-               onChange={(e) => handleFilterChange("isFbTransaction", e.target.value)}
-             >
-               <option value="all">Tất cả</option>
-               <option value="true">Đúng (FB)</option>
-               <option value="false">Không</option>
              </select>
            </div>
            {/* Is Amount Mismatched */}
@@ -442,32 +490,80 @@ return (
 
     {/* --- TABLE SECTION ĐÃ TỐI ƯU --- */}
       <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
-        {/* Bỏ overflow-x-auto để ép hiển thị full width, hoặc giữ lại để dự phòng màn hình quá bé */}
-        <div className="w-full"> 
-          <table className="w-full divide-y divide-gray-200 table-fixed">
+        {/* --- META DATA & TABS --- */}
+        <div className="border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            {/* Tabs - Bên trái */}
+            <div className="flex">
+              <button
+                type="button"
+                onClick={() => setActiveTab("all")}
+                className={`px-6 py-3 text-sm font-medium transition-colors ${
+                  activeTab === "all"
+                    ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
+                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                }`}
+              >
+                Tất cả
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("fb")}
+                className={`px-6 py-3 text-sm font-medium transition-colors ${
+                  activeTab === "fb"
+                    ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
+                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                }`}
+              >
+                Giao dịch FB
+              </button>
+            </div>
+            
+            {/* Meta Data - Bên phải */}
+            <div className="flex items-center gap-4 px-4 py-3 flex-wrap">
+              {meta && metaConfig.map((config) => {
+                const value = getMetaValue(meta, config.key);
+                if (value === null || value === undefined) return null;
+                return (
+                  <div key={config.key} className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-md border border-gray-200">
+                    <span className="text-xs text-gray-600 font-medium">{config.label}:</span>
+                    <span className={`text-sm ${config.className}`}>
+                      {config.format(value)}
+                    </span>
+                  </div>
+                );
+              })}
+              {(!meta || metaConfig.every(config => getMetaValue(meta, config.key) === null || getMetaValue(meta, config.key) === undefined)) && (
+                <span className="text-xs text-gray-400 italic">Đang tải thống kê...</span>
+              )}
+            </div>
+          </div>
+        </div>
+        {/* Table container với overflow để responsive */}
+        <div className="w-full overflow-x-auto"> 
+          <table className="w-full divide-y divide-gray-200 table-fixed min-w-[1400px]">
             <thead className="bg-gray-100">
               <tr>
-                {/* Đặt width cố định (w-...) cho các cột quan trọng để kiểm soát giao diện */}
-                <th className="px-1 py-2 text-left text-[10px] font-bold text-gray-600 uppercase w-20">Ngày HL</th>
-                <th className="px-1 py-2 text-left text-[10px] font-bold text-gray-600 uppercase w-20">Ngày GD</th>
-                <th className="px-1 py-2 text-left text-[10px] font-bold text-gray-600 uppercase w-20">Ngày tạo</th>
+                {/* 3 cột ngày đặt liền nhau */}
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase border-r border-gray-300" style={{width: '90px'}}>Ngày hiệu lực</th>
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase border-r border-gray-300" style={{width: '90px'}}>Ngày giao dịch</th>
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{width: '90px'}}>Ngày GD chính xác</th>
                 
-                <th className="px-1 py-2 text-left text-[10px] font-bold text-gray-600 uppercase w-16">Mã GD</th>
-                <th className="px-1 py-2 text-center text-[10px] font-bold text-gray-600 uppercase w-12">Loại</th>
-                <th className="px-1 py-2 text-right text-[10px] font-bold text-gray-600 uppercase w-24">Số tiền</th>
-                <th className="px-1 py-2 text-right text-[10px] font-bold text-gray-600 uppercase w-24">Số dư</th>
-                <th className="px-1 py-2 text-left text-[10px] font-bold text-gray-600 uppercase">Nội dung</th> {/* Cột này sẽ tự co giãn phần còn lại */}
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{width: '70px'}}>Mã GD</th>
+                <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '60px'}}>Loại</th>
+                <th className="px-2 py-2 text-right text-[10px] font-bold text-gray-600 uppercase" style={{width: '110px'}}>Số tiền</th>
+                <th className="px-2 py-2 text-right text-[10px] font-bold text-gray-600 uppercase" style={{width: '100px'}}>Tiền FB</th>
+                <th className="px-2 py-2 text-right text-[10px] font-bold text-gray-600 uppercase" style={{width: '110px'}}>Số dư</th>
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{minWidth: '180px'}}>Nội dung</th>
                 
-                <th className="px-1 py-2 text-left text-[10px] font-bold text-gray-600 uppercase w-20">Mã GD FB</th>
-                <th className="px-1 py-2 text-left text-[10px] font-bold text-gray-600 uppercase w-20">Ngày FB</th>
-                <th className="px-1 py-2 text-right text-[10px] font-bold text-gray-600 uppercase w-20">Tiền FB</th>
-                <th className="px-1 py-2 text-left text-[10px] font-bold text-gray-600 uppercase w-20">FB ID</th>
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{width: '100px'}}>Mã GD FB</th>
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{width: '120px'}}>FB Account ID</th>
                 
-                <th className="px-1 py-2 text-left text-[10px] font-bold text-gray-600 uppercase w-24">STK Bank</th>
-                <th className="px-1 py-2 text-center text-[10px] font-bold text-gray-600 uppercase w-10">ID</th>
-                <th className="px-1 py-2 text-center text-[10px] font-bold text-gray-600 uppercase w-12">Thẻ</th>
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{width: '110px'}}>STK Bank</th>
+                <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '60px'}}>Bank ID</th>
+                <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '70px'}}>Thẻ</th>
                 
-                <th className="px-1 py-2 text-center text-[10px] font-bold text-gray-600 uppercase w-16">Status</th>
+                <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '80px'}}>Status</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -481,106 +577,103 @@ return (
                       className="hover:bg-blue-50 transition-colors duration-150"
                     >
                       {/* 1. Ngày hiệu lực */}
-                      <td className="px-1 py-1.5 text-[11px] align-top">
+                      <td className="px-2 py-2 text-[11px] align-top border-r border-gray-200">
                         <DateCell dateString={item.effectiveDate} />
                       </td>
                       {/* 2. Ngày giao dịch */}
-                      <td className="px-1 py-1.5 text-[11px] align-top">
+                      <td className="px-2 py-2 text-[11px] align-top border-r border-gray-200">
                         <DateCell dateString={item.transactionDate} />
                       </td>
-                      {/* 3. Ngày tạo */}
-                      <td className="px-1 py-1.5 text-[11px] align-top">
-                         <DateCell dateString={item.created} />
+                      {/* 3. Ngày giao dịch chính xác (FB) */}
+                      <td className="px-2 py-2 text-[11px] align-top">
+                        <DateCell dateString={item.fbTransactionExactDate} />
                       </td>
 
                       {/* Mã GD */}
-                      <td className="px-1 py-1.5 text-[11px] text-gray-900 font-medium align-middle break-all">
+                      <td className="px-2 py-2 text-[11px] text-gray-900 font-semibold align-middle">
                         {item.transactionCode}
                       </td>
 
                       {/* Loại */}
-                      <td className="px-1 py-1.5 text-center align-middle">
-                        <span className={`px-1.5 py-0.5 inline-flex text-[10px] font-bold rounded border ${
+                      <td className="px-2 py-2 text-center align-middle">
+                        <span className={`px-2 py-1 inline-flex text-[10px] font-bold rounded ${
                           item.transactionType === 'IN' 
-                            ? 'bg-green-50 text-green-700 border-green-200' 
-                            : 'bg-red-50 text-red-700 border-red-200'
+                            ? 'bg-green-100 text-green-700' 
+                            : 'bg-red-100 text-red-700'
                         }`}>
                           {item.transactionType}
                         </span>
                       </td>
 
                       {/* Số tiền */}
-                      <td className={`px-1 py-1.5 text-[11px] text-right font-bold align-middle ${
+                      <td className={`px-2 py-2 text-[11px] text-right font-bold align-middle ${
                          item.transactionType === 'IN' ? 'text-green-600' : 'text-red-600'
                       }`}>
-                         {item.transactionType === 'IN' ? '+' : ''}{formatCurrency(item.amount)}
+                         {item.transactionType === 'IN' ? '+' : '-'}{formatCurrency(item.amount)}
+                      </td>
+
+                      {/* Số tiền FB */}
+                      <td className="px-2 py-2 text-[11px] text-right text-gray-600 align-middle">
+                         {item.amountFb ? formatCurrency(item.amountFb) : '-'}
                       </td>
 
                       {/* Số dư */}
-                      <td className="px-1 py-1.5 text-[11px] text-right text-gray-600 align-middle">
+                      <td className="px-2 py-2 text-[11px] text-right text-gray-700 font-medium align-middle">
                         {formatCurrency(item.balance)}
                       </td>
 
-                      {/* Nội dung (Quan trọng: Dùng truncate và title để hover xem full) */}
-                      <td className="px-1 py-1.5 align-middle">
-                        <div className="text-[11px] text-gray-600 truncate max-w-[150px] cursor-help" title={item.description}>
-                            {item.description}
+                      {/* Nội dung */}
+                      <td className="px-2 py-2 align-middle">
+                        <div className="text-[11px] text-gray-700 truncate cursor-help" title={item.description || "-"}>
+                            {item.description || "-"}
                         </div>
                       </td>
 
                       {/* Mã GD FB */}
-                      <td className="px-1 py-1.5 align-middle">
-                        <div className="text-[10px] text-gray-500 truncate max-w-[80px]" title={item.fbTransactionCode}>
+                      <td className="px-2 py-2 align-middle">
+                        <div className="text-[10px] text-gray-600 font-medium truncate" title={item.fbTransactionCode || "-"}>
                             {item.fbTransactionCode || "-"}
                         </div>
                       </td>
 
-                      {/* Ngày GD FB */}
-                      <td className="px-1 py-1.5 text-[11px] align-middle">
-                        <DateCell dateString={item.fbTransactionExactDate} />
-                      </td>
-
-                      {/* Số tiền FB */}
-                      <td className="px-1 py-1.5 text-[11px] text-right text-gray-500 align-middle">
-                         {item.amountFb ? formatCurrency(item.amountFb) : '-'}
-                      </td>
-
-                       {/* FB Account ID */}
-                       <td className="px-1 py-1.5 align-middle">
-                        <div className="text-[10px] text-gray-500 truncate max-w-[80px]" title={item.fbAccountId}>
+                      {/* FB Account ID */}
+                      <td className="px-2 py-2 align-middle">
+                        <div className="text-[10px] text-gray-600 truncate" title={item.fbAccountId || "-"}>
                              {item.fbAccountId || "-"}
                         </div>
                       </td>
 
                       {/* STK Ngân hàng */}
-                      <td className="px-1 py-1.5 text-[11px] text-gray-700 font-medium align-middle truncate max-w-[90px]" title={item.accountBankNumber}>
+                      <td className="px-2 py-2 text-[11px] text-gray-700 font-semibold align-middle">
                         {item.accountBankNumber}
                       </td>
 
-                       {/* Bank Account ID */}
-                       <td className="px-1 py-1.5 text-[11px] text-center text-gray-500 align-middle">
+                      {/* Bank Account ID */}
+                      <td className="px-2 py-2 text-[11px] text-center text-gray-600 align-middle">
                         {item.bankAccountId}
                       </td>
 
                       {/* Đuôi thẻ */}
-                      <td className="px-1 py-1.5 text-[11px] text-center text-gray-500 align-middle">
+                      <td className="px-2 py-2 text-[11px] text-center text-gray-600 align-middle">
                         {item.cardLastDigits || "-"}
                       </td>
 
                       {/* Trạng thái */}
-                      <td className="px-1 py-1.5 text-center align-middle">
+                      <td className="px-2 py-2 text-center align-middle">
                         <div className="flex flex-col gap-1 items-center justify-center">
                             {item.isFbTransaction && (
-                                <span className="w-4 h-4 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 text-[10px] font-bold" title="Facebook Transaction">
+                                <span className="w-5 h-5 flex items-center justify-center rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold" title="Giao dịch Facebook">
                                     F
                                 </span>
                             )}
-                            {item.isAmountMismatched && (
-                                <span className="w-4 h-4 flex items-center justify-center rounded-full bg-yellow-100 text-yellow-600 text-[10px] font-bold" title="Lệch tiền">
+                            {item.isAmountMismatched === true && (
+                                <span className="w-5 h-5 flex items-center justify-center rounded-full bg-yellow-100 text-yellow-700 text-[10px] font-bold" title="Lệch số tiền">
                                     !
                                 </span>
                             )}
-                            {!item.isFbTransaction && !item.isAmountMismatched && <span className="text-gray-200 text-[10px]">-</span>}
+                            {!item.isFbTransaction && item.isAmountMismatched !== true && (
+                                <span className="text-gray-300 text-[10px]">-</span>
+                            )}
                         </div>
                       </td>
                     </tr>
