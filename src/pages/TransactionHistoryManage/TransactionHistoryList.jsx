@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
 import weekday from "dayjs/plugin/weekday";
 import isoWeek from "dayjs/plugin/isoWeek";
+import utc from "dayjs/plugin/utc";
 import bankAccountApi from "../../api/bankAccountApi";
 import transactionHistoryApi from "../../api/transactionHistoryApi";
 
@@ -10,6 +11,7 @@ import transactionHistoryApi from "../../api/transactionHistoryApi";
 // --- CẤU HÌNH DAYJS ---
 dayjs.extend(weekday);
 dayjs.extend(isoWeek);
+dayjs.extend(utc);
 dayjs.locale("vi");
 
 // =============================================================================
@@ -229,6 +231,24 @@ const TransactionHistoryList = () => {
     sortOrder: "desc",
   });
 
+  // Modal states
+  const [scanModalOpen, setScanModalOpen] = useState(false);
+  const [facebookModalOpen, setFacebookModalOpen] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState(null);
+
+  // Debug selectedAccount
+  useEffect(() => {
+    console.log("selectedAccount changed:", selectedAccount);
+  }, [selectedAccount]);
+
+  // Calculate if date range is greater than 3 days
+  const isDateRangeTooLarge = useMemo(() => {
+    const fromDate = dayjs(filters.fromEffectiveDate);
+    const toDate = dayjs(filters.toEffectiveDate);
+    const diffInDays = toDate.diff(fromDate, 'day');
+    return diffInDays > 3;
+  }, [filters.fromEffectiveDate, filters.toEffectiveDate]);
+
   // Observer ref cho infinite scroll
   const observer = useRef();
   const lastElementRef = useCallback(
@@ -253,9 +273,31 @@ const TransactionHistoryList = () => {
     const fetchBanks = async () => {
       try {
         // Thay thế bằng call API thực tế của bạn
-        const res = await bankAccountApi.getBankList(); 
-        setBankList(res.data);
-        console.log("bank",bankList)
+        const res = await bankAccountApi.getBankList();
+        console.log("Bank API response:", res);
+        console.log("Bank data:", res.data);
+        // Temporary: Use mock data if API returns empty
+        const mockData = [
+          {
+            id: 1,
+            accountBankNumber: "1997568888",
+            accountBankHolderName: "Test User",
+            loginUsername: "7474251LTT",
+            loginPassword: "t4LDtGe1V1EnBRQ5khhtHtYHRyJl7LHOiS3byW7fNv0=",
+            bankCode: "ACB"
+          },
+          {
+            id: 2,
+            accountBankNumber: "1234567890",
+            accountBankHolderName: "Another User",
+            loginUsername: "testuser",
+            loginPassword: "testpass",
+            bankCode: "VCB"
+          }
+        ];
+        const dataToUse = (res.data && res.data.length > 0) ? res.data : mockData;
+        setBankList(dataToUse);
+        console.log("Bank list length after set:", dataToUse.length);
 
       } catch (err) {
         console.error("Lỗi lấy danh sách ngân hàng", err);
@@ -321,6 +363,12 @@ const TransactionHistoryList = () => {
     setFilters((prev) => {
       // Chỉ cập nhật nếu giá trị thay đổi để tránh re-render không cần thiết
       if (prev.isFbTransaction === newValue) return prev;
+
+      // Clear data ngay khi tab thay đổi để tránh hiển thị data cũ
+      setTransactions([]);
+      setMeta(null);
+      setIsLoading(true);
+
       return {
         ...prev,
         isFbTransaction: newValue,
@@ -371,13 +419,13 @@ const TransactionHistoryList = () => {
   const metaConfig = [
     {
       key: 'totalAmountIn', // API có thể trả về totalAmountIn hoặc TotalAmountIn
-      label: 'Tổng tiền nhận',
+      label: 'Tổng nhận',
       format: (value) => formatCurrency(value),
       className: 'text-green-600 font-semibold'
     },
     {
       key: 'totalAmountOut',
-      label: 'Tổng tiền trừ',
+      label: 'Tổng trừ',
       format: (value) => formatCurrency(value),
       className: 'text-red-600 font-semibold'
     },
@@ -389,7 +437,7 @@ const TransactionHistoryList = () => {
     },
     {
       key: 'fbUnreconciledCount',
-      label: 'Số GD chưa đối chiếu FB',
+      label: 'GD chưa đối chiếu',
       format: (value) => value !== null && value !== undefined ? value : '-',
       className: 'text-orange-600 font-semibold'
     }
@@ -406,6 +454,126 @@ const TransactionHistoryList = () => {
     return null;
   };
 
+  // Modal handlers
+  const handleScanTransaction = () => {
+    if (!selectedAccount) return;
+
+    const fromDate = dayjs(filters.fromEffectiveDate).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z';
+    const toDate = dayjs(filters.toEffectiveDate).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z';
+
+    const url = `https://acb.duckhero.store/trigger?token=999999999&stk=${selectedAccount.accountBankNumber}&fromDate=${fromDate}&toDate=${toDate}&LoginUsername=${selectedAccount.loginUsername}&LoginPassword=${selectedAccount.loginPassword}`;
+
+    window.open(url, '_blank');
+    setScanModalOpen(false);
+    setSelectedAccount(null);
+  };
+
+  const handleFacebookReconciliation = () => {
+    const fromDate = dayjs(filters.fromEffectiveDate).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z';
+    const toDate = dayjs(filters.toEffectiveDate).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z';
+
+    const url = `https://acb.duckhero.store/check-bill-fb?token=999999999&fromDate=${fromDate}&toDate=${toDate}`;
+
+    window.open(url, '_blank');
+    setFacebookModalOpen(false);
+  };
+
+  // Modal components
+  const ScanTransactionModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <h3 className="text-lg font-semibold mb-4">Quét giao dịch</h3>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Thời gian quét:</label>
+          <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+            Từ: {dayjs(filters.fromEffectiveDate).format('DD/MM/YYYY HH:mm:ss')}<br/>
+            Đến: {dayjs(filters.toEffectiveDate).format('DD/MM/YYYY HH:mm:ss')}
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Chọn tài khoản ngân hàng:</label>
+          <select
+            value={selectedAccount ? bankList.findIndex(bank =>
+              (bank.id === selectedAccount.id) ||
+              (bank.accountBankNumber === selectedAccount.accountBankNumber)
+            ) : ''}
+            onChange={(e) => {
+              console.log("Select value:", e.target.value);
+              console.log("Bank list:", bankList);
+              const account = bankList[parseInt(e.target.value)];
+              console.log("Found account:", account);
+              setSelectedAccount(account);
+            }}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">Chọn tài khoản...</option>
+            {bankList.map((bank, index) => (
+              <option key={bank.id || bank.accountBankNumber || index} value={index}>
+                {bank.accountBankNumber || bank.accountNumber} - {bank.accountBankHolderName || 'Unknown'}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex gap-3 justify-end">
+          <button
+            onClick={() => {
+              setScanModalOpen(false);
+              setSelectedAccount(null);
+            }}
+            className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+          >
+            Hủy
+          </button>
+          <button
+            onClick={handleScanTransaction}
+            disabled={!selectedAccount || !selectedAccount.accountBankNumber || !selectedAccount.loginUsername}
+            className={`px-4 py-2 text-sm rounded-md ${
+              selectedAccount && selectedAccount.accountBankNumber && selectedAccount.loginUsername
+                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            Bắt đầu quét
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const FacebookBillModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <h3 className="text-lg font-semibold mb-4">Đối chiếu bill Facebook</h3>
+
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Khoảng thời gian:</label>
+          <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+            Từ: {dayjs(filters.fromEffectiveDate).format('DD/MM/YYYY HH:mm:ss')}<br/>
+            Đến: {dayjs(filters.toEffectiveDate).format('DD/MM/YYYY HH:mm:ss')}
+          </div>
+        </div>
+
+        <div className="flex gap-3 justify-end">
+          <button
+            onClick={() => setFacebookModalOpen(false)}
+            className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+          >
+            Hủy
+          </button>
+          <button
+            onClick={handleFacebookReconciliation}
+            className="px-4 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700"
+          >
+            Đối chiếu
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
 return (
     <div className="p-6 bg-gray-50 min-h-screen font-sans">
       <h1 className="text-2xl font-bold mb-6 text-gray-800">Lịch sử giao dịch</h1>
@@ -415,6 +583,32 @@ return (
         <div className="flex items-center gap-4">
           <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Thời gian:</label>
           <DateRangePicker onChange={handleDateRangeChange} />
+          <button
+            type="button"
+            onClick={() => setScanModalOpen(true)}
+            disabled={isDateRangeTooLarge}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              isDateRangeTooLarge
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+            }`}
+            title={isDateRangeTooLarge ? 'Khoảng thời gian không được vượt quá 3 ngày' : ''}
+          >
+            Quét giao dịch
+          </button>
+          <button
+            type="button"
+            onClick={() => setFacebookModalOpen(true)}
+            disabled={isDateRangeTooLarge}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              isDateRangeTooLarge
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-green-600 text-white hover:bg-green-700'
+            }`}
+            title={isDateRangeTooLarge ? 'Khoảng thời gian không được vượt quá 3 ngày' : ''}
+          >
+            Đối chiếu bill Facebook
+          </button>
         </div>
       </div>
 
@@ -560,14 +754,65 @@ return (
                 <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{width: '120px'}}>FB Account ID</th>
                 
                 <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{width: '110px'}}>STK Bank</th>
-                <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '60px'}}>Bank ID</th>
+                {/* <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '60px'}}>Bank ID</th> */}
                 <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '70px'}}>Thẻ</th>
                 
                 <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '80px'}}>Status</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {transactions.length > 0 ? (
+              {isLoading && transactions.length === 0 ? (
+                // Skeleton loading cho lần đầu với 16 cột
+                Array.from({ length: 8 }, (_, index) => (
+                  <tr key={`skeleton-${index}`} className="animate-pulse">
+                    <td className="px-2 py-3 text-[11px] align-top border-r border-gray-200">
+                      <div className="h-3 bg-gray-200 rounded"></div>
+                      <div className="h-3 bg-gray-200 rounded mt-1 w-3/4"></div>
+                    </td>
+                    <td className="px-2 py-3 text-[11px] align-top border-r border-gray-200">
+                      <div className="h-3 bg-gray-200 rounded"></div>
+                      <div className="h-3 bg-gray-200 rounded mt-1 w-3/4"></div>
+                    </td>
+                    <td className="px-2 py-3 text-[11px] align-top">
+                      <div className="h-3 bg-gray-200 rounded"></div>
+                      <div className="h-3 bg-gray-200 rounded mt-1 w-3/4"></div>
+                    </td>
+                    <td className="px-2 py-3 text-[11px] align-middle">
+                      <div className="h-3 bg-gray-200 rounded w-16"></div>
+                    </td>
+                    <td className="px-2 py-3 text-center align-middle">
+                      <div className="h-5 bg-gray-200 rounded w-8 mx-auto"></div>
+                    </td>
+                    <td className="px-2 py-3 text-[11px] text-right align-middle">
+                      <div className="h-3 bg-gray-200 rounded w-20 ml-auto"></div>
+                    </td>
+                    <td className="px-2 py-3 text-[11px] text-right align-middle">
+                      <div className="h-3 bg-gray-200 rounded w-16 ml-auto"></div>
+                    </td>
+                    <td className="px-2 py-3 text-[11px] text-right align-middle">
+                      <div className="h-3 bg-gray-200 rounded w-20 ml-auto"></div>
+                    </td>
+                    <td className="px-2 py-3 align-middle">
+                      <div className="h-3 bg-gray-200 rounded w-32"></div>
+                    </td>
+                    <td className="px-2 py-3 align-middle">
+                      <div className="h-3 bg-gray-200 rounded w-16"></div>
+                    </td>
+                    <td className="px-2 py-3 align-middle">
+                      <div className="h-3 bg-gray-200 rounded w-20"></div>
+                    </td>
+                    <td className="px-2 py-3 text-[11px] align-middle">
+                      <div className="h-3 bg-gray-200 rounded w-12"></div>
+                    </td>
+                    <td className="px-2 py-3 text-[11px] text-center align-middle">
+                      <div className="h-3 bg-gray-200 rounded w-4"></div>
+                    </td>
+                    <td className="px-2 py-3 text-center align-middle">
+                      <div className="h-4 bg-gray-200 rounded w-5 mx-auto"></div>
+                    </td>
+                  </tr>
+                ))
+              ) : transactions.length > 0 ? (
                 transactions.map((item, index) => {
                   const isLastElement = transactions.length === index + 1;
                   return (
@@ -649,9 +894,9 @@ return (
                       </td>
 
                       {/* Bank Account ID */}
-                      <td className="px-2 py-2 text-[11px] text-center text-gray-600 align-middle">
+                      {/* <td className="px-2 py-2 text-[11px] text-center text-gray-600 align-middle">
                         {item.bankAccountId}
-                      </td>
+                      </td> */}
 
                       {/* Đuôi thẻ */}
                       <td className="px-2 py-2 text-[11px] text-center text-gray-600 align-middle">
@@ -693,12 +938,16 @@ return (
         </div>
         
         {/* Loading & Messages */}
-        {isLoading && (
+        {isLoading && transactions.length > 0 && (
             <div className="flex justify-center items-center py-2 bg-gray-50 border-t">
                 <span className="text-xs text-gray-500">Đang tải thêm...</span>
             </div>
         )}
       </div>
+
+      {/* Modals */}
+      {scanModalOpen && <ScanTransactionModal />}
+      {facebookModalOpen && <FacebookBillModal />}
     </div>
   );
 };
