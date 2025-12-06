@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import sfbLogo from "../../assets/sfb-logo.png";
-import { Landmark, LayoutDashboard, IdCard, CreditCard, Facebook, UserCog, FolderCog    } from "lucide-react";
+import { LayoutDashboard, Facebook, FolderCog, History } from "lucide-react";
 
 const Sidebar = () => {
   const { pathname } = useLocation();
@@ -30,7 +30,7 @@ const Sidebar = () => {
             pathname === "/sample" && active
           }`}
         >
-          <FolderCog  /> Ngân hàng
+          <FolderCog /> Ngân hàng
         </Link>
 
         {/* <Link
@@ -55,7 +55,15 @@ const Sidebar = () => {
             pathname === "/sample" && active
           }`}
         >
-          <Facebook  /> Quản lý FB 
+          <Facebook /> Quản lý FB
+        </Link>
+        <Link
+          to="/transaction-history"
+          className={`flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 ${
+            pathname === "/sample" && active
+          }`}
+        >
+          <History /> Lịch sử giao dịch
         </Link>
       </nav>
     </div>
