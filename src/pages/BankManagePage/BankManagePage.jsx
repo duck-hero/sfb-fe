@@ -3,7 +3,7 @@ import { FileUser , Database, CreditCard, Landmark } from "lucide-react";
 import BmAccountList from "../BmAccountManage/BmAccountList";
 import BmSourceList from "../BmSourceManage/BmSourceList";
 import AdsAccountList from "../AdsAccountManage/AdsAccountList";
-import BankCardList from "../BankCardManage/bankCardList";
+import BankCardList from "../BankCardManage/BankCardList";
 import BankAccountList from "../BankAccountManage/BankAccountList";
 import BankList from "../BankManage/BankList";
 
