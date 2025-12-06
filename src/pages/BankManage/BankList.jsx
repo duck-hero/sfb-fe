@@ -222,25 +222,25 @@ const handleSearch = () => {
       {loading ? (
        <TableSkeleton/>
       ) : (
-      <div class="overflow-x-auto shadow-lg rounded-xl">
+      <div className="overflow-x-auto shadow-lg rounded-xl">
         <table className="w-full divide-y divide-gray-200">
           <thead className="bg-white">
             <tr>
               <th
               scope="col"
-              class="px-6 py-3 text-left text-md font-medium text-gray-900 uppercase tracking-wider w-1/12 text-primary-darkest"
+              className="px-6 py-3 text-left text-md font-medium text-gray-900 uppercase tracking-wider w-1/12 text-primary-darkest"
             >#</th>
              <th
               scope="col"
-              class="px-6 py-3 text-left text-md font-medium text-gray-900  tracking-wider w-1/4 text-primary-darkest"
+              className="px-6 py-3 text-left text-md font-medium text-gray-900  tracking-wider w-1/4 text-primary-darkest"
             >Tên ngân hàng</th>
               <th
               scope="col"
-              class="px-6 py-3 text-left text-md font-medium text-gray-900  tracking-wider w-1/4 text-primary-darkest"
+              className="px-6 py-3 text-left text-md font-medium text-gray-900  tracking-wider w-1/4 text-primary-darkest"
             >Mã ngân hàng</th>
             <th
               scope="col"
-              class="px-6 py-3 text-left text-md font-medium text-gray-900  tracking-wider w-1/12 text-primary-darkest"
+              className="px-6 py-3 text-left text-md font-medium text-gray-900  tracking-wider w-1/12 text-primary-darkest"
             >Tùy chọn</th>
             </tr>
           </thead>

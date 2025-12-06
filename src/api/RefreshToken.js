@@ -1,49 +1,56 @@
-import React from "react";
 import { decryptToken, encryptToken } from "./cryptoService";
 import { api } from "./api";
 
 const refreshAccessToken = async () => {
   try {
     console.log("chạy refreshAccessToken");
-    const encryptedAccessToken = localStorage.getItem("accessToken");
     const encryptedRefreshToken = localStorage.getItem("refreshToken");
 
-    // Giải mã
-    const accessToken = decryptToken(encryptedAccessToken);
+    if (!encryptedRefreshToken) {
+      throw new Error("No refresh token found");
+    }
+
+    // Giải mã refresh token
     const refreshToken = decryptToken(encryptedRefreshToken);
 
-    console.log("access gm", accessToken);
-    console.log("refresh gm", refreshToken);
-    // Gửi refreshToken tới server để nhận accessToken mới
+    console.log("refresh token:", refreshToken);
+
+    // Chỉ gửi refreshToken tới server để nhận tokens mới
     const response = await fetch(`${api}/Account/RefreshToken`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ accessToken, refreshToken }),
+      body: JSON.stringify({ refreshToken }),
     });
 
     const data = await response.json();
-    if (response.ok) {
-      // Mã hóa accessToken mới và lưu vào localStorage
-      const accessToken = data.accessToken;
-      const refreshToken = data.refreshToken;
+
+    if (response.ok && data.success) {
+      // Mã hóa tokens mới và lưu vào localStorage
+      const newAccessToken = data.data.jwToken;
+      const newRefreshToken = data.data.refreshToken;
+
       // Mã hóa tokens
-      const encryptedAccessToken = encryptToken(accessToken);
-      const encryptedRefreshToken = encryptToken(refreshToken);
+      const encryptedAccessToken = encryptToken(newAccessToken);
+      const encryptedRefreshToken = encryptToken(newRefreshToken);
 
       localStorage.setItem("accessToken", encryptedAccessToken);
       localStorage.setItem("refreshToken", encryptedRefreshToken);
 
-      console.log("Đã refresh", data);
-      return data; // Trả về accessToken mới cho các hoạt động tiếp theo
+      console.log("Đã refresh token thành công");
+      return {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken
+      };
     } else {
-      // Xử lý lỗi, ví dụ: refreshToken không hợp lệ hoặc đã hết hạn
-      console.error("Error refreshing token:", data.errors);
-      // Có thể bạn muốn đăng xuất người dùng ở đây hoặc thông báo cho họ biết
+      // Xử lý lỗi refresh token
+      console.error("Error refreshing token:", data.errors || data.message);
+      throw new Error(data.errors?.[0]?.description || "Failed to refresh token");
     }
   } catch (error) {
-    console.error("Error during the token refresh:", error);
+    console.error("Error during token refresh:", error);
+    throw error;
   }
 };
 
