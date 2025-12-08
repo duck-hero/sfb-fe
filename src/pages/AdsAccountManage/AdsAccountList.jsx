@@ -59,6 +59,12 @@ function AdsAccountList() {
   const [itemToDelete, setItemToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Bank card details tooltip
+  const [showBankCardTooltip, setShowBankCardTooltip] = useState(false);
+  const [tooltipData, setTooltipData] = useState(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const [currentTooltipId, setCurrentTooltipId] = useState(null);
+
   const requestRef = useRef(0);
 
   // --- 1. FETCH DATA LIST ---
@@ -262,7 +268,7 @@ const handleEditSave = async (dataToSend) => {
     if (isLocked) {
       return (
         <span className="inline-block px-3 py-1 text-sm font-medium text-red-600 border border-red-600 rounded-lg bg-white whitespace-nowrap">
-          Đã khóa 
+          Đã khóa
         </span>
       );
     } else {
@@ -271,6 +277,29 @@ const handleEditSave = async (dataToSend) => {
           Hoạt động
         </span>
       );
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const renderBankCardStatus = (status) => {
+    switch (status) {
+      case 'NEW':
+        return <span className="text-green-600 font-medium">Mới</span>;
+      case 'OUT':
+        return <span className="text-orange-600 font-medium">Đã sử dụng</span>;
+      default:
+        return <span className="text-gray-600">{status}</span>;
     }
   };
 
@@ -365,6 +394,12 @@ const handleEditSave = async (dataToSend) => {
                   Trạng thái
                 </th>
                 <th scope="col" className="px-6 py-3 text-center text-md font-medium text-gray-900  tracking-wider text-primary-darkest">
+                  Lịch sử Add thẻ
+                </th>
+                <th scope="col" className="px-6 py-3 text-center text-md font-medium text-gray-900  tracking-wider text-primary-darkest">
+                  Ngày tạo
+                </th>
+                <th scope="col" className="px-6 py-3 text-center text-md font-medium text-gray-900  tracking-wider text-primary-darkest">
                   Tuỳ chọn
                 </th>
               </tr>
@@ -372,7 +407,7 @@ const handleEditSave = async (dataToSend) => {
             <tbody className="bg-white divide-y divide-gray-200">
               {adsAccounts.length === 0 && (
                 <tr>
-                   <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                   <td colSpan="8" className="px-6 py-4 text-center text-gray-500">
                       Không tìm thấy dữ liệu
                    </td>
                 </tr>
@@ -397,6 +432,40 @@ const handleEditSave = async (dataToSend) => {
                       {renderLockedStatus(x.locked)}
                     </div>
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div
+                      className="flex flex-col items-center space-y-1 cursor-pointer hover:bg-gray-50 rounded p-2 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        if (currentTooltipId === x.id) {
+                          // Click vào cùng một item thì đóng tooltip
+                          setShowBankCardTooltip(false);
+                          setCurrentTooltipId(null);
+                        } else {
+                          // Click vào item khác thì mở tooltip cho item đó
+                          setTooltipPosition({ x: rect.left, y: rect.bottom + 5 });
+                          setTooltipData(x.adsAccountBankCards || []);
+                          setShowBankCardTooltip(true);
+                          setCurrentTooltipId(x.id);
+                        }
+                      }}
+                    >
+                      <div className="text-center">
+                        <span className="font-medium text-green-600">{x.totalNewAddBankCards || 0}</span>
+                        <span className="text-gray-400 text-xs"> mới</span>
+                      </div>
+                      <div className="text-center">
+                        <span className="font-medium text-blue-600">{x.totalAddBankCards || 0}</span>
+                        <span className="text-gray-400 text-xs"> tổng</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div className="text-center">
+                      {formatDate(x.created)}
+                    </div>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex justify-center items-center gap-2">
                     <button onClick={() => openEditModal(x.id)} title="Chỉnh sửa">
                       <SquarePen className="h-5 w-5 text-warning cursor-pointer" />
@@ -412,7 +481,7 @@ const handleEditSave = async (dataToSend) => {
             {/* Footer Pagination */}
             <tfoot className="bg-white">
               <tr>
-                <td colSpan="6" className="px-6 py-3">
+                <td colSpan="8" className="px-6 py-3">
                   <div className="flex justify-end items-center text-sm">
                     {/* Select Page Size */}
                     <div className="flex items-center gap-2 mr-6">
@@ -471,6 +540,51 @@ const handleEditSave = async (dataToSend) => {
             </tfoot>
           </table>
         </div>
+      )}
+
+      {/* Bank Card Details Tooltip */}
+      {showBankCardTooltip && (
+        <>
+          {/* Overlay to close tooltip when clicking outside */}
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => {
+              setShowBankCardTooltip(false);
+              setCurrentTooltipId(null);
+            }}
+          />
+          <div
+            className="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-w-sm"
+            style={{
+              left: tooltipPosition.x,
+              top: tooltipPosition.y,
+              maxHeight: '300px',
+              overflowY: 'auto'
+            }}
+            onMouseEnter={() => setShowBankCardTooltip(true)}
+            onMouseLeave={() => setShowBankCardTooltip(false)}
+          >
+          <h4 className="font-semibold text-gray-800 mb-3 border-b pb-2">
+            Lịch sử Add thẻ ({tooltipData.length})
+          </h4>
+          {tooltipData.length === 0 ? (
+            <p className="text-gray-500 text-sm">Chưa có thẻ ngân hàng nào</p>
+          ) : (
+            <div className="space-y-2">
+              {tooltipData.map((card, index) => (
+                <div key={card.id || index} className="flex items-center justify-between py-1 border-b border-gray-100 last:border-b-0">
+                  <span className="text-sm text-gray-700 font-mono">
+                    ID: {card.bankCardId}
+                  </span>
+                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100">
+                    {renderBankCardStatus(card.status)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+          </div>
+        </>
       )}
 
       {/* --- MODALS --- */}
