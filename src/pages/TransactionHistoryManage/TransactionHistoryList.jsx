@@ -740,6 +740,7 @@ const TransactionHistoryList = () => {
     setSaving(true);
     try {
       await AddCardApi.addCard(
+        selectedTransactionForAddCard.id,
         selectedTransactionForAddCard.bankAccountId,
         selectedTransactionForAddCard.fbAccountId,
         selectedTransactionForAddCard.cardLastDigits
