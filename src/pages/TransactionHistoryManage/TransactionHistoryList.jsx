@@ -4,9 +4,19 @@ import "dayjs/locale/vi";
 import weekday from "dayjs/plugin/weekday";
 import isoWeek from "dayjs/plugin/isoWeek";
 import utc from "dayjs/plugin/utc";
+import { toast } from "react-toastify";
+import { PlusCircle } from "lucide-react"; 
+
 import bankAccountApi from "../../api/bankAccountApi";
 import transactionHistoryApi from "../../api/transactionHistoryApi";
+import bmAccountApi from "../../api/bmAccountApi";
+import accountApi from "../../api/accountApi";
+import adsAccountApi from "../../api/adsAccountApi"; 
+import bankCardApi from "../../api/bankCardApi";
 
+import CreateAdsAccountModal from "../AdsAccountManage/CreateAdsAccountModal"; // Adjust path if needed
+import CreateBankCardModal from "../BankCardManage/CreateBankCardModal"; // Adjust path if needed
+import SecurityHelper from "../../utils/crypto";
 
 // --- CẤU HÌNH DAYJS ---
 dayjs.extend(weekday);
@@ -226,6 +236,8 @@ const TransactionHistoryList = () => {
     isFbTransaction: "all", // "all", "true", "false"
     isAmountMismatched: "all", // "all", "true", "false"
     bankAccountId: "",
+    adAccountId: "", // New filter
+    bankCardId: "", // New filter
     fromEffectiveDate: dayjs().startOf("day").toISOString(),
     toEffectiveDate: dayjs().endOf("day").toISOString(),
     sortOrder: "desc",
@@ -235,6 +247,128 @@ const TransactionHistoryList = () => {
   const [scanModalOpen, setScanModalOpen] = useState(false);
   const [facebookModalOpen, setFacebookModalOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
+
+  // New Modals State
+  const [bmList, setBmList] = useState([]);
+  const [userList, setUserList] = useState([]);
+  const [createAdsModalOpen, setCreateAdsModalOpen] = useState(false);
+  const [createBankCardModalOpen, setCreateBankCardModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // Forms for new modals
+  const [createAdsFormData, setCreateAdsFormData] = useState({
+    adAccountName: "",
+    adAccountIdNumber: "",
+    bmAccountId: "",
+  });
+
+  const [createBankCardFormData, setCreateBankCardFormData] = useState({
+    cardNumber: "",
+    cardHolderName: "",
+    cvvCode: "",
+    issuedDate: "",
+    expirationDate: "",
+    bankAccountId: "",
+    assignedToUserId: "",
+  });
+
+  // --- AUTOCOMPLETE STATE ---
+  const [searchAdsAccountTerm, setSearchAdsAccountTerm] = useState("");
+  const [suggestedAdsAccounts, setSuggestedAdsAccounts] = useState([]);
+  const [isSearchingAds, setIsSearchingAds] = useState(false);
+  const [showAdsAccountSuggestions, setShowAdsAccountSuggestions] = useState(false);
+  const [isHoveringSuggestions, setIsHoveringSuggestions] = useState(false); // To handle click vs blur
+
+  // Handle click outside to close suggestions
+  useEffect(() => {
+    const handleClickOutside = () => {
+        if (!isHoveringSuggestions) {
+            setShowAdsAccountSuggestions(false);
+        }
+    };
+    
+    // Convert logic to document click listener if blur isn't enough
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isHoveringSuggestions]);
+
+
+  // Effect for searching ads accounts
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      if (!searchAdsAccountTerm) {
+         setSuggestedAdsAccounts([]);
+         return;
+      }
+      
+      // If the term matches the currently selected filter ID (user selected from list), don't re-search or show dropdown
+      // But here we store ID in filter and Text in term. 
+      // Let's just search always if changed.
+      
+      setIsSearchingAds(true);
+      try {
+        // Call API
+        const res = await adsAccountApi.getAdsAccountList(1, 10, searchAdsAccountTerm);
+        setSuggestedAdsAccounts(res?.data || []);
+      } catch (err) {
+        console.error("Search Ads Account Error", err);
+        setSuggestedAdsAccounts([]);
+      } finally {
+        setIsSearchingAds(false);
+      }
+    }, 500); // Debounce 500ms
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchAdsAccountTerm]);
+
+
+  // --- BANK CARD AUTOCOMPLETE STATE ---
+  const [searchBankCardTerm, setSearchBankCardTerm] = useState("");
+  const [suggestedBankCards, setSuggestedBankCards] = useState([]);
+  const [isSearchingBankCards, setIsSearchingBankCards] = useState(false);
+  const [showBankCardSuggestions, setShowBankCardSuggestions] = useState(false);
+  const [isHoveringCardSuggestions, setIsHoveringCardSuggestions] = useState(false);
+
+  // Handle click outside for Bank Card suggestions
+  useEffect(() => {
+    const handleClickOutsideCard = () => {
+        if (!isHoveringCardSuggestions) {
+            setShowBankCardSuggestions(false);
+        }
+    };
+    
+    document.addEventListener("mousedown", handleClickOutsideCard);
+    return () => {
+        document.removeEventListener("mousedown", handleClickOutsideCard);
+    };
+  }, [isHoveringCardSuggestions]);
+
+  // Effect for searching Bank Cards
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      // If term is empty, clear suggestions
+      if (!searchBankCardTerm) {
+         setSuggestedBankCards([]);
+         return;
+      }
+      
+      setIsSearchingBankCards(true);
+      try {
+        // Call API
+        const res = await bankCardApi.getBankCardList(1, 10, searchBankCardTerm);
+        setSuggestedBankCards(res?.data || []);
+      } catch (err) {
+        console.error("Search Bank Card Error", err);
+        setSuggestedBankCards([]);
+      } finally {
+        setIsSearchingBankCards(false);
+      }
+    }, 500); // Debounce 500ms
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchBankCardTerm]);
 
   // Debug selectedAccount
   useEffect(() => {
@@ -267,17 +401,13 @@ const TransactionHistoryList = () => {
     [isLoading, hasMore, nextCursor] // Phụ thuộc vào nextCursor để biết trang tiếp theo
   );
 
-  // --- API GET BANK LIST ---
+  // --- API GET BANK LIST, BM LIST, USER LIST ---
   useEffect(() => {
-    // Gọi API lấy danh sách ngân hàng khi mount
-    const fetchBanks = async () => {
+    const fetchDependencies = async () => {
       try {
-        // Thay thế bằng call API thực tế của bạn
-        const res = await bankAccountApi.getBankList();
-        console.log("Bank API response:", res);
-        console.log("Bank data:", res.data);
-        // Temporary: Use mock data if API returns empty
-        const mockData = [
+        // Fetch Bank List (Existing)
+        const bankRes = await bankAccountApi.getBankList();
+        const bankMockData = [
           {
             id: 1,
             accountBankNumber: "1997568888",
@@ -286,24 +416,24 @@ const TransactionHistoryList = () => {
             loginPassword: "t4LDtGe1V1EnBRQ5khhtHtYHRyJl7LHOiS3byW7fNv0=",
             bankCode: "ACB"
           },
-          {
-            id: 2,
-            accountBankNumber: "1234567890",
-            accountBankHolderName: "Another User",
-            loginUsername: "testuser",
-            loginPassword: "testpass",
-            bankCode: "VCB"
-          }
         ];
-        const dataToUse = (res.data && res.data.length > 0) ? res.data : mockData;
-        setBankList(dataToUse);
-        console.log("Bank list length after set:", dataToUse.length);
+        // Use real data if available, else mock (as per your extensive use of mock in original code)
+        // But here trying to be consistent with your existing logic
+        setBankList((bankRes.data && bankRes.data.length > 0) ? bankRes.data : bankMockData);
+
+        // Fetch BM List for Ads Modal
+        const bmRes = await bmAccountApi.getBmAccountList(1, 999);
+        setBmList(bmRes?.data || bmRes?.items || []);
+
+        // Fetch User List for Card Modal
+        const userRes = await accountApi.getUserList(1, 999);
+        setUserList(userRes?.data || []);
 
       } catch (err) {
-        console.error("Lỗi lấy danh sách ngân hàng", err);
+        console.error("Lỗi lấy dữ liệu phụ thuộc (Banks/BMs/Users)", err);
       }
     };
-    fetchBanks();
+    fetchDependencies();
   }, []);
 
   // --- API FETCH TRANSACTIONS ---
@@ -333,7 +463,9 @@ const TransactionHistoryList = () => {
         filters.fbAccountId || undefined,
         getBooleanValue(filters.isFbTransaction),
         getBooleanValue(filters.isAmountMismatched),
-        filters.bankAccountId || undefined
+        filters.bankAccountId || undefined,
+        filters.adAccountId || undefined, // Pass AdAccount ID
+        filters.bankCardId || undefined // Pass BankCard ID
       );
 
       if (res && res.success) {
@@ -480,6 +612,114 @@ const TransactionHistoryList = () => {
 
     window.open(url, '_blank');
     setFacebookModalOpen(false);
+  };
+
+  // --- CREATE MODAL HANDLERS ---
+
+  // 1. Ads Account Create
+  const handleOpenCreateAdsModal = (item) => {
+    setCreateAdsFormData({
+      adAccountName: item.fbAccountId || "", 
+      adAccountIdNumber: item.fbAccountId || "",
+      bmAccountId: "", // User must select
+    });
+    setCreateAdsModalOpen(true);
+  };
+
+  const handleCreateAdsChange = (e) => {
+    const { name, value } = e.target;
+    setCreateAdsFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSaveAdsAccount = async () => {
+    setSaving(true);
+    try {
+      if (!createAdsFormData.bmAccountId) {
+          toast.error("Vui lòng chọn BM Account");
+          setSaving(false);
+          return;
+      }
+      await adsAccountApi.createAdsAccount(
+        createAdsFormData.adAccountName,
+        createAdsFormData.adAccountIdNumber,
+        createAdsFormData.bmAccountId
+      );
+      toast.success("Tạo tài khoản FB thành công");
+      setCreateAdsModalOpen(false);
+      // Có thể reload list hoặc update item cục bộ nếu cần
+      // fetchTransactions(false); // Reload trang hiện tại thì hơi nặng, tùy logic
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.message || "Tạo thất bại");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // 2. Bank Card Create
+  const handleOpenCreateBankCardModal = (item) => {
+    setCreateBankCardFormData({
+      cardNumber: item.cardLastDigits ? item.cardLastDigits : "", // Pre-fill with available info
+      cardHolderName: "",
+      cvvCode: "",
+      issuedDate: "",
+      expirationDate: "",
+      bankAccountId: item.bankAccountId || "", // Pre-fill if available
+      assignedToUserId: "",
+    });
+    setCreateBankCardModalOpen(true);
+  };
+
+  const handleCreateBankCardChange = (e) => {
+    const { name, value } = e.target;
+    setCreateBankCardFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSaveBankCard = async () => {
+    setSaving(true);
+    
+    // 1. Copy payload
+    const payload = { ...createBankCardFormData };
+
+    // 2. Encrypt CVV
+    const cvvValue = payload.cvvCode;
+    if (cvvValue && String(cvvValue).trim() !== "") {
+        try {
+            payload.cvvCode = await SecurityHelper.encrypt(String(cvvValue));
+        } catch (error) {
+            console.error("Lỗi mã hóa CVV:", error);
+            toast.error("Lỗi mã hóa dữ liệu. Vui lòng thử lại.");
+            setSaving(false);
+            return;
+        }
+    }
+
+    try {
+        await bankCardApi.createBankCard(
+            payload.cardNumber,
+            payload.cardHolderName,
+            payload.cvvCode,
+            payload.issuedDate,
+            payload.expirationDate,
+            payload.bankAccountId,
+            payload.assignedToUserId
+        );
+        
+        toast.success("Tạo thẻ thành công");
+        setCreateBankCardModalOpen(false);
+        // fetchTransactions(false);
+    } catch (error) {
+        console.error("Lỗi tạo thẻ:", error);
+        toast.error("Tạo thất bại");
+    } finally {
+        setSaving(false);
+    }
   };
 
   // Modal components
@@ -630,16 +870,151 @@ return (
                onChange={(e) => handleFilterChange("fbTransactionCode", e.target.value)}
              />
            </div>
-           {/* Search FB Account ID */}
-           <div>
+           {/* Search FB Account ID (Autocomplete) */}
+           <div className="relative">
              <label className="block text-sm font-medium text-gray-700 mb-1">FB Account ID</label>
-             <input
-               type="text"
-               placeholder="Nhập FB Account ID..."
-               className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
-               value={filters.fbAccountId}
-               onChange={(e) => handleFilterChange("fbAccountId", e.target.value)}
-             />
+             <div className="relative">
+                <input
+                    type="text"
+                    placeholder="Nhập FB Account ID..."
+                    className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                    value={searchAdsAccountTerm}
+                    onChange={(e) => setSearchAdsAccountTerm(e.target.value)}
+                    onFocus={() => setShowAdsAccountSuggestions(true)}
+                    // onBlur={() => setTimeout(() => setShowAdsAccountSuggestions(false), 200)} // Delay to allow click
+                />
+                {/* Clear button if has value */}
+                {searchAdsAccountTerm && (
+                    <button
+                        onClick={() => {
+                            setSearchAdsAccountTerm("");
+                            handleFilterChange("adAccountId", ""); // Clear filter
+                        }}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                        &times;
+                    </button>
+                )}
+             </div>
+
+             {/* Suggestions Dropdown */}
+             {showAdsAccountSuggestions && searchAdsAccountTerm && (
+                 <div 
+                    className="absolute z-50 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm"
+                    onMouseEnter={() => setIsHoveringSuggestions(true)}
+                    onMouseLeave={() => setIsHoveringSuggestions(false)}
+                 >
+                    {isSearchingAds ? (
+                        <div className="px-4 py-2 text-gray-500">Đang tìm kiếm...</div>
+                    ) : suggestedAdsAccounts.length > 0 ? (
+                        suggestedAdsAccounts.map((account) => (
+                            <div
+                                key={account.id}
+                                className="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-blue-600 hover:text-white text-gray-900"
+                                onClick={() => {
+                                    setSearchAdsAccountTerm(account.adAccountIdNumber); // Display ID
+                                    handleFilterChange("adAccountId", account.id); // Set ID for filter
+                                    setShowAdsAccountSuggestions(false);
+                                }}
+                            >
+                                <span className="block truncate font-medium">
+                                    {account.adAccountIdNumber}
+                                </span>
+                                <span className="block truncate text-xs opacity-75">
+                                    {account.adAccountName}
+                                </span>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="px-4 py-2 text-gray-500">
+                            Không tìm thấy tài khoản.
+                            <button
+                                className="text-blue-600 hover:underline ml-1 font-medium"
+                                onClick={() => {
+                                    handleOpenCreateAdsModal({ fbAccountId: searchAdsAccountTerm });
+                                    setShowAdsAccountSuggestions(false);
+                                }}
+                            >
+                                Tạo mới "{searchAdsAccountTerm}"
+                            </button>
+                        </div>
+                    )}
+                 </div>
+             )}
+           </div>
+
+           {/* Search Bank Card (Autocomplete) */}
+           <div className="relative">
+             <label className="block text-sm font-medium text-gray-700 mb-1">Thẻ ngân hàng</label>
+             <div className="relative">
+                <input
+                    type="text"
+                    placeholder="Nhập 4 số cuối thẻ..."
+                    className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                    value={searchBankCardTerm}
+                    onChange={(e) => setSearchBankCardTerm(e.target.value)}
+                    onFocus={() => setShowBankCardSuggestions(true)}
+                />
+                {/* Clear button */}
+                {searchBankCardTerm && (
+                    <button
+                        onClick={() => {
+                            setSearchBankCardTerm("");
+                            handleFilterChange("bankCardId", "");
+                        }}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                        &times;
+                    </button>
+                )}
+             </div>
+
+             {/* Suggestions Dropdown */}
+             {showBankCardSuggestions && searchBankCardTerm && (
+                 <div 
+                    className="absolute z-50 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm"
+                    onMouseEnter={() => setIsHoveringCardSuggestions(true)}
+                    onMouseLeave={() => setIsHoveringCardSuggestions(false)}
+                 >
+                    {isSearchingBankCards ? (
+                        <div className="px-4 py-2 text-gray-500">Đang tìm kiếm...</div>
+                    ) : suggestedBankCards.length > 0 ? (
+                        suggestedBankCards.map((card) => (
+                            <div
+                                key={card.id}
+                                className="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-blue-600 hover:text-white text-gray-900"
+                                onClick={() => {
+                                    // Set Display: CardNumber only as requested
+                                    setSearchBankCardTerm(card.cardNumber);
+                                    handleFilterChange("bankCardId", card.id);
+                                    setShowBankCardSuggestions(false);
+                                }}
+                            >
+                                <span className="block truncate font-medium">
+                                    {card.cardNumber} 
+                                    {card.bankAccountNumber && <span className="text-gray-500 text-xs ml-2">({card.bankAccountNumber})</span>}
+                                </span>
+                                <span className="block truncate text-xs opacity-75">
+                                    {card.cardHolderName}
+                                </span>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="px-4 py-2 text-gray-500">
+                            Không tìm thấy thẻ.
+                            <button
+                                className="text-blue-600 hover:underline ml-1 font-medium"
+                                onClick={() => {
+                                    handleOpenCreateBankCardModal({ cardLastDigits: searchBankCardTerm });
+                                    setShowBankCardSuggestions(false);
+                                }}
+                            >
+                                Tạo mới "{searchBankCardTerm}"
+                            </button>
+                        </div>
+                    )}
+                 </div>
+             )}
            </div>
            {/* Bank Account Select */}
            <div>
@@ -897,9 +1272,21 @@ return (
                       </td>
 
                       {/* FB Account ID */}
-                      <td className="px-2 py-2 align-middle">
-                        <div className={`text-[10px] text-gray-600 truncate ${item.fbAccountId && !item.isSystemFbAccountExist ? 'underline decoration-yellow-500' : ''}`} title={item.fbAccountId ? (!item.isSystemFbAccountExist ? 'FB Account không tồn tại trong hệ thống' : item.fbAccountId) : "-"}>
-                             {item.fbAccountId || "-"}
+                      <td className="px-2 py-2 align-middle group relative">
+                        <div className={`text-[10px] text-gray-600 truncate flex items-center justify-between ${item.fbAccountId && !item.isSystemFbAccountExist ? 'text-yellow-600 font-medium' : ''}`} title={item.fbAccountId ? (!item.isSystemFbAccountExist ? 'FB Account không tồn tại trong hệ thống' : item.fbAccountId) : "-"}>
+                             <span>{item.fbAccountId || "-"}</span>
+                             {item.fbAccountId && !item.isSystemFbAccountExist && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenCreateAdsModal(item);
+                                    }}
+                                    className="invisible group-hover:visible ml-2 p-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition-all"
+                                    title="Tạo mới tài khoản này"
+                                >
+                                    <PlusCircle size={14} />
+                                </button>
+                             )}
                         </div>
                       </td>
 
@@ -914,10 +1301,24 @@ return (
                       </td> */}
 
                       {/* Đuôi thẻ */}
-                      <td className="px-2 py-2 text-[11px] text-center text-gray-600 align-middle">
-                        <span className={`${item.cardLastDigits && !item.isSystemCardExist ? 'underline decoration-yellow-500' : ''}`} title={item.cardLastDigits ? (!item.isSystemCardExist ? 'Thẻ không tồn tại trong hệ thống' : item.cardLastDigits) : "-"}>
-                          {item.cardLastDigits || "-"}
-                        </span>
+                      <td className="px-2 py-2 text-[11px] text-center text-gray-600 align-middle group relative">
+                        <div className="flex items-center justify-center gap-2">
+                            <span className={`${item.cardLastDigits && !item.isSystemCardExist ? 'text-yellow-600 font-medium' : ''}`} title={item.cardLastDigits ? (!item.isSystemCardExist ? 'Thẻ không tồn tại trong hệ thống' : item.cardLastDigits) : "-"}>
+                            {item.cardLastDigits || "-"}
+                            </span>
+                             {item.cardLastDigits && !item.isSystemCardExist && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenCreateBankCardModal(item);
+                                    }}
+                                    className="invisible group-hover:visible p-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition-all absolute right-0 top-1/2 transform -translate-y-1/2"
+                                    title="Tạo mới thẻ này"
+                                >
+                                    <PlusCircle size={14} />
+                                </button>
+                             )}
+                        </div>
                       </td>
 
                       {/* Trạng thái */}
@@ -965,6 +1366,28 @@ return (
       {/* Modals */}
       {scanModalOpen && <ScanTransactionModal />}
       {facebookModalOpen && <FacebookBillModal />}
+
+      {/* NEW: Create Modals */}
+      <CreateAdsAccountModal
+        open={createAdsModalOpen}
+        formData={createAdsFormData}
+        onChange={handleCreateAdsChange}
+        onClose={() => setCreateAdsModalOpen(false)}
+        onSave={handleSaveAdsAccount}
+        saving={saving}
+        bmList={bmList}
+      />
+
+      <CreateBankCardModal
+        open={createBankCardModalOpen}
+        formData={createBankCardFormData}
+        onChange={handleCreateBankCardChange}
+        onClose={() => setCreateBankCardModalOpen(false)}
+        onSave={handleSaveBankCard}
+        saving={saving}
+        userList={userList}
+        bankAccounts={bankList} // Re-using bankList derived from bankAccountApi
+      />
     </div>
   );
 };

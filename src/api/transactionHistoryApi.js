@@ -15,7 +15,9 @@ getTransactionHistoryList: async (
   fbAccountId,
   isFbTransaction,
   isAmountMismatched,
-  bankAccountId
+  bankAccountId,
+  adAccountId, // New param
+  bankCardId // New param
 ) => {
   try {
     const params = {};
@@ -44,6 +46,12 @@ getTransactionHistoryList: async (
 
     // Bank Account
     if (bankAccountId) params.BankAccountId = bankAccountId;
+
+    // Ad Account ID
+    if (adAccountId) params.AdAccountId = adAccountId;
+    
+    // Bank Card ID
+    if (bankCardId) params.BankCardId = bankCardId;
 
     const response = await axiosInstance.get(
       `${api}/TransactionHistory/GetTransactionHistoriesByCursor`,

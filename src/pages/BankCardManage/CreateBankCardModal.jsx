@@ -56,9 +56,18 @@ export default function CreateBankCardModal({
                       type="text"
                       name="cardNumber"
                       value={formData.cardNumber}
-                      onChange={onChange}
+                      onChange={(e) => {
+                        // Enforce numeric only
+                        const val = e.target.value.replace(/\D/g, "");
+                        onChange({
+                          target: {
+                            name: "cardNumber",
+                            value: val,
+                          },
+                        });
+                      }}
                       disabled={saving}
-                      placeholder="Nhập số thẻ..."
+                      placeholder="XXXX-XXXX-XXXX-XXXX"
                       className="w-full h-12 border border-gray-300 rounded-xl px-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                     />
                   </div>
@@ -151,7 +160,7 @@ export default function CreateBankCardModal({
                   {/* Assigned User */}
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      Gán cho người dùng
+                      Vận hành thẻ
                     </label>
                     <select
                       name="assignedToUserId"
@@ -160,7 +169,7 @@ export default function CreateBankCardModal({
                       disabled={saving}
                       className="w-full h-12 border border-gray-300 rounded-xl px-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                     >
-                      <option value="">-- Chọn user --</option>
+                      <option value="">-- Chọn vận hành --</option>
                       {userList.map((u) => (
                         <option key={u.id} value={u.id}>
                           {u.userName}
