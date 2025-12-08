@@ -14,7 +14,7 @@ import SecurityHelper from "../../utils/crypto";
 function BankCardList() {
   const [bankCards, setBankCards] = useState([]);
   const [pageNumber, setPageNumber] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -547,9 +547,9 @@ function BankCardList() {
                         }}
                         className="border border-gray-300 rounded px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
-                        <option value={5}>5</option>
                         <option value={10}>10</option>
-                        <option value={15}>15</option>
+                        <option value={20}>20</option>
+                        <option value={30}>30</option>
                       </select>
                     </div>
 

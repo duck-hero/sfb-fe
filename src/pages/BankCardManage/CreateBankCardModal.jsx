@@ -159,7 +159,7 @@ export default function CreateBankCardModal({
                   {/* Assigned User */}
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      Vận hành thẻ
+                      Vận hành
                     </label>
                     <select
                       name="assignedToUserId"

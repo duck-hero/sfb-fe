@@ -16,6 +16,8 @@ import bankCardApi from "../../api/bankCardApi";
 
 import CreateAdsAccountModal from "../AdsAccountManage/CreateAdsAccountModal"; // Adjust path if needed
 import CreateBankCardModal from "../BankCardManage/CreateBankCardModal"; // Adjust path if needed
+import AddCardModal from "./AddCardModal";
+import AddCardApi from "../../api/AddCardApi";
 import SecurityHelper from "../../utils/crypto";
 
 // --- CẤU HÌNH DAYJS ---
@@ -254,6 +256,10 @@ const TransactionHistoryList = () => {
   const [createAdsModalOpen, setCreateAdsModalOpen] = useState(false);
   const [createBankCardModalOpen, setCreateBankCardModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Add Card Modal State
+  const [addCardModalOpen, setAddCardModalOpen] = useState(false);
+  const [selectedTransactionForAddCard, setSelectedTransactionForAddCard] = useState(null);
 
   // Forms for new modals
   const [createAdsFormData, setCreateAdsFormData] = useState({
@@ -722,6 +728,46 @@ const TransactionHistoryList = () => {
     }
   };
 
+  // --- ADD CARD HANDLERS ---
+  const handleOpenAddCardModal = (item) => {
+    setSelectedTransactionForAddCard(item);
+    setAddCardModalOpen(true);
+  };
+
+  const handleAddCard = async () => {
+    if (!selectedTransactionForAddCard) return;
+
+    setSaving(true);
+    try {
+      await AddCardApi.addCard(
+        selectedTransactionForAddCard.bankAccountId,
+        selectedTransactionForAddCard.fbAccountId,
+        selectedTransactionForAddCard.cardLastDigits
+      );
+      toast.success("Thêm thẻ thành công");
+      
+      // Update local state to hide the button immediately
+      setTransactions((prev) =>
+        prev.map((item) =>
+          item.id === selectedTransactionForAddCard.id
+            ? { ...item, adAccountBankCardId: 1 } // Set to non-null value to hide button
+            : item
+        )
+      );
+      
+      setAddCardModalOpen(false);
+      setSelectedTransactionForAddCard(null);
+      
+      // Refresh transactions to get updated data from server
+      fetchTransactions(false);
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.message || "Thêm thẻ thất bại");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // Modal components
   const ScanTransactionModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -1129,25 +1175,26 @@ return (
             <thead className="bg-gray-100">
               <tr>
                 {/* 3 cột ngày đặt liền nhau */}
-                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase border-r border-gray-300" style={{width: '90px'}}>Ngày hiệu lực</th>
-                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase border-r border-gray-300" style={{width: '90px'}}>Ngày giao dịch</th>
-                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{width: '90px'}}>Ngày GD chính xác</th>
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase border-r border-gray-300" style={{width: '80px'}}>Ngày hiệu lực</th>
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase border-r border-gray-300" style={{width: '80px'}}>Ngày giao dịch</th>
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase border-r border-gray-300" style={{width: '80px'}}>Ngày GD chính xác</th>
                 
-                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{width: '70px'}}>Mã GD</th>
-                <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '60px'}}>Loại</th>
-                <th className="px-2 py-2 text-right text-[10px] font-bold text-gray-600 uppercase" style={{width: '110px'}}>Số tiền</th>
-                <th className="px-2 py-2 text-right text-[10px] font-bold text-gray-600 uppercase" style={{width: '100px'}}>Tiền FB</th>
-                <th className="px-2 py-2 text-right text-[10px] font-bold text-gray-600 uppercase" style={{width: '110px'}}>Số dư</th>
-                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{minWidth: '180px'}}>Nội dung</th>
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{width: '60px'}}>Mã GD</th>
+                <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '45px'}}>Loại</th>
+                <th className="px-2 py-2 text-right text-[10px] font-bold text-gray-600 uppercase" style={{width: '90px'}}>Số tiền</th>
+                <th className="px-2 py-2 text-right text-[10px] font-bold text-gray-600 uppercase" style={{width: '80px'}}>Tiền FB</th>
+                <th className="px-2 py-2 text-right text-[10px] font-bold text-gray-600 uppercase" style={{width: '90px'}}>Số dư</th>
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{minWidth: '140px'}}>Nội dung</th>
                 
-                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{width: '100px'}}>Mã GD FB</th>
-                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{width: '120px'}}>FB Account ID</th>
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{width: '85px'}}>Mã GD FB</th>
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{width: '125px'}}>FB Account ID</th>
                 
-                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{width: '110px'}}>STK Bank</th>
                 {/* <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '60px'}}>Bank ID</th> */}
                 <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '70px'}}>Thẻ</th>
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{width: '110px'}}>STK Bank</th>
                 
                 <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '80px'}}>Status</th>
+                <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '70px'}}>Thao tác</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -1163,7 +1210,7 @@ return (
                       <div className="h-3 bg-gray-200 rounded"></div>
                       <div className="h-3 bg-gray-200 rounded mt-1 w-3/4"></div>
                     </td>
-                    <td className="px-2 py-3 text-[11px] align-top">
+                    <td className="px-2 py-3 text-[11px] align-top border-r border-gray-200">
                       <div className="h-3 bg-gray-200 rounded"></div>
                       <div className="h-3 bg-gray-200 rounded mt-1 w-3/4"></div>
                     </td>
@@ -1200,6 +1247,9 @@ return (
                     <td className="px-2 py-3 text-center align-middle">
                       <div className="h-4 bg-gray-200 rounded w-5 mx-auto"></div>
                     </td>
+                    <td className="px-2 py-3 text-center align-middle">
+                      <div className="h-4 bg-gray-200 rounded w-12 mx-auto"></div>
+                    </td>
                   </tr>
                 ))
               ) : transactions.length > 0 ? (
@@ -1220,7 +1270,7 @@ return (
                         <DateCell dateString={item.transactionDate} />
                       </td>
                       {/* 3. Ngày giao dịch chính xác (FB) */}
-                      <td className="px-2 py-2 text-[11px] align-top">
+                      <td className="px-2 py-2 text-[11px] align-top border-r border-gray-200">
                         <DateCell dateString={item.fbTransactionExactDate} />
                       </td>
 
@@ -1290,11 +1340,6 @@ return (
                         </div>
                       </td>
 
-                      {/* STK Ngân hàng */}
-                      <td className="px-2 py-2 text-[11px] text-gray-700 font-semibold align-middle">
-                        {item.accountBankNumber}
-                      </td>
-
                       {/* Bank Account ID */}
                       {/* <td className="px-2 py-2 text-[11px] text-center text-gray-600 align-middle">
                         {item.bankAccountId}
@@ -1321,6 +1366,11 @@ return (
                         </div>
                       </td>
 
+                      {/* STK Ngân hàng */}
+                      <td className="px-2 py-2 text-[11px] text-gray-700 font-semibold align-middle">
+                        {item.accountBankNumber}
+                      </td>
+
                       {/* Trạng thái */}
                       <td className="px-2 py-2 text-center align-middle">
                         <div className="flex flex-col gap-1 items-center justify-center">
@@ -1339,13 +1389,32 @@ return (
                             )}
                         </div>
                       </td>
+
+                      {/* Actions - Add Card Button */}
+                      <td className="px-2 py-2 text-center align-middle">
+                        {item.isFbTransaction === true && 
+                         item.adAccountBankCardId == null && 
+                         item.isSystemFbAccountExist === true && 
+                         item.isSystemCardExist === true && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenAddCardModal(item);
+                            }}
+                            className="px-2 py-1 text-[10px] bg-green-100 text-green-700 rounded hover:bg-green-200 transition-all font-medium"
+                            title="Thêm thẻ vào giao dịch"
+                          >
+                            Add thẻ
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   );
                 })
               ) : (
                 !isLoading && (
                     <tr>
-                        <td colSpan="16" className="px-4 py-8 text-center text-gray-500 text-sm">
+                        <td colSpan="17" className="px-4 py-8 text-center text-gray-500 text-sm">
                             Không tìm thấy giao dịch nào.
                         </td>
                     </tr>
@@ -1387,6 +1456,18 @@ return (
         saving={saving}
         userList={userList}
         bankAccounts={bankList} // Re-using bankList derived from bankAccountApi
+      />
+
+      {/* Add Card Modal */}
+      <AddCardModal
+        open={addCardModalOpen}
+        onClose={() => {
+          setAddCardModalOpen(false);
+          setSelectedTransactionForAddCard(null);
+        }}
+        onSave={handleAddCard}
+        saving={saving}
+        transactionData={selectedTransactionForAddCard}
       />
     </div>
   );
