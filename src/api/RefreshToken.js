@@ -3,7 +3,7 @@ import { api } from "./api";
 
 const refreshAccessToken = async () => {
   try {
-    console.log("chạy refreshAccessToken");
+    // console.log("chạy refreshAccessToken");
     const encryptedRefreshToken = localStorage.getItem("refreshToken");
 
     if (!encryptedRefreshToken) {
@@ -13,7 +13,7 @@ const refreshAccessToken = async () => {
     // Giải mã refresh token
     const refreshToken = decryptToken(encryptedRefreshToken);
 
-    console.log("refresh token:", refreshToken);
+    // console.log("refresh token:", refreshToken);
 
     // Chỉ gửi refreshToken tới server để nhận tokens mới
     const response = await fetch(`${api}/Account/RefreshToken`, {

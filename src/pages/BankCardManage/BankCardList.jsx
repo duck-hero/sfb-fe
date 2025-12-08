@@ -394,7 +394,7 @@ function BankCardList() {
               onChange={(e) => setSearchAssignedTo(e.target.value)}
               className="w-full text-gray-800 placeholder-primary-darkest bg-transparent text-base focus:outline-none"
             >
-              <option value="">-- Quản trị --</option>
+              <option value="">-- Vận hành --</option>
               {userList.map((u) => (
                 <option key={u.id} value={u.id}>
                   {u.userName}
@@ -457,13 +457,13 @@ function BankCardList() {
                   scope="col"
                   className="px-6 py-3 text-left text-md font-medium text-gray-900  tracking-wider text-primary-darkest"
                 >
-                  Quản trị
+                  Vận hành
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-center text-md font-medium text-gray-900  tracking-wider text-primary-darkest"
                 >
-                  Số lần thêm
+                  Số lần Add thẻ
                 </th>
                 <th
                   scope="col"

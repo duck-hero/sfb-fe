@@ -59,7 +59,7 @@ Verify2FASetup: async (code) => {
 verify2FACode: async (data) => {
   try {
     const response = await axios.post(`${api}/Account/Verify2FACode`, data);
-    console.log("✅ Response từ API:", response.data);
+    // console.log("✅ Response từ API:", response.data);
     return response.data;
   } catch (error) {
     throw error.response ? error.response.data : error.message;

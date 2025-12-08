@@ -57,7 +57,6 @@ export default function CreateBankCardModal({
                       name="cardNumber"
                       value={formData.cardNumber}
                       onChange={(e) => {
-                        // Enforce numeric only
                         const val = e.target.value.replace(/\D/g, "");
                         onChange({
                           target: {
