@@ -1,4 +1,4 @@
-import { api } from "./api";
+import { api, handleApiError } from "./api"; // Updated import
 import axiosInstance from "./axiosInstance";
 
 const bankApi = {
@@ -15,7 +15,7 @@ getBankList: async (pageNumber = 1, pageSize = 10, bankCode) => {
 
     return response.data;
   } catch (error) {
-    throw error.response ? error.response.data : error.message;
+    throw handleApiError(error);
   }
 },
 
@@ -29,7 +29,7 @@ getBankList: async (pageNumber = 1, pageSize = 10, bankCode) => {
 
       return response.data;
     } catch (error) {
-      throw error.response ? error.response.data : error.message;
+      throw handleApiError(error);
     }
   },
 
@@ -40,7 +40,7 @@ getBankList: async (pageNumber = 1, pageSize = 10, bankCode) => {
 
       return response.data;
     } catch (error) {
-      throw error.response ? error.response.data : error.message;
+      throw handleApiError(error);
     }
   },
 
@@ -53,7 +53,7 @@ getBankList: async (pageNumber = 1, pageSize = 10, bankCode) => {
 
       return response.data;
     } catch (error) {
-      throw error.response ? error.response.data : error.message;
+      throw handleApiError(error);
     }
   },
 createBank: async (bankName, bankCode) => {
@@ -65,7 +65,7 @@ createBank: async (bankName, bankCode) => {
 
     return response.data;
   } catch (error) {
-    throw error.response ? error.response.data : error.message;
+    throw handleApiError(error);
   }
 },
 

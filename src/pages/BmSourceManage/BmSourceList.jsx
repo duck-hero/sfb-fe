@@ -55,7 +55,6 @@ function BmSourceList() {
       );
       setPageNumber(response?.pageNumber || page);
     } catch (error) {
-      console.error("Lỗi khi lấy danh sách ngân hàng:", error);
       toast.error("Lấy danh sách ngân hàng thất bại");
     } finally {
       setLoading(false);
@@ -96,8 +95,7 @@ function BmSourceList() {
         sourceName: bmSource?.sourceName ?? "",
       });
     } catch (err) {
-      console.error("Lỗi load chi tiết bmSource:", err);
-      toast.error("Load chi tiết ngân hàng thất bại");
+      toast.error(typeof err === "string" ? err : "Load chi tiết ngân hàng thất bại");
     } finally {
       if (requestRef.current === reqId) setIsEditLoading(false);
     }
@@ -118,8 +116,7 @@ function BmSourceList() {
       requestRef.current++;
       fetchBmSources(pageNumber, pageSize, searchCode.trim());
     } catch (err) {
-      console.error(err);
-      toast.error("Cập nhật thất bại");
+      toast.error(typeof err === "string" ? err : "Cập nhật thất bại");
     } finally {
       setSaving(false);
     }
@@ -145,8 +142,7 @@ function BmSourceList() {
       setIsCreateModalOpen(false);
       fetchBmSources(pageNumber, pageSize, searchCode.trim());
     } catch (err) {
-      console.error(err);
-      toast.error("Thêm thất bại!");
+      toast.error(typeof err === "string" ? err : "Thêm thất bại!");
     } finally {
       setSaving(false);
     }
@@ -166,7 +162,7 @@ function BmSourceList() {
       fetchBmSources(pageNumber, pageSize, searchCode.trim());
     } catch (err) {
       console.error(err);
-      toast.error("Xóa thất bại");
+      toast.error(typeof err === "string" ? err : "Xóa thất bại");
     }
     setIsDeleting(false);
     setOpenDeleteModal(false);

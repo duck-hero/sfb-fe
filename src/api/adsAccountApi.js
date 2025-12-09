@@ -1,4 +1,4 @@
-import { api } from "./api";
+import { api, handleApiError } from "./api"; // Updated import
 import axiosInstance from "./axiosInstance";
 
 const adsAccountApi = {
@@ -17,7 +17,7 @@ getAdsAccountList: async (pageNumber = 1, pageSize = 10, adAccountIdNumber, lock
     );
     return response.data;
   } catch (error) {
-    throw error.response ? error.response.data : error.message;
+    throw handleApiError(error);
   }
 },
   // Lấy thông tin tài khoản theo Id
@@ -29,7 +29,7 @@ getAdsAccountList: async (pageNumber = 1, pageSize = 10, adAccountIdNumber, lock
 
       return response.data;
     } catch (error) {
-      throw error.response ? error.response.data : error.message;
+      throw handleApiError(error);
     }
   },
 
@@ -40,7 +40,7 @@ getAdsAccountList: async (pageNumber = 1, pageSize = 10, adAccountIdNumber, lock
 
       return response.data;
     } catch (error) {
-      throw error.response ? error.response.data : error.message;
+      throw handleApiError(error);
     }
   },
 
@@ -53,7 +53,7 @@ getAdsAccountList: async (pageNumber = 1, pageSize = 10, adAccountIdNumber, lock
 
       return response.data;
     } catch (error) {
-      throw error.response ? error.response.data : error.message;
+      throw handleApiError(error);
     }
   },
   // Thêm mới
@@ -67,7 +67,7 @@ createAdsAccount: async (adAccountName, adAccountIdNumber, bmAccountId) => {
 
     return response.data;
   } catch (error) {
-    throw error.response ? error.response.data : error.message;
+    throw handleApiError(error);
   }
 },
 };

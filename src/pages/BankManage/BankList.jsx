@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import bankApi from "../../api/bankApi";
 import DeleteConfirmModal from "../../components/Modal/DeleteConfirmModal";
 import EditBankModal from "./EditBankModal";
@@ -90,8 +90,7 @@ const handleSearch = () => {
       const bank = res?.data;
       setFormData({ id: bank?.id ?? 0, bankName: bank?.name ?? "", bankCode: bank?.codeBank ?? "" });
     } catch (err) {
-      console.error("Lỗi load chi tiết bank:", err);
-      toast.error("Load chi tiết ngân hàng thất bại");
+      toast.error(typeof err === 'string' ? err : "Load chi tiết ngân hàng thất bại");
     } finally {
       if (requestRef.current === reqId) setIsEditLoading(false);
     }
@@ -108,8 +107,7 @@ const handleSearch = () => {
       requestRef.current++;
       fetchBanks(pageNumber, pageSize, searchCode.trim());
     } catch (err) {
-      console.error(err);
-      toast.error("Cập nhật thất bại");
+      toast.error(typeof err === 'string' ? err : "Cập nhật thất bại");
     } finally {
       setSaving(false);
     }
@@ -135,8 +133,7 @@ const handleSearch = () => {
       setIsCreateModalOpen(false);
       fetchBanks(pageNumber, pageSize, searchCode.trim());
     } catch (err) {
-      console.error(err);
-      toast.error("Thêm thất bại!");
+      toast.error(typeof err === 'string' ? err : "Thêm thất bại!");
     } finally {
       setSaving(false);
     }
@@ -155,8 +152,7 @@ const handleSearch = () => {
       toast.success("Xóa thành công");
       fetchBanks(pageNumber, pageSize, searchCode.trim());
     } catch (err) {
-      console.error(err);
-      toast.error("Xóa thất bại");
+      toast.error(typeof err === 'string' ? err : "Xóa thất bại");
     }
       setIsDeleting(false);
     setOpenDeleteModal(false);

@@ -220,7 +220,12 @@ const TransactionHistoryList = () => {
   const [bankList, setBankList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [meta, setMeta] = useState(null); // Meta data từ API
+  const [meta, setMeta] = useState(null); // Meta data từ API (deprecated - use countData instead)
+  
+  // Separate state for count data
+  const [countData, setCountData] = useState(null);
+  const [isLoadingCounts, setIsLoadingCounts] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Tab State
   const [activeTab, setActiveTab] = useState("all"); // "all", "fb", hoặc "other"
@@ -413,19 +418,9 @@ const TransactionHistoryList = () => {
       try {
         // Fetch Bank List (Existing)
         const bankRes = await bankAccountApi.getBankList();
-        const bankMockData = [
-          {
-            id: 1,
-            accountBankNumber: "1997568888",
-            accountBankHolderName: "Test User",
-            loginUsername: "7474251LTT",
-            loginPassword: "t4LDtGe1V1EnBRQ5khhtHtYHRyJl7LHOiS3byW7fNv0=",
-            bankCode: "ACB"
-          },
-        ];
         // Use real data if available, else mock (as per your extensive use of mock in original code)
         // But here trying to be consistent with your existing logic
-        setBankList((bankRes.data && bankRes.data.length > 0) ? bankRes.data : bankMockData);
+        setBankList((bankRes.data && bankRes.data.length > 0) ? bankRes.data : []);
 
         // Fetch BM List for Ads Modal
         const bmRes = await bmAccountApi.getBmAccountList(1, 999);
@@ -482,10 +477,7 @@ const TransactionHistoryList = () => {
         // Cập nhật thông tin phân trang
         setNextCursor(res.pageInfo.nextCursor);
         setHasMore(res.pageInfo.hasNextPage);
-        // Cập nhật meta data (chỉ cập nhật khi không phải load more)
-        if (!isLoadMore && res.meta) {
-          setMeta(res.meta);
-        }
+        // Note: Meta data is no longer updated here, use fetchCounts instead
       }
     } catch (err) {
       console.error(err);
@@ -494,6 +486,44 @@ const TransactionHistoryList = () => {
       setIsLoading(false);
     }
   };
+
+  // --- API FETCH COUNTS ---
+  const fetchCounts = async () => {
+    setIsLoadingCounts(true);
+    
+    try {
+      // Xử lý logic boolean filter (vì select trả về string "true"/"false"/"all")
+      const getBooleanValue = (val) => {
+        if (val === "true") return true;
+        if (val === "false") return false;
+        return undefined; // "all" -> undefined
+      };
+
+      const res = await transactionHistoryApi.getTransactionHistoryCount(
+        filters.sortOrder,
+        filters.fromEffectiveDate,
+        filters.toEffectiveDate,
+        filters.fbTransactionCode || undefined,
+        filters.transactionType || undefined,
+        filters.fbAccountId || undefined,
+        getBooleanValue(filters.isFbTransaction),
+        getBooleanValue(filters.isAmountMismatched),
+        filters.bankAccountId || undefined,
+        filters.adAccountId || undefined,
+        filters.bankCardId || undefined
+      );
+      
+      if (res && res.success && res.data) {
+        setCountData(res.data);
+      }
+    } catch (err) {
+      console.error("Lỗi khi lấy thống kê:", err);
+      // Don't show error toast for count failures to avoid being too noisy
+    } finally {
+      setIsLoadingCounts(false);
+    }
+  };
+
 
   // --- EFFECT: CẬP NHẬT FILTER KHI TAB THAY ĐỔI ---
   useEffect(() => {
@@ -509,7 +539,9 @@ const TransactionHistoryList = () => {
       // Clear data ngay khi tab thay đổi để tránh hiển thị data cũ
       setTransactions([]);
       setMeta(null);
+      setCountData(null);
       setIsLoading(true);
+      setIsLoadingCounts(true);
 
       return {
         ...prev,
@@ -524,8 +556,9 @@ const TransactionHistoryList = () => {
     // Reset state phân trang
     setNextCursor(null);
     setHasMore(true);
-    // Gọi API (isLoadMore = false)
+    // Gọi cả 2 APIs đồng thời, cái nào nhanh hơn sẽ hiển thị trước
     fetchTransactions(false);
+    fetchCounts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]); 
   // Lưu ý: Đưa tất cả field trong filters vào dependency array hoặc object filters
@@ -544,6 +577,39 @@ const TransactionHistoryList = () => {
       fromEffectiveDate: startDate,
       toEffectiveDate: endDate,
     }));
+  };
+
+  const handleSyncAddCard = async () => {
+    if (isSyncing) return;
+    setIsSyncing(true);
+    try {
+      const getBooleanValue = (val) => {
+        if (val === "true") return true;
+        if (val === "false") return false;
+        return undefined; // "all" -> undefined
+      };
+
+      await transactionHistoryApi.syncAddCard(
+        filters.sortOrder,
+        filters.fromEffectiveDate,
+        filters.toEffectiveDate,
+        filters.fbTransactionCode || undefined,
+        filters.transactionType || undefined,
+        filters.fbAccountId || undefined,
+        getBooleanValue(filters.isFbTransaction),
+        getBooleanValue(filters.isAmountMismatched),
+        filters.bankAccountId || undefined,
+        filters.adAccountId || undefined,
+        filters.bankCardId || undefined
+      );
+
+      toast.success("Đồng bộ thành công!");
+      fetchCounts(); // Refresh counts from server
+    } catch (err) {
+      toast.error(typeof err === "string" ? err : "Đồng bộ thất bại");
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   // --- RENDER HELPERS ---
@@ -582,6 +648,27 @@ const TransactionHistoryList = () => {
       label: 'GD chưa đối chiếu',
       format: (value) => value !== null && value !== undefined ? value : '-',
       className: 'text-orange-600 font-semibold'
+    },
+    {
+      key: 'syncableCount',
+      label: 'Chưa đồng bộ',
+      format: (value) => {
+        if (value === null || value === undefined) return '-';
+        if (value > 0) {
+          return (
+            <button
+              onClick={handleSyncAddCard}
+              disabled={isSyncing}
+              className={`underline decoration-dotted underline-offset-2 hover:decoration-solid transition-all ${isSyncing ? 'opacity-70 cursor-wait' : 'hover:text-purple-800'}`}
+              title="Click để đồng bộ thẻ"
+            >
+              {isSyncing ? "Đang xử lý..." : value}
+            </button>
+          );
+        }
+        return <span className="opacity-50 cursor-not-allowed" title="Không có dữ liệu để đồng bộ">{value}</span>;
+      },
+      className: 'text-purple-600 font-semibold'
     }
   ];
 
@@ -1152,8 +1239,8 @@ return (
             
             {/* Meta Data - Bên phải */}
             <div className="flex items-center gap-4 px-4 py-3 flex-wrap">
-              {meta && metaConfig.map((config) => {
-                const value = getMetaValue(meta, config.key);
+              {countData && metaConfig.map((config) => {
+                const value = getMetaValue(countData, config.key);
                 if (value === null || value === undefined) return null;
                 return (
                   <div key={config.key} className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-md border border-gray-200">
@@ -1164,8 +1251,10 @@ return (
                   </div>
                 );
               })}
-              {(!meta || metaConfig.every(config => getMetaValue(meta, config.key) === null || getMetaValue(meta, config.key) === undefined)) && (
-                <span className="text-xs text-gray-400 italic">Đang tải thống kê...</span>
+              {(!countData || metaConfig.every(config => getMetaValue(countData, config.key) === null || getMetaValue(countData, config.key) === undefined)) && (
+                <span className="text-xs text-gray-400 italic">
+                  {isLoadingCounts ? "Đang tải thống kê..." : "Không có dữ liệu thống kê"}
+                </span>
               )}
             </div>
           </div>

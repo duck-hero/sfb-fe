@@ -1,4 +1,4 @@
-import { api } from "./api";
+import { api, handleApiError } from "./api";
 import axiosInstance from "./axiosInstance";
 
 const bmSourceApi = {
@@ -16,7 +16,7 @@ const bmSourceApi = {
       );
       return response.data;
     } catch (error) {
-      throw error.response ? error.response.data : error.message;
+      throw handleApiError(error);
     }
   },
 
@@ -32,7 +32,7 @@ const bmSourceApi = {
 
       return response.data;
     } catch (error) {
-      throw error.response ? error.response.data : error.message;
+      throw handleApiError(error);
     }
   },
 
@@ -46,7 +46,7 @@ const bmSourceApi = {
 
       return response.data;
     } catch (error) {
-      throw error.response ? error.response.data : error.message;
+      throw handleApiError(error);
     }
   },
 
@@ -62,7 +62,7 @@ const bmSourceApi = {
 
       return response.data;
     } catch (error) {
-      throw error.response ? error.response.data : error.message;
+      throw handleApiError(error);
     }
   },
   // Tạo mới thông tin BmSource
@@ -77,7 +77,7 @@ const bmSourceApi = {
 
       return response.data;
     } catch (error) {
-      throw error.response ? error.response.data : error.message;
+      throw handleApiError(error);
     }
   },
 };

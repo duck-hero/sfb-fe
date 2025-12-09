@@ -1,4 +1,4 @@
-import { api } from "./api";
+import { api, handleApiError } from "./api"; // Updated import
 import axiosInstance from "./axiosInstance";
 
 const AddCardApi = {
@@ -17,7 +17,7 @@ const AddCardApi = {
 
       return response.data;
     } catch (error) {
-      throw error.response ? error.response.data : error.message;
+      throw handleApiError(error);
     }
   },
 };

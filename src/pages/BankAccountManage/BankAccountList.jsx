@@ -139,12 +139,11 @@ function BankAccountList() {
         bankId: acc?.bankId || "",
       });
     } catch (err) {
-      console.error(err);
-      toast.error("Không tải được thông tin tài khoản");
-    } finally {
-      if (requestRef.current === reqId) setIsEditLoading(false);
-    }
-  };
+      toast.error("Không tải được thông tin tài khoản");
+    } finally {
+      if (requestRef.current === reqId) setIsEditLoading(false);
+    }
+  };
 
   const handleEditChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -164,8 +163,7 @@ function BankAccountList() {
       setIsEditModalOpen(false);
       fetchBanks();
     } catch (err) {
-      console.error(err);
-      toast.error("Cập nhật thất bại");
+      toast.error(typeof err === 'string' ? err : "Cập nhật dữ liệu thất bại");
     } finally {
       setSaving(false);
     }
@@ -194,16 +192,15 @@ function BankAccountList() {
         formData.loginPassword,
         formData.bankId
       );
-      toast.success("Thêm tài khoản thành công");
-      setIsCreateModalOpen(false);
-      fetchBanks();
-    } catch (err) {
-      console.error(err);
-      toast.error("Thêm thất bại");
-    } finally {
-      setSaving(false);
-    }
-  };
+      toast.success("Thêm tài khoản thành công");
+      setIsCreateModalOpen(false);
+      fetchBanks();
+    } catch (err) {
+      toast.error(typeof err === 'string' ? err : "Thêm thất bại");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // ---------------------- DELETE ----------------------
   const handleOpenDelete = (item) => {
@@ -214,18 +211,18 @@ function BankAccountList() {
   const handleConfirmDelete = async () => {
     setIsDeleting(true);
     try {
-      await bankAccountApi.deleteBankAccountById(bankToDelete.id);
-      toast.success("Xóa thành công");
-      fetchBanks();
-    } catch (err) {
-      console.error(err);
-      toast.error("Xóa thất bại");
-    }
-    setIsDeleting(false);
-    setOpenDeleteModal(false);
-  };
+      await bankAccountApi.deleteBankAccountById(bankToDelete.id);
+      toast.success("Xóa thành công");
+      fetchBanks();
+    } catch (err) {
+      toast.error(typeof err === 'string' ? err : "Xóa thất bại");
+    } finally {
+      setIsDeleting(false);
+      setOpenDeleteModal(false);
+    }
+  };
 
-  // ---------------------- RENDER ----------------------
+  // ---------------------- RENDER ----------------------
   return (
     <div className="px-6">
       <h1 className="text-2xl font-bold mb-4">Danh sách tài khoản ngân hàng</h1>

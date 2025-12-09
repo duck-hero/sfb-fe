@@ -107,7 +107,7 @@ function AdsAccountList() {
         const res = await bmAccountApi.getBmAccountList(1, 999); 
         setBmList(res?.data || res?.items || []);
       } catch (err) {
-        console.error("Lỗi tải BM Account:", err);
+        // toast.error("Lỗi tải BM Account");
       }
     };
     fetchBmDropdown();
@@ -150,8 +150,7 @@ function AdsAccountList() {
       setIsCreateModalOpen(false);
       fetchAdsAccounts();
     } catch (err) {
-      console.error(err);
-      toast.error(err?.message || "Tạo thất bại");
+      toast.error(typeof err === 'string' ? err : "Tạo thất bại");
     } finally {
       setSaving(false);
     }
@@ -178,7 +177,7 @@ function AdsAccountList() {
         // Các trường khác nếu cần update
       });
     } catch {
-      toast.error("Không tải được dữ liệu tài khoản");
+      toast.error(typeof err === 'string' ? err : "Không tải được dữ liệu tài khoản");
       setIsEditModalOpen(false);
     } finally {
       if (requestRef.current === reqId) setIsEditLoading(false);
@@ -236,8 +235,7 @@ const handleEditSave = async (dataToSend) => {
       setIsEditModalOpen(false);
       fetchAdsAccounts();
     } catch (err) {
-      console.error(err);
-      toast.error("Cập nhật thất bại");
+      toast.error(typeof err === 'string' ? err : "Cập nhật thất bại");
     } finally {
       setSaving(false);
     }
@@ -255,8 +253,8 @@ const handleEditSave = async (dataToSend) => {
       await adsAccountApi.deleteAdsAccountById(itemToDelete.id);
       toast.success("Xóa thành công");
       fetchAdsAccounts();
-    } catch {
-      toast.error("Xóa thất bại");
+    } catch (err) {
+      toast.error(typeof err === 'string' ? err : "Xóa thất bại");
     } finally {
       setIsDeleting(false);
       setOpenDeleteModal(false);

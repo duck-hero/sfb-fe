@@ -1,4 +1,4 @@
-import { api } from "./api";
+import { api, handleApiError } from "./api";
 import axiosInstance from "./axiosInstance";
 
 const bankCardApi = {
@@ -17,7 +17,7 @@ getBankCardList: async (pageNumber = 1, pageSize = 10, cardNumber, cardHolderNam
     );
     return response.data;
   } catch (error) {
-    throw error.response ? error.response.data : error.message;
+    throw handleApiError(error);
   }
 },
   // Lấy thông tin thẻ ngân hàng theo Id
@@ -29,7 +29,7 @@ getBankCardList: async (pageNumber = 1, pageSize = 10, cardNumber, cardHolderNam
 
       return response.data;
     } catch (error) {
-      throw error.response ? error.response.data : error.message;
+      throw handleApiError(error);
     }
   },
 
@@ -40,7 +40,7 @@ getBankCardList: async (pageNumber = 1, pageSize = 10, cardNumber, cardHolderNam
 
       return response.data;
     } catch (error) {
-      throw error.response ? error.response.data : error.message;
+      throw handleApiError(error);
     }
   },
 
@@ -53,7 +53,7 @@ getBankCardList: async (pageNumber = 1, pageSize = 10, cardNumber, cardHolderNam
 
       return response.data;
     } catch (error) {
-      throw error.response ? error.response.data : error.message;
+      throw handleApiError(error);
     }
   },
   // Thêm mới thẻ ngân hàng
@@ -71,7 +71,7 @@ createBankCard: async (cardNumber, cardHolderName, cvvCode, issuedDate, expirati
 
     return response.data;
   } catch (error) {
-    throw error.response ? error.response.data : error.message;
+    throw handleApiError(error);
   }
 },
 

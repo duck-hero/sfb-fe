@@ -133,33 +133,32 @@ function BmAccountList() {
 //       if (requestRef.current === reqId) setIsEditLoading(false);
 //     }
 //   };
-const openEditModal = async (id) => {
-    setIsEditModalOpen(true);
-    setIsEditLoading(true);
-    
-    const reqId = ++requestRef.current;
+  const openEditModal = async (id) => {
+      setIsEditModalOpen(true);
+      setIsEditLoading(true);
+      
+      const reqId = ++requestRef.current;
 
-    try {
-      const res = await bmAccountApi.getBmAccountById(id);
-      if (requestRef.current !== reqId) return;
+      try {
+        const res = await bmAccountApi.getBmAccountById(id);
+        if (requestRef.current !== reqId) return;
 
-      const acc = res?.data;
-      // Map dữ liệu từ API vào form
-      setFormData({
-        id: acc?.id || 0,
-        name: acc?.name || "",
-        bmSourceId: acc?.bmSourceId || "",
-        // !!! SỬA LỖI: Thêm trường status vào formData !!!
-        status: acc?.status || "INACTIVE", // Giả định API trả về status (vd: "ACTIVE" hoặc "INACTIVE")
-      });
-    } catch (err) {
-      console.error(err);
-      toast.error("Không tải được thông tin");
-      setIsEditModalOpen(false);
-    } finally {
-      if (requestRef.current === reqId) setIsEditLoading(false);
-    }
-  };
+        const acc = res?.data;
+        // Map dữ liệu từ API vào form
+        setFormData({
+          id: acc?.id || 0,
+          name: acc?.name || "",
+          bmSourceId: acc?.bmSourceId || "",
+          // !!! SỬA LỖI: Thêm trường status vào formData !!!
+          status: acc?.status || "INACTIVE", // Giả định API trả về status (vd: "ACTIVE" hoặc "INACTIVE")
+        });
+      } catch (err) {
+        toast.error(typeof err === 'string' ? err : "Không tải được thông tin");
+        setIsEditModalOpen(false);
+      } finally {
+        if (requestRef.current === reqId) setIsEditLoading(false);
+      }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -174,7 +173,6 @@ const openEditModal = async (id) => {
       setIsEditModalOpen(false);
       fetchBmAccounts();
     } catch (err) {
-      console.error(err);
       toast.error(typeof err === 'string' ? err : "Cập nhật thất bại");
     } finally {
       setSaving(false);
@@ -203,7 +201,6 @@ const openEditModal = async (id) => {
       setIsCreateModalOpen(false);
       fetchBmAccounts();
     } catch (err) {
-      console.error(err);
       toast.error(typeof err === 'string' ? err : "Thêm mới thất bại");
     } finally {
       setSaving(false);
@@ -224,8 +221,7 @@ const openEditModal = async (id) => {
       toast.success("Xóa thành công");
       fetchBmAccounts();
     } catch (err) {
-      console.error(err);
-      toast.error("Xóa thất bại");
+      toast.error(typeof err === 'string' ? err : "Xóa thất bại");
     } finally {
       setIsDeleting(false);
       setOpenDeleteModal(false);

@@ -1,4 +1,4 @@
-import { api } from "./api";
+import { api, handleApiError } from "./api"; // Updated import
 import axiosInstance from "./axiosInstance";
 
 const bankAccountApi = {
@@ -17,7 +17,7 @@ getBankList: async (pageNumber = 1, pageSize = 10, accountBankNumber, accountBan
     );
     return response.data;
   } catch (error) {
-    throw error.response ? error.response.data : error.message;
+    throw handleApiError(error);
   }
 },
   // Lấy thông tin tài khoản ngân hàng theo Id
@@ -29,7 +29,7 @@ getBankList: async (pageNumber = 1, pageSize = 10, accountBankNumber, accountBan
 
       return response.data;
     } catch (error) {
-      throw error.response ? error.response.data : error.message;
+      throw handleApiError(error);
     }
   },
 
@@ -40,7 +40,7 @@ getBankList: async (pageNumber = 1, pageSize = 10, accountBankNumber, accountBan
 
       return response.data;
     } catch (error) {
-      throw error.response ? error.response.data : error.message;
+      throw handleApiError(error);
     }
   },
 
@@ -53,7 +53,7 @@ getBankList: async (pageNumber = 1, pageSize = 10, accountBankNumber, accountBan
 
       return response.data;
     } catch (error) {
-      throw error.response ? error.response.data : error.message;
+      throw handleApiError(error);
     }
   },
   // Thêm mới tài khoản ngân hàng
@@ -69,7 +69,7 @@ createBankAccount: async (accountBankNumber, accountBankHolderName, loginUsernam
 
     return response.data;
   } catch (error) {
-    throw error.response ? error.response.data : error.message;
+    throw handleApiError(error);
   }
 },
 

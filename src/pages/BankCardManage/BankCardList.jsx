@@ -181,8 +181,8 @@ function BankCardList() {
         bankAccountId: data.bankAccountId,
         assignedToUserId: data.assignedToUserId,
       });
-    } catch {
-      toast.error("Không tải được dữ liệu thẻ");
+    } catch (err) {
+      toast.error(typeof err === 'string' ? err : "Không tải được dữ liệu thẻ");
     } finally {
       if (requestRef.current === reqId) setIsEditLoading(false);
     }
@@ -216,8 +216,7 @@ function BankCardList() {
       setIsEditModalOpen(false);
       fetchCards();
     } catch (err) {
-      console.error(err); // Log lỗi ra để dễ debug
-      toast.error("Cập nhật thất bại");
+      toast.error(typeof err === 'string' ? err : "Cập nhật thất bại");
     } finally {
       setSaving(false);
     }
@@ -276,7 +275,6 @@ function BankCardList() {
             // Mã hóa và thay thế giá trị CVV
             payload.cvvCode = await SecurityHelper.encrypt(String(cvvValue));
         } catch (error) {
-            console.error("Lỗi mã hóa CVV:", error);
             toast.error("Lỗi mã hóa dữ liệu. Vui lòng thử lại.");
             setSaving(false);
             return; // Dừng quá trình nếu mã hóa thất bại
@@ -284,7 +282,7 @@ function BankCardList() {
     }
     
     try {
-        console.log("Create Payload đã mã hóa:", payload);
+        // console.log("Create Payload đã mã hóa:", payload);
 
         // 3. Gửi payload đã mã hóa vào API
         await bankCardApi.createBankCard(
@@ -301,9 +299,7 @@ function BankCardList() {
         setIsCreateModalOpen(false);
         fetchCards();
     } catch (error) {
-        // Log lỗi chi tiết từ API nếu cần
-        console.error("Lỗi tạo thẻ:", error);
-        toast.error("Tạo thất bại");
+        toast.error(typeof error === 'string' ? error : "Tạo thất bại");
     } finally {
         setSaving(false);
     }
@@ -321,8 +317,8 @@ function BankCardList() {
       await bankCardApi.deleteBankCardById(cardToDelete.id);
       toast.success("Xóa thành công");
       fetchCards();
-    } catch {
-      toast.error("Xóa thất bại");
+    } catch (error) {
+      toast.error(typeof error === 'string' ? error : "Xóa thất bại");
     }
     setIsDeleting(false);
     setOpenDeleteModal(false);

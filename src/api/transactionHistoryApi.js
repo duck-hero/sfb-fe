@@ -1,4 +1,4 @@
-import { api } from "./api";
+import { api, handleApiError } from "./api";
 import axiosInstance from "./axiosInstance";
 
 const transactionHistoryApi = {
@@ -59,9 +59,115 @@ getTransactionHistoryList: async (
 
     return response.data;
   } catch (error) {
-    throw error.response ? error.response.data : error.message;
+    throw handleApiError(error);
   }
 },
+
+  // Lấy thống kê số lượng giao dịch
+  getTransactionHistoryCount: async (
+    sortOrder,
+    fromEffectiveDate,
+    toEffectiveDate,
+    fbTransactionCode,
+    transactionType,
+    fbAccountId,
+    isFbTransaction,
+    isAmountMismatched,
+    bankAccountId,
+    adAccountId,
+    bankCardId
+  ) => {
+    try {
+      const params = {};
+
+      // Sorting
+      if (sortOrder) params.SortOrder = sortOrder;
+
+      // Date filters
+      if (fromEffectiveDate) params.FromEffectiveDate = fromEffectiveDate;
+      if (toEffectiveDate) params.ToEffectiveDate = toEffectiveDate;
+
+      // FB filters
+      if (fbTransactionCode) params.FbTransactionCode = fbTransactionCode;
+      if (transactionType) params.TransactionType = transactionType;
+      if (fbAccountId) params.FbAccountId = fbAccountId;
+
+      // Boolean filters
+      if (isFbTransaction !== undefined) params.IsFbTransaction = isFbTransaction;
+      if (isAmountMismatched !== undefined) params.IsAmountMismatched = isAmountMismatched;
+
+      // Bank Account
+      if (bankAccountId) params.BankAccountId = bankAccountId;
+
+      // Ad Account ID
+      if (adAccountId) params.AdAccountId = adAccountId;
+      
+      // Bank Card ID
+      if (bankCardId) params.BankCardId = bankCardId;
+
+      const response = await axiosInstance.get(
+        `${api}/TransactionHistory/GetTransactionHistoryCount`,
+        { params }
+      );
+
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  // Đồng bộ thẻ
+  syncAddCard: async (
+    sortOrder,
+    fromEffectiveDate,
+    toEffectiveDate,
+    fbTransactionCode,
+    transactionType,
+    fbAccountId,
+    isFbTransaction,
+    isAmountMismatched,
+    bankAccountId,
+    adAccountId,
+    bankCardId
+  ) => {
+    try {
+      const data = {};
+
+      // Sorting
+      if (sortOrder) data.SortOrder = sortOrder;
+
+      // Date filters
+      if (fromEffectiveDate) data.FromEffectiveDate = fromEffectiveDate;
+      if (toEffectiveDate) data.ToEffectiveDate = toEffectiveDate;
+
+      // FB filters
+      if (fbTransactionCode) data.FbTransactionCode = fbTransactionCode;
+      if (transactionType) data.TransactionType = transactionType;
+      if (fbAccountId) data.FbAccountId = fbAccountId;
+
+      // Boolean filters
+      if (isFbTransaction !== undefined) data.IsFbTransaction = isFbTransaction;
+      if (isAmountMismatched !== undefined) data.IsAmountMismatched = isAmountMismatched;
+
+      // Bank Account
+      if (bankAccountId) data.BankAccountId = bankAccountId;
+
+      // Ad Account ID
+      if (adAccountId) data.AdAccountId = adAccountId;
+      
+      // Bank Card ID
+      if (bankCardId) data.BankCardId = bankCardId;
+
+      const response = await axiosInstance.post(
+        `${api}/TransactionHistory/SyncAddCard`,
+        data
+      );
+
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 
 };
 
