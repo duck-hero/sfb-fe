@@ -231,37 +231,37 @@ function BmAccountList() {
 
   // ---------------------- RENDER ----------------------
   return (
-    <div className="px-6">
-      <h1 className="text-2xl font-bold mb-4">Danh sách tài khoản BM</h1>
+    <div className="px-4">
+      <h1 className="text-lg font-bold mb-3">Danh sách tài khoản BM</h1>
 
-      <div className="flex justify-between items-center pb-3 border-b border-gray-200">
+      <div className="flex justify-between items-center pb-2 border-b border-gray-200">
         {/* Search Bar - Chỉ giữ lại tìm theo Tên */}
-        <div className="flex items-center w-full max-w-lg gap-4">
-          <div className="flex-1 flex items-center px-5 py-2 bg-white border border-gray-200 rounded-xl shadow-lg transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-4 focus-within:ring-blue-100">
+        <div className="flex items-center w-full max-w-lg gap-3">
+          <div className="flex-1 flex items-center px-3 py-1.5 bg-white border border-gray-200 rounded-lg shadow-md transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100">
             <input
               type="text"
               placeholder="Tìm theo tên account..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
-              className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-base focus:outline-none"
+              className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-sm focus:outline-none"
             />
           </div>
 
           <button
             onClick={handleSearch}
-            className="px-5 py-2 rounded-xl font-semibold text-md transition bg-primary-dark text-white hover:bg-primary-darkest cursor-pointer flex items-center justify-center shadow-md"
+            className="px-3 py-1.5 rounded-lg font-semibold text-sm transition bg-primary-dark text-white hover:bg-primary-darkest cursor-pointer flex items-center justify-center shadow-md"
           >
-            <Search className="h-5 w-5" />
+            <Search className="h-4 w-4" />
           </button>
         </div>
 
         {/* Nút Tạo mới */}
         <button
-          className="px-5 py-2 rounded-xl font-semibold text-md transition bg-primary-dark text-white hover:bg-primary-darkest cursor-pointer shadow-md"
+          className="px-3 py-1.5 rounded-lg font-semibold text-sm transition bg-primary-dark text-white hover:bg-primary-darkest cursor-pointer shadow-md"
           onClick={openCreateModal}
         >
-          <Plus className="h-5 w-5 inline-block mr-2" />
+          <Plus className="h-4 w-4 inline-block mr-1.5" />
           Tạo mới
         </button>
       </div>
@@ -270,23 +270,23 @@ function BmAccountList() {
       {loading ? (
         <TableSkeleton />
       ) : (
-        <div className="overflow-x-auto shadow-lg rounded-xl">
+        <div className="overflow-x-auto shadow-md rounded-lg">
           <table className="w-full divide-y divide-gray-200">
             <thead className="bg-white">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-md font-medium text-gray-900 uppercase tracking-wider w-1/12 text-primary-darkest">
+                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-900 uppercase tracking-wider w-1/12 text-primary-darkest">
                   #
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-md font-medium text-gray-900 tracking-wider w-1/3 text-primary-darkest">
+                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-900 tracking-wider w-1/3 text-primary-darkest">
                   BM
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-md font-medium text-gray-900 tracking-wider w-1/3 text-primary-darkest">
+                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-900 tracking-wider w-1/3 text-primary-darkest">
                   Nguồn (Source)
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-md font-medium text-gray-900 tracking-wider w-1/3 text-primary-darkest">
+                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-900 tracking-wider w-1/3 text-primary-darkest">
                   Trạng thái
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-md font-medium text-gray-900 tracking-wider w-1/6 text-primary-darkest">
+                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-900 tracking-wider w-1/6 text-primary-darkest">
                   Tùy chọn
                 </th>
               </tr>
@@ -296,32 +296,32 @@ function BmAccountList() {
               {bmAccounts.length > 0 ? (
                 bmAccounts.map((x, index) => (
                   <tr key={x.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
                       {(pageNumber - 1) * pageSize + index + 1}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
                       {x.name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
                       {/* Hiển thị tên Source nếu API trả về, nếu không hiển thị ID */}
                       {x.sourceName }
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
                       {x.status }
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex items-center">
+                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500 flex items-center">
                       <button onClick={() => openEditModal(x.id)}>
-                        <SquarePen className="h-5 w-5 text-warning mr-3 hover:scale-110 transition-transform cursor-pointer" />
+                        <SquarePen className="h-4 w-4 text-warning mr-2 hover:scale-110 transition-transform cursor-pointer" />
                       </button>
                       <button onClick={() => handleOpenDelete(x)}>
-                        <Trash className="h-5 w-5 text-error hover:scale-110 transition-transform cursor-pointer" />
+                        <Trash className="h-4 w-4 text-error hover:scale-110 transition-transform cursor-pointer" />
                       </button>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                   <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                   <td colSpan="6" className="px-3 py-3 text-center text-gray-500 text-sm">
                       Không tìm thấy dữ liệu
                    </td>
                 </tr>
@@ -331,14 +331,14 @@ function BmAccountList() {
             {/* Footer Pagination */}
             <tfoot className="bg-white">
               <tr>
-                <td colSpan="4" className="px-6 py-3">
-                  <div className="flex justify-end items-center text-sm">
-                    <div className="flex items-center gap-2 mr-6">
+                <td colSpan="4" className="px-3 py-2">
+                  <div className="flex justify-end items-center text-xs">
+                    <div className="flex items-center gap-1.5 mr-4">
                       <span className="text-gray-700">Hiển thị:</span>
                       <select
                         value={pageSize}
                         onChange={handlePageSizeChange}
-                        className="border border-gray-300 rounded px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="border border-gray-300 rounded px-1.5 py-0.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
                       >
                         <option value={5}>5</option>
                         <option value={10}>10</option>
@@ -346,25 +346,25 @@ function BmAccountList() {
                       </select>
                     </div>
 
-                    <span className="text-gray-700 mr-6">
+                    <span className="text-gray-700 mr-4">
                       {totalItems > 0 ? ((pageNumber - 1) * pageSize) + 1 : 0}–
                       {Math.min(pageNumber * pageSize, totalItems)} trên {totalItems}
                     </span>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                       <button
                         onClick={handlePrev}
                         disabled={pageNumber === 1}
-                        className={`p-2 rounded-full transition duration-150 ${pageNumber === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'}`}
+                        className={`p-1.5 rounded-full transition duration-150 ${pageNumber === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'}`}
                       >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
                       </button>
                       <button
                         onClick={handleNext}
                         disabled={pageNumber === totalPages || totalPages === 0}
-                        className={`p-2 rounded-full transition duration-150 ${pageNumber === totalPages || totalPages === 0 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'}`}
+                        className={`p-1.5 rounded-full transition duration-150 ${pageNumber === totalPages || totalPages === 0 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'}`}
                       >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
                       </button>
                     </div>
                   </div>

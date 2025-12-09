@@ -171,19 +171,19 @@ function BmSourceList() {
 
   // ------------------------- RENDER -------------------------
   return (
-    <div className="px-6">
-      <h1 className="text-2xl font-bold mb-4">Danh sách BM</h1>
+    <div className="px-4">
+      <h1 className="text-lg font-bold mb-3">Danh sách BM</h1>
 
-      <div className="flex justify-between items-center pb-3 border-b border-gray-200">
+      <div className="flex justify-between items-center pb-2 border-b border-gray-200">
         <div className="w-full max-w-3xl">
           <div
-            className="flex items-center w-full px-5 py-2 bg-white 
-                   border border-gray-200 rounded-xl shadow-lg 
+            className="flex items-center w-full px-3 py-1.5 bg-white 
+                   border border-gray-200 rounded-lg shadow-md 
                    transition-all duration-300 ease-in-out
-                   focus-within:border-primary-darkest focus-within:ring-4 focus-within:ring-blue-100"
+                   focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100"
           >
             {/* Icon tìm kiếm màu xanh nằm bên trái */}
-            <Search className="h-5 w-5 text-primary-darkest mr-3 flex-shrink-0" />
+            <Search className="h-4 w-4 text-primary-darkest mr-2 flex-shrink-0" />
 
             {/* Input field, chiếm hết không gian còn lại */}
             <input
@@ -198,7 +198,7 @@ function BmSourceList() {
               }}
               // Input không có border và outline riêng, để container quản lý style
               className="w-full text-gray-800 placeholder-gray-500 bg-transparent 
-                     text-base focus:outline-none"
+                     text-sm focus:outline-none"
             />
           </div>
           {/* <button
@@ -214,10 +214,10 @@ function BmSourceList() {
         </button> */}
         </div>
         <button
-          className="  px-5 py-2 rounded-xl font-semibold text-md transition bg-primary-dark text-white hover:bg-primary-darkest cursor-pointer"
+          className="px-3 py-1.5 rounded-lg font-semibold text-sm transition bg-primary-dark text-white hover:bg-primary-darkest cursor-pointer"
           onClick={openCreateModal}
         >
-                <Plus className="h-5 w-5 inline-block mr-2" />
+                <Plus className="h-4 w-4 inline-block mr-1.5" />
           Tạo mới
         </button>
       </div>
@@ -225,26 +225,26 @@ function BmSourceList() {
       {loading ? (
         <TableSkeleton />
       ) : (
-        <div className="overflow-x-auto shadow-lg rounded-xl">
+        <div className="overflow-x-auto shadow-md rounded-lg">
           <table className="w-full divide-y divide-gray-200">
             <thead className="bg-white">
               <tr>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-md font-medium text-gray-900 uppercase tracking-wider w-1/12 text-primary-darkest"
+                  className="px-3 py-2 text-left text-xs font-medium text-gray-900 uppercase tracking-wider w-1/12 text-primary-darkest"
                 >
                   #
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-md font-medium text-gray-900  tracking-wider w-1/4 text-primary-darkest"
+                  className="px-3 py-2 text-left text-xs font-medium text-gray-900  tracking-wider w-1/4 text-primary-darkest"
                 >
-                  Tên BM
+                  Tên Nguồn
                 </th>
 
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-md font-medium text-gray-900  tracking-wider w-1/12 text-primary-darkest"
+                  className="px-3 py-2 text-left text-xs font-medium text-gray-900  tracking-wider w-1/12 text-primary-darkest"
                 >
                   Tùy chọn
                 </th>
@@ -253,31 +253,31 @@ function BmSourceList() {
             <tbody className="bg-white divide-y divide-gray-200">
                             {bmSources.length === 0 && (
                 <tr>
-                   <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                   <td colSpan="6" className="px-3 py-3 text-center text-gray-500 text-sm">
                       Không tìm thấy dữ liệu
                    </td>
                 </tr>
               )}
               {bmSources.map((bmSource, index) => (
                 <tr key={bmSource.id} className="">
-                  <td className="w-1/12 px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="w-1/12 px-3 py-2 whitespace-nowrap text-xs text-gray-500">
                     {(pageNumber - 1) * pageSize + index + 1}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
                     {bmSource.sourceName}
                   </td>
-                  <td className="w-1/12 px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="w-1/12 px-3 py-2 whitespace-nowrap text-xs text-gray-500">
                     <button
                       className=" "
                       onClick={() => openEditModal(bmSource.id)}
                     >
-                      <SquarePen className="h-5 w-5 text-warning mr-3 ml-2 flex-shrink-0 cursor-pointer" />
+                      <SquarePen className="h-4 w-4 text-warning mr-2 ml-1.5 flex-shrink-0 cursor-pointer" />
                     </button>
                     <button
                       className=""
                       onClick={() => handleOpenDelete(bmSource)}
                     >
-                      <Trash className="h-5 w-5 text-error mr-3 flex-shrink-0 cursor-pointer" />
+                      <Trash className="h-4 w-4 text-error mr-2 flex-shrink-0 cursor-pointer" />
                     </button>
                   </td>
                 </tr>
@@ -286,15 +286,15 @@ function BmSourceList() {
 
             <tfoot className="bg-white">
               <tr>
-                <td colSpan="4" className="px-6 py-3">
-                  <div className="flex justify-end items-center text-sm">
+                <td colSpan="4" className="px-3 py-2">
+                  <div className="flex justify-end items-center text-xs">
                     {/* Component chọn số lượng hàng trên mỗi trang */}
-                    <div className="flex items-center gap-2 mr-6">
+                    <div className="flex items-center gap-1.5 mr-4">
                       <span className="text-gray-700">Hiển thị:</span>
                       <select
                         value={pageSize}
                         onChange={handlePageSizeChange}
-                        className="border border-gray-300 rounded px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="border border-gray-300 rounded px-1.5 py-0.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
                       >
                         <option value={5}>5</option>
                         <option value={10}>10</option>
@@ -303,26 +303,26 @@ function BmSourceList() {
                     </div>
 
                     {/* Thông tin số lượng hàng đang hiển thị (Đã sử dụng totalItems) */}
-                    <span className="text-gray-700 mr-6">
+                    <span className="text-gray-700 mr-4">
                       {(pageNumber - 1) * pageSize + 1}–
                       {Math.min(pageNumber * pageSize, totalItems)} trên{" "}
                       {totalItems}
                     </span>
 
                     {/* Các nút điều hướng (Prev/Next) */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                       {/* Nút Previous */}
                       <button
                         onClick={handlePrev}
                         disabled={pageNumber === 1}
-                        className={`p-2 rounded-full transition duration-150 ${
+                        className={`p-1.5 rounded-full transition duration-150 ${
                           pageNumber === 1
                             ? "text-gray-400 cursor-not-allowed"
                             : "text-gray-700 hover:bg-gray-100"
                         }`}
                       >
                         <svg
-                          className="w-5 h-5"
+                          className="w-4 h-4"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -340,15 +340,15 @@ function BmSourceList() {
                       {/* Nút Next (Điều kiện disabled được làm gọn hơn một chút) */}
                       <button
                         onClick={handleNext}
-                        disabled={pageNumber === totalPages} // SỬ DỤNG totalPages
-                        className={`p-2 rounded-full transition duration-150 ${
+                        disabled={pageNumber === totalPages} // Sử DỤNG totalPages
+                        className={`p-1.5 rounded-full transition duration-150 ${
                           pageNumber === totalPages
                             ? "text-gray-400 cursor-not-allowed"
                             : "text-gray-700 hover:bg-gray-100"
                         }`}
                       >
                         <svg
-                          className="w-5 h-5"
+                          className="w-4 h-4"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"

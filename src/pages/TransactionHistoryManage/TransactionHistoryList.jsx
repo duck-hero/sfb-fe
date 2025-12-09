@@ -954,7 +954,7 @@ const TransactionHistoryList = () => {
 
 return (
     <div className="p-6 bg-gray-50 min-h-screen font-sans">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">Lịch sử giao dịch</h1>
+      <h1 className="text-lg font-bold mb-3">Lịch sử giao dịch</h1>
 
       {/* --- DATE FILTER SECTION (Riêng biệt) --- */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-4">
@@ -1272,7 +1272,7 @@ return (
                 <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{width: '60px'}}>Mã GD</th>
                 <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '45px'}}>Loại</th>
                 <th className="px-2 py-2 text-right text-[10px] font-bold text-gray-600 uppercase" style={{width: '90px'}}>Số tiền</th>
-                <th className="px-2 py-2 text-right text-[10px] font-bold text-gray-600 uppercase" style={{width: '80px'}}>Tiền FB</th>
+                <th className="px-2 py-2 text-right text-[10px] font-bold text-gray-600 uppercase" style={{width: '90px'}}>Tiền FB</th>
                 <th className="px-2 py-2 text-right text-[10px] font-bold text-gray-600 uppercase" style={{width: '90px'}}>Số dư</th>
                 <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{minWidth: '140px'}}>Nội dung</th>
                 
@@ -1389,7 +1389,12 @@ return (
 
                       {/* Số tiền FB */}
                       <td className="px-2 py-2 text-[11px] text-right text-gray-600 align-middle">
-                         {item.amountFb ? formatCurrency(item.amountFb) : '-'}
+                         {item.amountFb ? (
+                             <>
+                                {formatCurrency(item.amountFb)}
+                                {item.isAmountMismatched === true && <span className="text-red-600 font-bold" title="Bị lệch tiền">⚠️</span>}
+                             </>
+                         ) : '-'}
                       </td>
 
                       {/* Số dư */}

@@ -340,14 +340,14 @@ function BankCardList() {
   const renderStatus = (status) => {
     if (status === "Active") {
       return (
-        <span className="inline-block px-3 py-1 text-sm font-medium text-green-600 border border-green-600 rounded-lg bg-white whitespace-nowrap">
+        <span className="inline-block px-2 py-0.5 text-xs font-medium text-green-600 border border-green-600 rounded-md bg-white whitespace-nowrap">
           Hoạt động
         </span>
       );
     } else {
       // Giả sử các trạng thái khác (Inactive, Blocked...) là Danger
       return (
-        <span className="inline-block px-3 py-1 text-sm font-medium text-red-600 border border-red-600 rounded-lg bg-white whitespace-nowrap">
+        <span className="inline-block px-2 py-0.5 text-xs font-medium text-red-600 border border-red-600 rounded-md bg-white whitespace-nowrap">
           Vô hiệu
         </span>
       );
@@ -355,40 +355,40 @@ function BankCardList() {
   };
 
   return (
-    <div className="px-6">
-      <h1 className="text-2xl font-bold mb-4">Danh sách thẻ ngân hàng</h1>
+    <div className="px-4">
+      <h1 className="text-lg font-bold mb-3">Danh sách thẻ ngân hàng</h1>
 
       {/* --- SEARCH BAR SECTION --- */}
-      <div className="flex justify-between items-center pb-3 border-b border-gray-200">
-        <div className="flex items-center w-full max-w-4xl gap-4">
+      <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+        <div className="flex items-center w-full max-w-4xl gap-3">
           {/* Input: Card Number */}
-          <div className="flex-1 flex items-center px-5 py-2 bg-white border border-gray-200 rounded-xl shadow-lg transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-4 focus-within:ring-blue-100">
+          <div className="flex-1 flex items-center px-3 py-1.5 bg-white border border-gray-200 rounded-lg shadow-md transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100">
             <input
               type="text"
               placeholder="Tìm theo số thẻ..."
               value={searchCardNumber}
               onChange={(e) => setSearchCardNumber(e.target.value)}
-              className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-base focus:outline-none"
+              className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-sm focus:outline-none"
             />
           </div>
 
           {/* Input: Holder Name */}
-          <div className="flex-1 flex items-center px-5 py-2 bg-white border border-gray-200 rounded-xl shadow-lg transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-4 focus-within:ring-blue-100">
+          <div className="flex-1 flex items-center px-3 py-1.5 bg-white border border-gray-200 rounded-lg shadow-md transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100">
             <input
               type="text"
               placeholder="Tìm theo tên chủ thẻ..."
               value={searchHolderName}
               onChange={(e) => setSearchHolderName(e.target.value)}
-              className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-base focus:outline-none"
+              className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-sm focus:outline-none"
             />
           </div>
 
           {/* Select: Assigned User */}
-          <div className="flex-1 flex items-center px-5 py-2 bg-white border border-gray-200 rounded-xl shadow-lg transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-4 focus-within:ring-blue-100">
+          <div className="flex-1 flex items-center px-3 py-1.5 bg-white border border-gray-200 rounded-lg shadow-md transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100">
             <select
               value={searchAssignedTo}
               onChange={(e) => setSearchAssignedTo(e.target.value)}
-              className="w-full text-gray-800 placeholder-primary-darkest bg-transparent text-base focus:outline-none"
+              className="w-full text-gray-800 placeholder-primary-darkest bg-transparent text-sm focus:outline-none"
             >
               <option value="">-- Vận hành --</option>
               {userList.map((u) => (
@@ -402,221 +402,204 @@ function BankCardList() {
           {/* Button: Search */}
           <button
             onClick={handleSearch}
-            className="px-5 py-2 rounded-xl font-semibold text-md transition bg-primary-dark text-white hover:bg-primary-darkest cursor-pointer whitespace-nowrap flex items-center justify-center"
+            className="px-3 py-1.5 rounded-lg font-semibold text-sm transition bg-primary-dark text-white hover:bg-primary-darkest cursor-pointer whitespace-nowrap flex items-center justify-center"
           >
-            <Search className="h-5 w-5" />
+            <Search className="h-4 w-4" />
           </button>
         </div>
 
         {/* Button: Create New */}
         <button
-          className="px-5 py-2 rounded-xl font-semibold text-md transition bg-primary-dark text-white hover:bg-primary-darkest cursor-pointer"
+          className="px-3 py-1.5 rounded-lg font-semibold text-sm transition bg-primary-dark text-white hover:bg-primary-darkest cursor-pointer"
           onClick={openCreateModal}
         >
-          <Plus className="h-5 w-5 inline-block mr-2" /> Tạo mới
+          <Plus className="h-4 w-4 inline-block mr-1.5" /> Tạo mới
         </button>
       </div>
 
-      {/* --- TABLE SECTION --- */}
+
+      {/* --- CARD-STYLED LIST SECTION --- */}
       {loading ? (
         <TableSkeleton />
       ) : (
-        <div className="overflow-x-auto shadow-lg rounded-xl ">
-          <table className="w-full divide-y divide-gray-200">
-            <thead className="bg-white">
-              <tr>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-md font-medium text-gray-900 uppercase tracking-wider text-primary-darkest"
-                >
-                  #
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-md font-medium text-gray-900  tracking-wider text-primary-darkest"
-                >
-                  Số thẻ
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-md font-medium text-gray-900  tracking-wider text-primary-darkest"
-                >
-                  Chủ thẻ
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-md font-medium text-gray-900  tracking-wider text-primary-darkest"
-                >
-                  Ngày hết hạn
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-md font-medium text-gray-900  tracking-wider text-primary-darkest"
-                >
-                  Vận hành
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-center text-md font-medium text-gray-900  tracking-wider text-primary-darkest"
-                >
-                  Số lần Add thẻ
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-center text-md font-medium text-gray-900  tracking-wider text-primary-darkest"
-                >
-                  Trạng thái
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-center text-md font-medium text-gray-900  tracking-wider text-primary-darkest"
-                >
-                  Tuỳ chọn
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-                            {bankCards.length === 0 && (
-                <tr>
-                   <td colSpan="12" className="px-6 py-4 text-center text-gray-500">
-                      Không tìm thấy dữ liệu
-                   </td>
-                </tr>
-              )}
-              {bankCards.map((x, index) => (
-                <tr key={x.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {(pageNumber - 1) * pageSize + index + 1}
-                  </td>
-                  <td
-                    className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary-darkest cursor-pointer hover:underline"
-                    onClick={() => openDetailModal(x.id)}
+        <>
+          {/* Cards List */}
+          {bankCards.length === 0 ? (
+            <div className="text-center py-8 bg-white rounded-lg shadow-sm mt-4">
+              <p className="text-gray-500 text-sm">Không tìm thấy dữ liệu</p>
+            </div>
+          ) : (
+            <div className="mt-4 space-y-2">
+              {bankCards.map((card, index) => {
+                return (
+                  <div
+                    key={card.id}
+                    className="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 group cursor-pointer"
+                    onClick={() => openDetailModal(card.id)}
                   >
-                    {x.cardNumber}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
-                    {x.cardHolderName}
-                  </td>
-                  {/* --- CẬP NHẬT NGÀY HẾT HẠN --- */}
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(x.expirationDate)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {x.assignedUserName}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex items-center justify-center">
-                    {x.addTotal}
-                    
-                  </td>
+                    <div className="flex items-center gap-3">
+                      {/* Chip Icon */}
+                      <div className="flex-shrink-0">
+                        <div className="w-8 h-7 bg-gradient-to-br from-yellow-200 to-yellow-400 rounded flex items-center justify-center shadow-sm">
+                          <div className="w-5 h-4 border border-yellow-600 rounded-sm"></div>
+                        </div>
+                      </div>
 
-                  {/* --- CẬP NHẬT TRẠNG THÁI (BADGE) --- */}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center justify-center">
-                      {renderStatus(x.status)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex justify-center items-center gap-2">
-                    <button onClick={() => openEditModal(x.id)}>
-                      <SquarePen className="h-5 w-5 text-warning cursor-pointer" />
-                    </button>
-                    <button onClick={() => handleOpenDelete(x)}>
-                      <Trash className="h-5 w-5 text-error cursor-pointer" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+                      {/* Card Number */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-mono font-semibold text-gray-800 truncate">
+                          {card.cardNumber ? card.cardNumber.replace(/(\d{4})(?=\d)/g, '$1 ') : '•••• •••• •••• ••••'}
+                        </p>
+                      </div>
 
-            {/* Footer Pagination */}
-            <tfoot className="bg-white">
-              <tr>
-                <td colSpan="8" className="px-6 py-3">
-                  <div className="flex justify-end items-center text-sm">
-                    {/* Select Page Size */}
-                    <div className="flex items-center gap-2 mr-6">
-                      <span className="text-gray-700">Hiển thị:</span>
-                      <select
-                        value={pageSize}
-                        onChange={(e) => {
-                          setPageSize(Number(e.target.value));
-                          setPageNumber(1);
-                        }}
-                        className="border border-gray-300 rounded px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value={10}>10</option>
-                        <option value={20}>20</option>
-                        <option value={30}>30</option>
-                      </select>
-                    </div>
+                      {/* Card Holder */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-500 mb-0.5">Chủ thẻ</p>
+                        <p className="text-sm font-medium text-gray-800 truncate uppercase">
+                          {card.cardHolderName || 'N/A'}
+                        </p>
+                      </div>
 
-                    {/* Show Count */}
-                    <span className="text-gray-700 mr-6">
-                      {(pageNumber - 1) * pageSize + 1}–
-                      {Math.min(pageNumber * pageSize, totalItems)} trên{" "}
-                      {totalItems}
-                    </span>
+                      {/* Expiry Date */}
+                      <div className="w-24">
+                        <p className="text-xs text-gray-500 mb-0.5">Hết hạn</p>
+                        <p className="text-sm font-medium text-gray-700">
+                          {formatDate(card.expirationDate) || 'N/A'}
+                        </p>
+                      </div>
 
-                    {/* Prev/Next Buttons */}
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() =>
-                          pageNumber > 1 && setPageNumber(pageNumber - 1)
-                        }
-                        disabled={pageNumber === 1}
-                        className={`p-2 rounded-full transition duration-150 ${
-                          pageNumber === 1
-                            ? "text-gray-400 cursor-not-allowed"
-                            : "text-gray-700 hover:bg-gray-100"
-                        }`}
-                      >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
+                      {/* Assigned User */}
+                      <div className="w-28">
+                        <p className="text-xs text-gray-500 mb-0.5">Vận hành</p>
+                        <p className="text-sm text-gray-700 truncate">
+                          {card.assignedUserName || 'N/A'}
+                        </p>
+                      </div>
+
+                      {/* Add Total */}
+                      <div className="w-20 text-center">
+                        <p className="text-xs text-gray-500 mb-0.5">Add thẻ</p>
+                        <p className="text-sm font-semibold text-blue-600">
+                          {card.addTotal || 0}
+                        </p>
+                      </div>
+
+                      {/* Status */}
+                      <div className="w-24 text-center">
+                        {renderStatus(card.status)}
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditModal(card.id);
+                          }}
+                          className="p-1.5 bg-white hover:bg-blue-50 rounded shadow-sm transition-colors"
+                          title="Chỉnh sửa"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M15 19l-7-7 7-7"
-                          ></path>
-                        </svg>
-                      </button>
-
-                      <button
-                        onClick={() =>
-                          pageNumber < totalPages &&
-                          setPageNumber(pageNumber + 1)
-                        }
-                        disabled={pageNumber === totalPages}
-                        className={`p-2 rounded-full transition duration-150 ${
-                          pageNumber === totalPages
-                            ? "text-gray-400 cursor-not-allowed"
-                            : "text-gray-700 hover:bg-gray-100"
-                        }`}
-                      >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
+                          <SquarePen className="h-3.5 w-3.5 text-blue-600" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenDelete(card);
+                          }}
+                          className="p-1.5 bg-white hover:bg-red-50 rounded shadow-sm transition-colors"
+                          title="Xóa"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M9 5l7 7-7 7"
-                          ></path>
-                        </svg>
-                      </button>
+                          <Trash className="h-3.5 w-3.5 text-red-600" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Pagination */}
+          <div className="mt-4 bg-white rounded-lg shadow-sm p-3">
+            <div className="flex justify-end items-center text-xs">
+              {/* Select Page Size */}
+              <div className="flex items-center gap-1.5 mr-4">
+                <span className="text-gray-700">Hiển thị:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setPageNumber(1);
+                  }}
+                  className="border border-gray-300 rounded px-1.5 py-0.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={30}>30</option>
+                </select>
+              </div>
+
+              {/* Show Count */}
+              <span className="text-gray-700 mr-4">
+                {(pageNumber - 1) * pageSize + 1}–
+                {Math.min(pageNumber * pageSize, totalItems)} trên {totalItems}
+              </span>
+
+              {/* Prev/Next Buttons */}
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => pageNumber > 1 && setPageNumber(pageNumber - 1)}
+                  disabled={pageNumber === 1}
+                  className={`p-1.5 rounded-full transition duration-150 ${
+                    pageNumber === 1
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M15 19l-7-7 7-7"
+                    ></path>
+                  </svg>
+                </button>
+
+                <button
+                  onClick={() =>
+                    pageNumber < totalPages && setPageNumber(pageNumber + 1)
+                  }
+                  disabled={pageNumber === totalPages}
+                  className={`p-1.5 rounded-full transition duration-150 ${
+                    pageNumber === totalPages
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M9 5l7 7-7 7"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
       )}
 
       {/* --- MODALS --- */}

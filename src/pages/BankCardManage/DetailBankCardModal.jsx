@@ -56,7 +56,7 @@ const ContentSkeleton = () => (
         </div>
     </div>
 
-    {/* 3. NGƯỜI SỞ HỮU */}
+    {/* 3. Vận hành */}
     <div className="border-t pt-4">
         <div className="h-5 w-48 bg-gray-300 rounded-full animate-pulse mb-3"></div>
         <div className="grid grid-cols-2 gap-x-4 gap-y-3">
@@ -184,20 +184,20 @@ export default function DetailBankCardModal({
                       </section>
                       
 
-                      {/* --- 3. THÔNG TIN NGƯỜI SỞ HỮU --- */}
+                      {/* --- 3. THÔNG TIN VẬN HÀNH --- */}
                       <section className="border-t pt-4">
                         <h3 className="text-base font-semibold text-gray-800 mb-3">
-                          Thông tin người phụ trách
+                          Thông tin Vận hành
                         </h3>
                         <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                            {/* Người sở hữu (Tên) */}
+                            {/* Người phụ trách (Tên) */}
                             <DetailField
-                                label="Người sở hữu (Tên)"
+                                label="Người phụ trách (Tên)"
                                 value={cardData?.assignedUserName}
                             />
-                            {/* Người sở hữu (Email) */}
+                            {/* Người phụ trách (Email) */}
                             <DetailField
-                                label="Người sở hữu (Email)"
+                                label="Người phụ trách (Email)"
                                 value={cardData?.assignedUserEmail}
                             />
                         </div>
