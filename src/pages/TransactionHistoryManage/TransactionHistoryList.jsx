@@ -5,7 +5,7 @@ import weekday from "dayjs/plugin/weekday";
 import isoWeek from "dayjs/plugin/isoWeek";
 import utc from "dayjs/plugin/utc";
 import { toast } from "react-toastify";
-import { PlusCircle } from "lucide-react"; 
+import { PlusCircle, SquarePen } from "lucide-react"; 
 
 import bankAccountApi from "../../api/bankAccountApi";
 import transactionHistoryApi from "../../api/transactionHistoryApi";
@@ -16,9 +16,12 @@ import bankCardApi from "../../api/bankCardApi";
 
 import CreateAdsAccountModal from "../AdsAccountManage/CreateAdsAccountModal"; // Adjust path if needed
 import CreateBankCardModal from "../BankCardManage/CreateBankCardModal"; // Adjust path if needed
+
 import AddCardModal from "./AddCardModal";
+import EditTransactionModal from "./EditTransactionModal";
 import AddCardApi from "../../api/AddCardApi";
 import SecurityHelper from "../../utils/crypto";
+
 
 // --- CẤU HÌNH DAYJS ---
 dayjs.extend(weekday);
@@ -265,6 +268,11 @@ const TransactionHistoryList = () => {
   // Add Card Modal State
   const [addCardModalOpen, setAddCardModalOpen] = useState(false);
   const [selectedTransactionForAddCard, setSelectedTransactionForAddCard] = useState(null);
+
+  // Edit Transaction Modal State
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({});
+  const [isEditLoading, setIsEditLoading] = useState(false); // If we need to fetch details, but here we likely use row data
 
   // Forms for new modals
   const [createAdsFormData, setCreateAdsFormData] = useState({
@@ -810,6 +818,41 @@ const TransactionHistoryList = () => {
     } catch (error) {
         console.error("Lỗi tạo thẻ:", error);
         toast.error("Tạo thất bại");
+    } finally {
+        setSaving(false);
+    }
+  };
+
+  // --- EDIT TRANSACTION HANDLERS ---
+  const handleOpenEditModal = (item) => {
+    setEditFormData({
+        id: item.id,
+        fbTransactionCode: item.fbTransactionCode || "",
+        fbAccountId: item.fbAccountId || "",
+        amountFb: item.amountFb || "",
+        cardLastDigits: item.cardLastDigits || "",
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleSaveEditTransaction = async () => {
+    setSaving(true);
+    try {
+        await transactionHistoryApi.updateTransaction({
+            Id: editFormData.id,
+            FbTransactionCode: editFormData.fbTransactionCode,
+            FbAccountId: editFormData.fbAccountId,
+            AmountFb: editFormData.amountFb || null,
+            CardLastDigits: editFormData.cardLastDigits || null,
+        });
+
+        toast.success("Cập nhật giao dịch thành công");
+        setEditModalOpen(false);
+        // Refresh list
+        fetchTransactions(false); // Refresh current view
+    } catch (err) {
+        console.error(err);
+        toast.error("Cập nhật thất bại");
     } finally {
         setSaving(false);
     }
@@ -1491,16 +1534,33 @@ return (
                          item.adAccountBankCardId == null && 
                          item.isSystemFbAccountExist === true && 
                          item.isSystemCardExist === true && (
+                          <div className="flex justify-center gap-1">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               handleOpenAddCardModal(item);
                             }}
-                            className="px-2 py-1 text-[10px] bg-green-100 text-green-700 rounded hover:bg-green-200 transition-all font-medium"
+                            className="px-2 py-1 text-[10px] bg-green-100 text-green-700 rounded hover:bg-green-200 transition-all font-medium whitespace-nowrap"
                             title="Thêm thẻ vào giao dịch"
                           >
                             Add thẻ
                           </button>
+                          </div>
+                        )}
+                        {/* Edit Button - Visible only for FB Transactions */}
+                        {item.isFbTransaction === true && (
+                            <div className="flex justify-center gap-1 mt-1">
+                                <button 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenEditModal(item);
+                                    }}
+                                    title="Chỉnh sửa giao dịch"
+                                    className="p-1 hover:bg-gray-100 rounded text-blue-600"
+                                >
+                                    <SquarePen size={14} />
+                                </button>
+                            </div>
                         )}
                       </td>
                     </tr>
@@ -1526,6 +1586,21 @@ return (
             </div>
         )}
       </div>
+
+      {/* Edit Transaction Modal */}
+      <EditTransactionModal 
+        open={editModalOpen}
+        loading={isEditLoading}
+        saving={saving}
+        formData={editFormData}
+        onChange={(e) => {
+            const { name, value } = e.target;
+            setEditFormData(prev => ({ ...prev, [name]: value }));
+        }}
+        onClose={() => setEditModalOpen(false)}
+        onSave={handleSaveEditTransaction}
+        // Optional: pass lists if needed for select inputs
+      />
 
       {/* Modals */}
       {scanModalOpen && <ScanTransactionModal />}

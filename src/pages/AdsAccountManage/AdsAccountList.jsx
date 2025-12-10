@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify"; // Giả sử bạn dùng thư viện này
-import { Search, Plus, SquarePen, Trash } from "lucide-react"; // Hoặc icon từ thư viện bạn đang dùng
+import { Search, Plus, SquarePen, Trash, RefreshCcw, DollarSign } from "lucide-react"; // Hoặc icon từ thư viện bạn đang dùng
 import DeleteConfirmModal from "../../components/Modal/DeleteConfirmModal";
 
 // Import API
@@ -295,7 +295,7 @@ const handleEditSave = async (dataToSend) => {
       case 'NEW':
         return <span className="text-green-600 font-medium">Mới</span>;
       case 'OUT':
-        return <span className="text-orange-600 font-medium">Đã sử dụng</span>;
+        return <span className="text-orange-600 font-medium">Đã đá</span>;
       default:
         return <span className="text-gray-600">{status}</span>;
     }
@@ -380,10 +380,29 @@ const handleEditSave = async (dataToSend) => {
                   #
                 </th>
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-900  tracking-wider text-primary-darkest">
-                  Tên tài khoản
+                  ID tài khoản FB
                 </th>
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-900  tracking-wider text-primary-darkest">
-                  ID tài khoản FB
+                  Tên tài khoản
+                </th>
+                <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-900  tracking-wider text-primary-darkest">
+                  <div className="flex items-center justify-center gap-1">
+                    Dư nợ hiện tại
+                    <a 
+                      href="https://acb.duckhero.store/scan-account?token=999999999"
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      title="Quét toàn bộ"
+                    >
+                      <RefreshCcw className="h-4 w-4 text-blue-600 cursor-pointer hover:text-blue-800" />
+                    </a>
+                  </div>
+                </th>
+                <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-900  tracking-wider text-primary-darkest">
+                  Đơn vị tiền tệ
+                </th>
+                <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-900  tracking-wider text-primary-darkest">
+                  Thời gian cập nhật dư nợ
                 </th>
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-900  tracking-wider text-primary-darkest">
                 BM
@@ -395,9 +414,6 @@ const handleEditSave = async (dataToSend) => {
                   Lịch sử Add thẻ
                 </th>
                 <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-900  tracking-wider text-primary-darkest">
-                  Ngày tạo
-                </th>
-                <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-900  tracking-wider text-primary-darkest">
                   Tuỳ chọn
                 </th>
               </tr>
@@ -405,23 +421,50 @@ const handleEditSave = async (dataToSend) => {
             <tbody className="bg-white divide-y divide-gray-200">
               {adsAccounts.length === 0 && (
                 <tr>
-                   <td colSpan="8" className="px-3 py-3 text-center text-gray-500 text-sm">
+                   <td colSpan="10" className="px-3 py-3 text-center text-gray-500 text-sm">
                       Không tìm thấy dữ liệu
                    </td>
                 </tr>
               )}
               {adsAccounts.map((x, index) => (
                 <tr key={x.id}>
-                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
+                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-700">
                     {(pageNumber - 1) * pageSize + index + 1}
                   </td>
-                  <td className="px-3 py-2 whitespace-nowrap font-medium text-sm">
-                    {x.adAccountName}
-                  </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500 font-sm">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm font-bold text-gray-900">
                     {x.adAccountIdNumber}
                   </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 max-w-[200px] truncate" title={x.adAccountName}>
+                    {x.adAccountName}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-700">
+                    <div className="flex items-center justify-center gap-2 group">
+                       <span className="cursor-default">{x.currentDebt ? Number(x.currentDebt).toLocaleString('vi-VN') : 0}</span>
+                       <a 
+                          href={`https://acb.duckhero.store/scan-account?token=999999999&id=${x.id}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          title="Quét dư nợ tài khoản"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                       >
+                          <RefreshCcw className="h-4 w-4 text-blue-600 cursor-pointer" />
+                       </a>
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-700">
+                    <div className="flex items-center justify-center gap-1 font-medium">
+                      {x.currencyCode}
+                      {x.currencyCode === 'USD' && (
+                         <DollarSign className="h-4 w-4 text-yellow-600" />
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-xs text-blue-600">
+                    <div className="text-center">
+                      {formatDate(x.debtUpdatedAt)}
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-700">
                     {/* Hiển thị tên BM, nếu API trả về bmName thì dùng, không thì check logic */}
                     {x.bmAccountname}
                   </td>
@@ -459,11 +502,6 @@ const handleEditSave = async (dataToSend) => {
                       </div>
                     </div>
                   </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
-                    <div className="text-center">
-                      {formatDate(x.created)}
-                    </div>
-                  </td>
                   <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500 flex justify-center items-center gap-1.5">
                     <button onClick={() => openEditModal(x.id)} title="Chỉnh sửa">
                       <SquarePen className="h-4 w-4 text-warning cursor-pointer" />
@@ -479,7 +517,7 @@ const handleEditSave = async (dataToSend) => {
             {/* Footer Pagination */}
             <tfoot className="bg-white">
               <tr>
-                <td colSpan="8" className="px-3 py-2">
+                <td colSpan="10" className="px-3 py-2">
                   <div className="flex justify-end items-center text-xs">
                     {/* Select Page Size */}
                     <div className="flex items-center gap-1.5 mr-4">

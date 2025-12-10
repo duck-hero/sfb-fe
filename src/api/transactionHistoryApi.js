@@ -169,6 +169,19 @@ getTransactionHistoryList: async (
     }
   },
 
+  // Cập nhật giao dịch
+  updateTransaction: async (data) => {
+    try {
+      const response = await axiosInstance.put(
+        `${api}/TransactionHistory/UpdateTransaction`,
+        data
+      );
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
 };
 
 export default transactionHistoryApi;

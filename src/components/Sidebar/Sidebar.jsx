@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import sfbLogo from "../../assets/sfb-logo.png";
-import { LayoutDashboard, Users, FolderCog, History, ChevronLeft, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Users, Landmark, History, ChevronLeft, ChevronRight } from "lucide-react";
 
 const Sidebar = ({ onToggle, isCollapsed }) => {
   const { pathname } = useLocation();
@@ -44,7 +44,7 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
           }`}
           title={isCollapsed ? "Ngân hàng" : ""}
         >
-          <FolderCog size={20} className="flex-shrink-0" />
+          <Landmark size={20} className="flex-shrink-0" />
           {!isCollapsed && <span className="truncate">Ngân hàng</span>}
         </Link>
 
