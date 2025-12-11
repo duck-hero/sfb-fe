@@ -46,6 +46,7 @@ import BmAccountList from "../pages/BmAccountManage/BmAccountList";
 import BMManage from "../pages/BmManager/BMManage";
 import BankManagePage from "../pages/BankManagePage/BankManagePage";
 import TransactionHistoryList from "../pages/TransactionHistoryManage/TransactionHistoryList";
+import CustomerList from "../pages/CustomerManage/CustomerList";
 
 // 1. Import ProtectedRoute
 
@@ -58,7 +59,7 @@ export default function AppRoutes() {
       */}
       <ToastContainer
         position="top-center"
-        autoClose={500}
+        autoClose={1000}
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick
@@ -92,7 +93,8 @@ export default function AppRoutes() {
             />
             <Route path="bank-card-management" element={<BankCardList />} /> */}
             <Route path="bm-management" element={<BMManage />} />
-                <Route path="transaction-history" element={<TransactionHistoryList />} />
+            <Route path="transaction-history" element={<TransactionHistoryList />} />
+            <Route path="customer-management" element={<CustomerList />} />
           </Route>
 
           {/* 4. Tuyến đường cài đặt /settings cũng cần được bảo vệ */}

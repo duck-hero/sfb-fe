@@ -851,8 +851,7 @@ const TransactionHistoryList = () => {
         // Refresh list
         fetchTransactions(false); // Refresh current view
     } catch (err) {
-        console.error(err);
-        toast.error("Cập nhật thất bại");
+        toast.error(typeof err === "string" ? err : "Cập nhật thất bại");
     } finally {
         setSaving(false);
     }
@@ -1224,7 +1223,7 @@ return (
            </div>
            {/* Is Amount Mismatched */}
            <div>
-             <label className="block text-sm font-medium text-gray-700 mb-1">Lệch đối chiếu?</label>
+             <label className="block text-sm font-medium text-gray-700 mb-1">Đối chiếu GD?</label>
              <select
                className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm"
                value={filters.isAmountMismatched}
@@ -1392,7 +1391,7 @@ return (
                     <tr 
                       key={`${item.id}-${index}`} 
                       ref={isLastElement ? lastElementRef : null}
-                      className="hover:bg-blue-50 transition-colors duration-150"
+                      className="hover:bg-blue-50 transition-colors duration-150 group"
                     >
                       {/* 1. Ngày hiệu lực */}
                       <td className="px-2 py-2 text-[11px] align-top border-r border-gray-200">
@@ -1549,7 +1548,7 @@ return (
                         )}
                         {/* Edit Button - Visible only for FB Transactions */}
                         {item.isFbTransaction === true && (
-                            <div className="flex justify-center gap-1 mt-1">
+                            <div className="flex justify-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button 
                                     onClick={(e) => {
                                         e.stopPropagation();

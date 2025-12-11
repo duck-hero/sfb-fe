@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import sfbLogo from "../../assets/sfb-logo.png";
-import { LayoutDashboard, Users, Landmark, History, ChevronLeft, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Mountain, Landmark, History, ChevronLeft, ChevronRight, UsersRound } from "lucide-react";
 
 const Sidebar = ({ onToggle, isCollapsed }) => {
   const { pathname } = useLocation();
@@ -71,7 +71,7 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
           }`}
           title={isCollapsed ? "Quản lý FB" : ""}
         >
-          <Users size={20} className="flex-shrink-0" />
+          <Mountain size={20} className="flex-shrink-0" />
           {!isCollapsed && <span className="truncate">Quản lý FB</span>}
         </Link>
         <Link
@@ -83,6 +83,17 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
         >
           <History size={20} className="flex-shrink-0" />
           {!isCollapsed && <span className="truncate">Lịch sử giao dịch</span>}
+        </Link>
+        
+        <Link
+          to="/customer-management"
+          className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${
+            pathname === "/customer-management" && active
+          }`}
+          title={isCollapsed ? "Khách hàng" : ""}
+        >
+          <UsersRound size={20} className="flex-shrink-0" />
+          {!isCollapsed && <span className="truncate">Khách hàng</span>}
         </Link>
       </nav>
     </div>
