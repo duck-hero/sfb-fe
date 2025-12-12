@@ -182,6 +182,62 @@ getTransactionHistoryList: async (
     }
   },
 
+  // Export Excel
+  exportExcel: async (
+    sortOrder,
+    fromEffectiveDate,
+    toEffectiveDate,
+    fbTransactionCode,
+    transactionType,
+    fbAccountId,
+    isFbTransaction,
+    isAmountMismatched,
+    bankAccountId,
+    adAccountId,
+    bankCardId
+  ) => {
+    try {
+      const params = {};
+
+      // Sorting
+      if (sortOrder) params.SortOrder = sortOrder;
+
+      // Date filters
+      if (fromEffectiveDate) params.FromEffectiveDate = fromEffectiveDate;
+      if (toEffectiveDate) params.ToEffectiveDate = toEffectiveDate;
+
+      // FB filters
+      if (fbTransactionCode) params.FbTransactionCode = fbTransactionCode;
+      if (transactionType) params.TransactionType = transactionType;
+      if (fbAccountId) params.FbAccountId = fbAccountId;
+
+      // Boolean filters
+      if (isFbTransaction !== undefined) params.IsFbTransaction = isFbTransaction;
+      if (isAmountMismatched !== undefined) params.IsAmountMismatched = isAmountMismatched;
+
+      // Bank Account
+      if (bankAccountId) params.BankAccountId = bankAccountId;
+
+      // Ad Account ID
+      if (adAccountId) params.AdAccountId = adAccountId;
+      
+      // Bank Card ID
+      if (bankCardId) params.BankCardId = bankCardId;
+
+      const response = await axiosInstance.get(
+        `${api}/TransactionHistory/ExportExcel`,
+        { 
+          params,
+          responseType: 'blob' // Important for file download
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
 };
 
 export default transactionHistoryApi;
