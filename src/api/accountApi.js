@@ -76,22 +76,59 @@ Disable2FA: async (password) => {
   }
 },
 
-getUserList: async (pageNumber = 1, pageSize = 10) => {
-  try {
-    const response = await axiosInstance.get(`${api}/Account/GetPagedListUser`, {
-      params: {
-        PageNumber: pageNumber,
-        PageSize: pageSize,
-      },
-    });
+  getUserList: async (pageNumber = 1, pageSize = 10) => {
+    try {
+      const response = await axiosInstance.get(`${api}/Account/GetPagedListUser`, {
+        params: {
+          PageNumber: pageNumber,
+          PageSize: pageSize,
+        },
+      });
 
-    return response.data;
-  } catch (error) {
-    throw error.response ? error.response.data : error.message;
-  }
-},
+      return response.data;
+    } catch (error) {
+      throw error.response ? error.response.data : error.message;
+    }
+  },
 
+  createUser: async (data) => {
+    try {
+      const response = await axiosInstance.post(`${api}/Account/CreateUser`, data);
+      return response.data;
+    } catch (error) {
+      throw error.response ? error.response.data : error.message;
+    }
+  },
 
+  updateUser: async (data) => {
+    try {
+      const response = await axiosInstance.put(`${api}/Account/UpdateUser`, data);
+      return response.data;
+    } catch (error) {
+      throw error.response ? error.response.data : error.message;
+    }
+  },
+
+  deleteUser: async (id) => {
+    try {
+      // Assuming DELETE method passing ID, or POST if required by backend specific design
+      // Standard REST would be DELETE /Account/DeleteUser?id=... or /Account/DeleteUser/{id}
+      // Based on typical patterns here, likely query param or body. 
+      // Using query param for DeleteUser?id=... pattern which matches GetPagedListUser style slightly
+      const response = await axiosInstance.delete(`${api}/Account/DeleteUser`, {
+        params: { id },
+      });
+      return response.data;
+    } catch (error) {
+        // Fallback to POST if DELETE is not allowed or implemented differently
+        try {
+             const response = await axiosInstance.post(`${api}/Account/DeleteUser?id=${id}`);
+             return response.data;
+        } catch (innerError) {
+             throw error.response ? error.response.data : error.message;
+        }
+    }
+  },
 };
 
 export default accountApi;

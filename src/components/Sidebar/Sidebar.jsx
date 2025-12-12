@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import sfbLogo from "../../assets/sfb-logo.png";
-import { LayoutDashboard, Mountain, Landmark, History, ChevronLeft, ChevronRight, UsersRound } from "lucide-react";
+import { LayoutDashboard, Mountain, Landmark, History, ChevronLeft, ChevronRight, UsersRound, Shield } from "lucide-react";
 
 const Sidebar = ({ onToggle, isCollapsed }) => {
   const { pathname } = useLocation();
@@ -94,6 +94,17 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
         >
           <UsersRound size={20} className="flex-shrink-0" />
           {!isCollapsed && <span className="truncate">Khách hàng</span>}
+        </Link>
+        
+        <Link
+          to="/user-management"
+          className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${
+            pathname === "/user-management" && active
+          }`}
+          title={isCollapsed ? "Phân quyền" : ""}
+        >
+          <Shield size={20} className="flex-shrink-0" />
+          {!isCollapsed && <span className="truncate">Phân quyền</span>}
         </Link>
       </nav>
     </div>
