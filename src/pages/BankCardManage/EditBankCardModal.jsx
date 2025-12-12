@@ -1,5 +1,5 @@
 import React, { useEffect, useState, Fragment } from "react";
-import { Dialog, Transition } from "@headlessui/react";
+import { Dialog, Transition, Switch } from "@headlessui/react";
 import { ClipLoader } from "react-spinners";
 import SecurityHelper from "../../utils/crypto";
 
@@ -82,6 +82,13 @@ const handleCardNumberFocus = () => {
   }
 };
 
+
+  const isCardActive = formData.status === 'Active';
+
+  const handleStatusChange = (isActive) => {
+    onChange({ target: { name: "status", value: isActive ? 'Active' : 'Inactive' } });
+  };
+
   // Handle Save
 // const handleSaveClick = () => {
 //     // 1. Tạo bản sao của formData hiện tại
@@ -100,7 +107,8 @@ const handleCardNumberFocus = () => {
 //     // 4. Gọi onSave và truyền payload đã xử lý sang cha
 //     onSave(payload); 
 //   };
-const handleSaveClick = async () => {
+
+  const handleSaveClick = async () => {
   const payload = { ...formData };
 
   // Nếu CVV KHÔNG được chỉnh sửa → không update CVV
@@ -287,7 +295,7 @@ const handleSaveClick = async () => {
                       {/* --- ASSIGNED USER SELECT --- */}
                       <div>
                         <label className="block text-sm font-medium mb-1">
-                          Người sở hữu
+                          Vận hành
                         </label>
                         <select
                           name="assignedToUserId"
@@ -303,6 +311,38 @@ const handleSaveClick = async () => {
                             </option>
                           ))}
                         </select>
+
+                      </div>
+
+                      {/* Switch: Status */}
+                      <div className="flex items-center justify-between pt-2 pb-2">
+                        <label className="block text-sm font-medium">
+                          Trạng thái hoạt động
+                        </label>
+                        <Switch
+                          checked={isCardActive}
+                          onChange={handleStatusChange}
+                          disabled={saving}
+                          className={`${
+                            isCardActive ? "bg-green-600" : "bg-red-600"
+                          } relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-600`}
+                        >
+                          <span
+                            className={`${
+                              isCardActive
+                                ? "translate-x-6"
+                                : "translate-x-1"
+                            } inline-block h-4 w-4 transform rounded-full bg-white transition`}
+                          />
+                        </Switch>
+
+                        <span
+                          className={`text-sm font-semibold w-24 text-right ${
+                            isCardActive ? "text-green-600" : "text-red-600"
+                          }`}
+                        >
+                          {isCardActive ? "Hoạt động" : "Khóa"}
+                        </span>
                       </div>
                     </div>
 

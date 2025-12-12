@@ -10,6 +10,7 @@ import adsAccountApi from "../../api/adsAccountApi";
 import bmAccountApi from "../../api/bmAccountApi";
 import CreateAdsAccountModal from "./CreateAdsAccountModal";
 import EditAdsAccountModal from "./EditAdsAccountModal";
+import DetailAdsAccountModal from "./DetailAdsAccountModal";
 import TableSkeleton from "../../components/Loading/TableSkeleton";
 
 // Import các Modal Create/Edit của bạn (nếu đã tạo)
@@ -58,6 +59,11 @@ function AdsAccountList() {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Detail Modal
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isDetailLoading, setIsDetailLoading] = useState(false);
+  const [detailData, setDetailData] = useState(null);
 
   // Bank card details tooltip
   const [showBankCardTooltip, setShowBankCardTooltip] = useState(false);
@@ -261,6 +267,26 @@ const handleEditSave = async (dataToSend) => {
     }
   };
 
+  // --- 7. DETAIL MODAL ---
+  const openDetailModal = async (id) => {
+    setIsDetailModalOpen(true);
+    setIsDetailLoading(true);
+    setDetailData(null);
+
+    const reqId = ++requestRef.current;
+
+    try {
+      const res = await adsAccountApi.getAdsAccountById(id);
+      if (requestRef.current !== reqId) return;
+
+      setDetailData(res?.data || res);
+    } catch (err) {
+      toast.error("Không thể tải dữ liệu chi tiết tài khoản");
+    } finally {
+      if (requestRef.current === reqId) setIsDetailLoading(false);
+    }
+  };
+
   // --- RENDER HELPERS ---
   const renderLockedStatus = (isLocked) => {
     if (isLocked) {
@@ -408,10 +434,10 @@ const handleEditSave = async (dataToSend) => {
                 BM
                 </th>
                 <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-900  tracking-wider text-primary-darkest">
-                  Trạng thái
+                  Trạng thái tài khoản
                 </th>
                 <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-900  tracking-wider text-primary-darkest">
-                  Lịch sử Add thẻ
+                  Thẻ
                 </th>
                 <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-900  tracking-wider text-primary-darkest">
                   Tuỳ chọn
@@ -427,7 +453,11 @@ const handleEditSave = async (dataToSend) => {
                 </tr>
               )}
               {adsAccounts.map((x, index) => (
-                <tr key={x.id}>
+                <tr 
+                  key={x.id}
+                  onClick={() => openDetailModal(x.id)}
+                  className="cursor-pointer hover:bg-gray-50 transition-colors"
+                >
                   <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-700">
                     {(pageNumber - 1) * pageSize + index + 1}
                   </td>
@@ -475,7 +505,7 @@ const handleEditSave = async (dataToSend) => {
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
                     <div
-                      className="flex flex-col items-center space-y-0.5 cursor-pointer hover:bg-gray-50 rounded p-1.5 transition-colors"
+                      className="flex items-center justify-center cursor-pointer hover:bg-gray-50 rounded p-1.5 transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
                         const rect = e.currentTarget.getBoundingClientRect();
@@ -486,27 +516,32 @@ const handleEditSave = async (dataToSend) => {
                         } else {
                           // Click vào item khác thì mở tooltip cho item đó
                           setTooltipPosition({ x: rect.left, y: rect.bottom + 5 });
-                          setTooltipData(x.adsAccountBankCards || []);
+                          setTooltipData(x.linkedBankCards || []);
                           setShowBankCardTooltip(true);
                           setCurrentTooltipId(x.id);
                         }
                       }}
                     >
-                      <div className="text-center">
-                        <span className="font-medium text-green-600">{x.totalNewAddBankCards || 0}</span>
-                        <span className="text-gray-400 text-xs"> mới</span>
-                      </div>
-                      <div className="text-center">
-                        <span className="font-medium text-blue-600">{x.totalAddBankCards || 0}</span>
-                        <span className="text-gray-400 text-xs"> tổng</span>
-                      </div>
+                      <span className="font-medium text-blue-600">{x.totalAddBankCards || 0}</span>
                     </div>
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500 flex justify-center items-center gap-1.5">
-                    <button onClick={() => openEditModal(x.id)} title="Chỉnh sửa">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditModal(x.id);
+                      }} 
+                      title="Chỉnh sửa"
+                    >
                       <SquarePen className="h-4 w-4 text-warning cursor-pointer" />
                     </button>
-                    <button onClick={() => handleOpenDelete(x)} title="Xóa">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenDelete(x);
+                      }} 
+                      title="Xóa"
+                    >
                       <Trash className="h-4 w-4 text-error cursor-pointer" />
                     </button>
                   </td>
@@ -578,51 +613,6 @@ const handleEditSave = async (dataToSend) => {
         </div>
       )}
 
-      {/* Bank Card Details Tooltip */}
-      {showBankCardTooltip && (
-        <>
-          {/* Overlay to close tooltip when clicking outside */}
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => {
-              setShowBankCardTooltip(false);
-              setCurrentTooltipId(null);
-            }}
-          />
-          <div
-            className="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-w-sm"
-            style={{
-              left: tooltipPosition.x,
-              top: tooltipPosition.y,
-              maxHeight: '300px',
-              overflowY: 'auto'
-            }}
-            onMouseEnter={() => setShowBankCardTooltip(true)}
-            onMouseLeave={() => setShowBankCardTooltip(false)}
-          >
-          <h4 className="font-semibold text-gray-800 mb-3 border-b pb-2">
-            Lịch sử Add thẻ ({tooltipData.length})
-          </h4>
-          {tooltipData.length === 0 ? (
-            <p className="text-gray-500 text-sm">Chưa có thẻ ngân hàng nào</p>
-          ) : (
-            <div className="space-y-2">
-              {tooltipData.map((card, index) => (
-                <div key={card.id || index} className="flex items-center justify-between py-1 border-b border-gray-100 last:border-b-0">
-                  <span className="text-sm text-gray-700 font-mono">
-                    ID: {card.bankCardId}
-                  </span>
-                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100">
-                    {renderBankCardStatus(card.status)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-          </div>
-        </>
-      )}
-
       {/* --- MODALS --- */}
       
       {/* Modal Xóa - Sử dụng lại của bạn */}
@@ -659,6 +649,14 @@ const handleEditSave = async (dataToSend) => {
         onSave={handleEditSave}
         bmList={bmList}
       /> 
+
+      <DetailAdsAccountModal
+        open={isDetailModalOpen}
+        loading={isDetailLoading}
+        accountData={detailData}
+        onClose={() => setIsDetailModalOpen(false)}
+        refreshData={() => openDetailModal(detailData?.id)}
+      />
      
     </div>
   );

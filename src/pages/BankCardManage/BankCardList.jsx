@@ -180,6 +180,7 @@ function BankCardList() {
         expirationDate: data.expirationDate,
         bankAccountId: data.bankAccountId,
         assignedToUserId: data.assignedToUserId,
+        status: data.status,
       });
     } catch (err) {
       toast.error(typeof err === 'string' ? err : "Không tải được dữ liệu thẻ");
@@ -348,7 +349,7 @@ function BankCardList() {
       // Giả sử các trạng thái khác (Inactive, Blocked...) là Danger
       return (
         <span className="inline-block px-2 py-0.5 text-xs font-medium text-red-600 border border-red-600 rounded-md bg-white whitespace-nowrap">
-          Vô hiệu
+          Khóa
         </span>
       );
     }
@@ -437,7 +438,7 @@ function BankCardList() {
                     className="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 group cursor-pointer"
                     onClick={() => openDetailModal(card.id)}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       {/* Chip Icon */}
                       <div className="flex-shrink-0">
                         <div className="w-8 h-7 bg-gradient-to-br from-yellow-200 to-yellow-400 rounded flex items-center justify-center shadow-sm">
@@ -446,14 +447,14 @@ function BankCardList() {
                       </div>
 
                       {/* Card Number */}
-                      <div className="flex-1 min-w-0">
+                      <div className="w-40 min-w-0">
                         <p className="text-sm font-mono font-semibold text-gray-800 truncate">
                           {card.cardNumber ? card.cardNumber.replace(/(\d{4})(?=\d)/g, '$1 ') : '•••• •••• •••• ••••'}
                         </p>
                       </div>
 
                       {/* Card Holder */}
-                      <div className="flex-1 min-w-0">
+                      <div className="w-36 min-w-0">
                         <p className="text-xs text-gray-500 mb-0.5">Chủ thẻ</p>
                         <p className="text-sm font-medium text-gray-800 truncate uppercase">
                           {card.cardHolderName || 'N/A'}
@@ -478,7 +479,7 @@ function BankCardList() {
 
                       {/* Add Total */}
                       <div className="w-20 text-center">
-                        <p className="text-xs text-gray-500 mb-0.5">Add thẻ</p>
+                        <p className="text-xs text-gray-500 mb-0.5">Tài khoản QC</p>
                         <p className="text-sm font-semibold text-blue-600">
                           {card.addTotal || 0}
                         </p>
@@ -490,7 +491,7 @@ function BankCardList() {
                       </div>
 
                       {/* Actions */}
-                      <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-1.5 ml-auto">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -608,6 +609,7 @@ function BankCardList() {
         loading={isDetailLoading}
         cardData={detailData}
         onClose={() => setIsDetailModalOpen(false)}
+        refreshData={() => openDetailModal(detailData?.id)} // Refresh current modal data
       />
 
       <DeleteConfirmModal
