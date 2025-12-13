@@ -1,16 +1,17 @@
 import { Link, useLocation } from "react-router-dom";
 import sfbLogo from "../../assets/sfb-logo.png";
 import { LayoutDashboard, Mountain, Landmark, History, ChevronLeft, ChevronRight, UsersRound, Shield } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const Sidebar = ({ onToggle, isCollapsed }) => {
   const { pathname } = useLocation();
+  const { hasRole } = useAuth();
 
   const active = "bg-blue-100 font-semibold";
 
   return (
-    <div className={`h-screen bg-white shadow-md fixed left-0 top-0 transition-all duration-300 ease-in-out ${
-      isCollapsed ? 'w-20 p-3' : 'w-64 p-5'
-    }`}>
+    <div className={`h-screen bg-white shadow-md fixed left-0 top-0 transition-all duration-300 ease-in-out ${isCollapsed ? 'w-20 p-3' : 'w-64 p-5'
+      }`}>
       {/* Toggle Button - căn giữa chiều cao sidebar */}
       <button
         onClick={onToggle}
@@ -28,9 +29,8 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
       <nav className="space-y-2">
         <Link
           to="/"
-          className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${
-            pathname === "/" && active
-          }`}
+          className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${pathname === "/" && active
+            }`}
           title={isCollapsed ? "Dashboard" : ""}
         >
           <LayoutDashboard size={20} className="flex-shrink-0" />
@@ -39,73 +39,57 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
 
         <Link
           to="/bank-management"
-          className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${
-            pathname === "/bank-management" && active
-          }`}
+          className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${pathname === "/bank-management" && active
+            }`}
           title={isCollapsed ? "Ngân hàng" : ""}
         >
           <Landmark size={20} className="flex-shrink-0" />
           {!isCollapsed && <span className="truncate">Ngân hàng</span>}
         </Link>
-
-        {/* <Link
-          to="/bank-account-management"
-          className={`flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 ${
-            pathname === "/sample" && active
-          }`}
-        >
-          <IdCard /> Quản lý tài khoản ngân hàng
-        </Link>
-        <Link
-          to="/bank-card-management"
-          className={`flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 ${
-            pathname === "/sample" && active
-          }`}
-        >
-          <CreditCard /> Quản lý thẻ ngân hàng
-        </Link> */}
         <Link
           to="/bm-management"
-          className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${
-            pathname === "/bm-management" && active
-          }`}
+          className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${pathname === "/bm-management" && active
+            }`}
           title={isCollapsed ? "Quản lý FB" : ""}
         >
           <Mountain size={20} className="flex-shrink-0" />
           {!isCollapsed && <span className="truncate">Quản lý FB</span>}
         </Link>
-        <Link
-          to="/transaction-history"
-          className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${
-            pathname === "/transaction-history" && active
-          }`}
-          title={isCollapsed ? "Lịch sử giao dịch" : ""}
-        >
-          <History size={20} className="flex-shrink-0" />
-          {!isCollapsed && <span className="truncate">Lịch sử giao dịch</span>}
-        </Link>
-        
+        {/* Chỉ hiển thị nếu có role Admin hoặc Kế Toán */}
+        {(hasRole('Admin') || hasRole('Kế Toán')) && (
+          <Link
+            to="/transaction-history"
+            className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${pathname === "/transaction-history" && active
+              }`}
+            title={isCollapsed ? "Lịch sử giao dịch" : ""}
+          >
+            <History size={20} className="flex-shrink-0" />
+            {!isCollapsed && <span className="truncate">Lịch sử giao dịch</span>}
+          </Link>
+        )}
+
         <Link
           to="/customer-management"
-          className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${
-            pathname === "/customer-management" && active
-          }`}
+          className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${pathname === "/customer-management" && active
+            }`}
           title={isCollapsed ? "Khách hàng" : ""}
         >
           <UsersRound size={20} className="flex-shrink-0" />
           {!isCollapsed && <span className="truncate">Khách hàng</span>}
         </Link>
-        
-        <Link
-          to="/user-management"
-          className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${
-            pathname === "/user-management" && active
-          }`}
-          title={isCollapsed ? "Phân quyền" : ""}
-        >
-          <Shield size={20} className="flex-shrink-0" />
-          {!isCollapsed && <span className="truncate">Phân quyền</span>}
-        </Link>
+
+        {/* Chỉ hiển thị cho Admin */}
+        {(hasRole('Admin')) && (
+          <Link
+            to="/user-management"
+            className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${pathname === "/user-management" && active
+              }`}
+            title={isCollapsed ? "Phân quyền" : ""}
+          >
+            <Shield size={20} className="flex-shrink-0" />
+            {!isCollapsed && <span className="truncate">Phân quyền</span>}
+          </Link>
+        )}
       </nav>
     </div>
   );

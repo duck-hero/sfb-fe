@@ -19,8 +19,8 @@ function DateRangePicker({ onChange }) {
   const [rightMonth, setRightMonth] = useState(dayjs());
 
   // State riêng cho 2 ô input
-  const [inputStart, setInputStart] = useState(''); // hiển thị
-  const [inputEnd, setInputEnd] = useState('');     // hiển thị
+  const [inputStart, setInputStart] = useState(dayjs().format('DD/MM/YYYY')); // hiển thị
+  const [inputEnd, setInputEnd] = useState(dayjs().format('DD/MM/YYYY'));     // hiển thị
 
   const popupRef = useRef(null);
 
@@ -48,6 +48,11 @@ function DateRangePicker({ onChange }) {
     const { start, end, label } = presets[key]();
     updateRange(start, end, label);
     setOpen(false);
+    // Giống logic code cũ: chọn preset là emit luôn để list tự reload
+    onChange?.({
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
+    });
   };
 
   // ==================== CẬP NHẬT RANGE + INPUT ====================

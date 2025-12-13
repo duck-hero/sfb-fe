@@ -45,7 +45,7 @@ import BmSourceList from "../pages/BmSourceManage/BmSourceList";
 import BmAccountList from "../pages/BmAccountManage/BmAccountList";
 import BMManage from "../pages/BmManager/BMManage";
 import BankManagePage from "../pages/BankManagePage/BankManagePage";
-import TransactionHistoryList from "../pages/TransactionHistoryManage/TransactionHistoryList";
+import TransactionManage from "../pages/TransactionManage/TransactionManage";
 import CustomerList from "../pages/CustomerManage/CustomerList";
 import UserList from "../pages/UserManage/UserList";
 
@@ -94,9 +94,15 @@ export default function AppRoutes() {
             />
             <Route path="bank-card-management" element={<BankCardList />} /> */}
             <Route path="bm-management" element={<BMManage />} />
-            <Route path="transaction-history" element={<TransactionHistoryList />} />
+            {/* Chỉ Admin và Kế Toán mới xem được lịch sử giao dịch */}
+            <Route element={<ProtectedRoute allowedRoles={['Admin', 'Kế Toán']} />}>
+              <Route path="transaction-history" element={<TransactionManage />} />
+            </Route>
+            {/* Chỉ Admin mới có quyền truy cập */}
             <Route path="customer-management" element={<CustomerList />} />
-            <Route path="user-management" element={<UserList />} />
+            <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
+              <Route path="user-management" element={<UserList />} />
+            </Route>
           </Route>
 
           {/* 4. Tuyến đường cài đặt /settings cũng cần được bảo vệ */}

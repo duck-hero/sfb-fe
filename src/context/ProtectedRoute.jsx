@@ -1,16 +1,10 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import Forbidden from '../pages/Forbidden';
 
-
-/**
- * Component bảo vệ tuyến đường (Route).
- * Nếu người dùng chưa đăng nhập, chuyển hướng về trang /login.
- * Nếu đã đăng nhập, hiển thị nội dung tuyến đường con.
- * @param {object} props - Các props truyền vào (hiện tại không dùng explicit props).
- */
-export default function ProtectedRoute() {
-  const { user } = useAuth(); // Lấy trạng thái người dùng từ AuthContext
+export default function ProtectedRoute({ allowedRoles }) {
+  const { user, hasRole } = useAuth(); // Lấy trạng thái người dùng từ AuthContext
 
   // Kiểm tra xem người dùng đã đăng nhập chưa
   if (!user) {
@@ -19,7 +13,16 @@ export default function ProtectedRoute() {
     return <Navigate to="/login" replace />;
   }
 
-  // Nếu đã đăng nhập, hiển thị các tuyến đường con (sử dụng Outlet)
+  // Nếu có yêu cầu role, kiểm tra xem user có quyền không
+  if (allowedRoles && allowedRoles.length > 0) {
+    // Nếu không có role nào khớp, hiển thị trang 403
+    const hasPermission = allowedRoles.some((role) => hasRole(role));
+    if (!hasPermission) {
+      return <Forbidden />;
+    }
+  }
+
+  // Nếu đã đăng nhập và đủ quyền, hiển thị các tuyến đường con (sử dụng Outlet)
   // Trong trường hợp này là MainLayout và các Route con bên trong nó.
   return <Outlet />;
 }

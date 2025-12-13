@@ -2,8 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext({
   user: null, // Giá trị mặc định cho user
-  login: () => {},
-  logout: () => {},
+  login: () => { },
+  logout: () => { },
 });
 
 export function useAuth() {
@@ -16,10 +16,10 @@ export const AuthProvider = ({ children }) => {
   // );
 
 
-const storedUser = localStorage.getItem("user");
-const [user, setUser] = useState(
-  storedUser && storedUser !== "null" ? JSON.parse(storedUser) : null
-);
+  const storedUser = localStorage.getItem("user");
+  const [user, setUser] = useState(
+    storedUser && storedUser !== "null" ? JSON.parse(storedUser) : null
+  );
 
 
 
@@ -34,12 +34,12 @@ const [user, setUser] = useState(
   // };
 
   const login = (userData) => {
-  // Tạo bản sao user nhưng bỏ token
-  const { jwToken, refreshToken, ...userWithoutTokens } = userData;
+    // Tạo bản sao user nhưng bỏ token
+    const { jwToken, refreshToken, ...userWithoutTokens } = userData;
 
-  setUser(userWithoutTokens);
-  localStorage.setItem("user", JSON.stringify(userWithoutTokens));
-};
+    setUser(userWithoutTokens);
+    localStorage.setItem("user", JSON.stringify(userWithoutTokens));
+  };
 
 
   const logout = () => {
@@ -49,10 +49,16 @@ const [user, setUser] = useState(
     localStorage.removeItem("refreshToken");
   };
 
+  const hasRole = (roleName) => {
+    if (!user || !user.roles) return false;
+    return user.roles.includes(roleName);
+  };
+
   const value = {
     user,
     login,
     logout,
+    hasRole,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

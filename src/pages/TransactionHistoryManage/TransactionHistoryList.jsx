@@ -1,17 +1,15 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
-import weekday from "dayjs/plugin/weekday";
-import isoWeek from "dayjs/plugin/isoWeek";
 import utc from "dayjs/plugin/utc";
 import { toast } from "react-toastify";
-import { PlusCircle, SquarePen } from "lucide-react"; 
+import { PlusCircle, SquarePen } from "lucide-react";
 
 import bankAccountApi from "../../api/bankAccountApi";
 import transactionHistoryApi from "../../api/transactionHistoryApi";
 import bmAccountApi from "../../api/bmAccountApi";
 import accountApi from "../../api/accountApi";
-import adsAccountApi from "../../api/adsAccountApi"; 
+import adsAccountApi from "../../api/adsAccountApi";
 import bankCardApi from "../../api/bankCardApi";
 
 import CreateAdsAccountModal from "../AdsAccountManage/CreateAdsAccountModal"; // Adjust path if needed
@@ -22,209 +20,25 @@ import EditTransactionModal from "./EditTransactionModal";
 import AddCardApi from "../../api/AddCardApi";
 import SecurityHelper from "../../utils/crypto";
 
+import DateRangePicker from "../../components/DateFilter/DateRangePicker";
+import DateCell from "../../components/DateFilter/DateCell";
 
 // --- CẤU HÌNH DAYJS ---
-dayjs.extend(weekday);
-dayjs.extend(isoWeek);
 dayjs.extend(utc);
 dayjs.locale("vi");
-
-// =============================================================================
-// PHẦN 1: COMPONENT DATE RANGE PICKER (Code của bạn)
-// =============================================================================
-function DateRangePicker({ onChange }) {
-  const [open, setOpen] = useState(false);
-  const [range, setRange] = useState({
-    start: dayjs().startOf("day"),
-    end: dayjs().endOf("day"),
-  });
-  const [preset, setPreset] = useState("Hôm nay");
-  const [leftMonth, setLeftMonth] = useState(dayjs());
-  const [rightMonth, setRightMonth] = useState(dayjs());
-
-  const [inputStart, setInputStart] = useState(dayjs().format("DD/MM/YYYY"));
-  const [inputEnd, setInputEnd] = useState(dayjs().format("DD/MM/YYYY"));
-
-  const popupRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (popupRef.current && !popupRef.current.contains(e.target)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const presets = {
-    "Hôm nay": () => ({ start: dayjs().startOf("day"), end: dayjs().endOf("day"), label: "Hôm nay" }),
-    "Hôm qua": () => ({ start: dayjs().subtract(1, "day").startOf("day"), end: dayjs().subtract(1, "day").endOf("day"), label: "Hôm qua" }),
-    "Tuần này": () => ({ start: dayjs().startOf("isoWeek"), end: dayjs().endOf("isoWeek"), label: "Tuần này" }),
-    "Tuần trước": () => ({ start: dayjs().subtract(1, "week").startOf("isoWeek"), end: dayjs().subtract(1, "week").endOf("isoWeek"), label: "Tuần trước" }),
-    "Tháng này": () => ({ start: dayjs().startOf("month"), end: dayjs().endOf("month"), label: "Tháng này" }),
-    "Tháng trước": () => ({ start: dayjs().subtract(1, "month").startOf("month"), end: dayjs().subtract(1, "month").endOf("month"), label: "Tháng trước" }),
-  };
-
-  const applyPreset = (key) => {
-    const { start, end, label } = presets[key]();
-    updateRange(start, end, label);
-    setOpen(false);
-    emitValue(start, end);
-  };
-
-  const updateRange = (start, end, newPreset = "") => {
-    setRange({ start, end });
-    setPreset(newPreset);
-    setInputStart(start.format("DD/MM/YYYY"));
-    setInputEnd(end.format("DD/MM/YYYY"));
-    setLeftMonth(start);
-    setRightMonth(end);
-  };
-
-  const emitValue = (start, end) => {
-    onChange?.({
-      startDate: start.toISOString(),
-      endDate: end.toISOString(),
-    });
-  };
-
-  const handleInputChange = (type, value) => {
-    const cleaned = value.replace(/[^\d/]/g, "");
-    if (type === "start") setInputStart(cleaned);
-    else setInputEnd(cleaned);
-
-    if (cleaned.length === 10) {
-      const parsed = dayjs(cleaned, "DD/MM/YYYY", true);
-      if (parsed.isValid()) {
-        const newDate = parsed.startOf("day");
-        if (type === "start") {
-            // Logic cập nhật state...
-            const newRange = { ...range, start: newDate };
-            if (newDate.isAfter(range.end)) newRange.end = newDate.endOf('day');
-            setRange(newRange);
-            setLeftMonth(newDate);
-        } else {
-            // Logic cập nhật state...
-            const newRange = { ...range, end: newDate.endOf("day") };
-            if (newDate.isBefore(range.start)) newRange.start = newDate.startOf('day');
-            setRange(newRange);
-            setRightMonth(newDate);
-        }
-        setPreset("");
-      }
-    }
-  };
-
-  const displayText = inputStart && inputEnd ? (inputStart === inputEnd ? inputStart : `${inputStart} - ${inputEnd}`) : "Chọn khoảng thời gian";
-
-  return (
-    <div className="relative inline-block" ref={popupRef}>
-      <button type="button" onClick={() => setOpen(!open)} className="flex items-center justify-between gap-3 px-4 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50 min-w-[280px] text-sm shadow-sm">
-        <span>{displayText}</span>
-        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-      </button>
-      {open && (
-        <div className="absolute top-full mt-2 left-0 bg-white border rounded-lg shadow-2xl z-50 flex overflow-hidden">
-          <div className="w-40 border-r bg-gray-50">
-            {Object.keys(presets).map((key) => (
-              <button key={key} type="button" onClick={() => applyPreset(key)} className={`w-full text-left px-4 py-3 text-sm hover:bg-blue-50 transition ${preset === presets[key]().label ? "bg-blue-100 text-blue-700 font-medium" : ""}`}>{key}</button>
-            ))}
-          </div>
-          <div className="p-5">
-            <div className="flex gap-4 mb-5 justify-center">
-                 {/* Input Start */}
-                <div className="flex items-center border rounded">
-                   <span className="px-2 text-xs text-gray-500 bg-gray-100 h-full flex items-center">Từ</span>
-                   <input className="w-28 px-2 py-1 text-sm outline-none" value={inputStart} onChange={(e)=>handleInputChange('start', e.target.value)} />
-                </div>
-                 {/* Input End */}
-                 <div className="flex items-center border rounded">
-                   <span className="px-2 text-xs text-gray-500 bg-gray-100 h-full flex items-center">Đến</span>
-                   <input className="w-28 px-2 py-1 text-sm outline-none" value={inputEnd} onChange={(e)=>handleInputChange('end', e.target.value)} />
-                </div>
-            </div>
-            <div className="flex gap-6">
-              <CalendarMonth month={leftMonth} onMonthChange={setLeftMonth} value={range.start} onChange={(d) => updateRange(d.startOf("day"), range.end)} />
-              <CalendarMonth month={rightMonth} onMonthChange={setRightMonth} value={range.end} onChange={(d) => {
-                  const newEnd = d.endOf("day");
-                  if (newEnd.isBefore(range.start)) updateRange(newEnd, newEnd);
-                  else updateRange(range.start, newEnd);
-              }} />
-            </div>
-            <div className="mt-4 flex justify-end gap-2">
-              <button onClick={() => setOpen(false)} className="px-4 py-1.5 border rounded text-sm hover:bg-gray-100">Hủy</button>
-              <button onClick={() => { emitValue(range.start, range.end); setOpen(false); }} className="px-4 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">Áp dụng</button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-const DateCell = ({ dateString }) => {
-  if (!dateString) return <span className="text-gray-400 text-[11px]">-</span>;
-  const d = dayjs(dateString);
-  return (
-    <div className="flex flex-col leading-tight">
-      <span className="font-semibold text-gray-800 text-[11px]">{d.format("HH:mm:ss")}</span>
-      <span className="text-[10px] text-gray-500">{d.format("DD/MM/YYYY")}</span>
-    </div>
-  );
-};
-
-function CalendarMonth({ month, onMonthChange, value, onChange }) {
-  const currentMonth = month || dayjs();
-  const year = currentMonth.year();
-  const monthNum = currentMonth.month();
-  const startOfMonth = currentMonth.startOf("month");
-  const daysInMonth = currentMonth.daysInMonth();
-  const startDayOfWeek = startOfMonth.day() === 0 ? 6 : startOfMonth.day() - 1; // Điều chỉnh để T2 là đầu tuần nếu cần, ở đây dùng mặc định dayjs locale
-  
-  // Sửa lại logic render day grid cho đơn giản theo dayjs locale 'vi' (CN là 0)
-  // Tuy nhiên ở trên bạn import weekday plugin.
-  // Để an toàn với UI của bạn, tôi giữ logic render đơn giản
-  
-  const days = [];
-  const emptyDays = startOfMonth.day() === 0 ? 6 : startOfMonth.day() - 1; // Giả sử T2 bắt đầu
-
-  for (let i = 0; i < emptyDays; i++) days.push(<div key={`empty-${i}`} className="w-8 h-8" />);
-  
-  for (let day = 1; day <= daysInMonth; day++) {
-    const date = dayjs(new Date(year, monthNum, day));
-    const isSelected = value && date.isSame(value, "day");
-    days.push(
-      <button key={day} onClick={() => onChange(date)} className={`w-8 h-8 rounded-full text-sm hover:bg-blue-100 ${isSelected ? "bg-blue-600 text-white" : ""}`}>{day}</button>
-    );
-  }
-
-  return (
-    <div>
-      <div className="flex justify-between mb-2">
-        <button onClick={() => onMonthChange(currentMonth.subtract(1, "month"))}>&lt;</button>
-        <span className="text-sm font-semibold">Tháng {monthNum + 1}/{year}</span>
-        <button onClick={() => onMonthChange(currentMonth.add(1, "month"))}>&gt;</button>
-      </div>
-      <div className="grid grid-cols-7 gap-1 text-center">
-        {['T2','T3','T4','T5','T6','T7','CN'].map(d=><div key={d} className="text-xs text-gray-500">{d}</div>)}
-        {days}
-      </div>
-    </div>
-  );
-}
 
 // =============================================================================
 // PHẦN 2: COMPONENT CHÍNH TransactionHistoryList
 // =============================================================================
 
-const TransactionHistoryList = () => {
+const TransactionHistoryList = ({ bankAccountType = 1 }) => {
   // --- STATE ---
   const [transactions, setTransactions] = useState([]);
   const [bankList, setBankList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [meta, setMeta] = useState(null); // Meta data từ API (deprecated - use countData instead)
-  
+
   // Separate state for count data
   const [countData, setCountData] = useState(null);
   const [isLoadingCounts, setIsLoadingCounts] = useState(false);
@@ -302,15 +116,15 @@ const TransactionHistoryList = () => {
   // Handle click outside to close suggestions
   useEffect(() => {
     const handleClickOutside = () => {
-        if (!isHoveringSuggestions) {
-            setShowAdsAccountSuggestions(false);
-        }
+      if (!isHoveringSuggestions) {
+        setShowAdsAccountSuggestions(false);
+      }
     };
-    
+
     // Convert logic to document click listener if blur isn't enough
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isHoveringSuggestions]);
 
@@ -319,14 +133,14 @@ const TransactionHistoryList = () => {
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
       if (!searchAdsAccountTerm) {
-         setSuggestedAdsAccounts([]);
-         return;
+        setSuggestedAdsAccounts([]);
+        return;
       }
-      
+
       // If the term matches the currently selected filter ID (user selected from list), don't re-search or show dropdown
       // But here we store ID in filter and Text in term. 
       // Let's just search always if changed.
-      
+
       setIsSearchingAds(true);
       try {
         // Call API
@@ -354,14 +168,14 @@ const TransactionHistoryList = () => {
   // Handle click outside for Bank Card suggestions
   useEffect(() => {
     const handleClickOutsideCard = () => {
-        if (!isHoveringCardSuggestions) {
-            setShowBankCardSuggestions(false);
-        }
+      if (!isHoveringCardSuggestions) {
+        setShowBankCardSuggestions(false);
+      }
     };
-    
+
     document.addEventListener("mousedown", handleClickOutsideCard);
     return () => {
-        document.removeEventListener("mousedown", handleClickOutsideCard);
+      document.removeEventListener("mousedown", handleClickOutsideCard);
     };
   }, [isHoveringCardSuggestions]);
 
@@ -370,10 +184,10 @@ const TransactionHistoryList = () => {
     const delayDebounceFn = setTimeout(async () => {
       // If term is empty, clear suggestions
       if (!searchBankCardTerm) {
-         setSuggestedBankCards([]);
-         return;
+        setSuggestedBankCards([]);
+        return;
       }
-      
+
       setIsSearchingBankCards(true);
       try {
         // Call API
@@ -426,10 +240,17 @@ const TransactionHistoryList = () => {
     const fetchDependencies = async () => {
       try {
         // Fetch Bank List (Existing)
-        const bankRes = await bankAccountApi.getBankList();
+        const bankRes = await bankAccountApi.getBankList(
+          1,
+          999,
+          undefined,
+          undefined,
+          undefined,
+          bankAccountType
+        );
         // Use real data if available, else mock (as per your extensive use of mock in original code)
         // But here trying to be consistent with your existing logic
-        setBankList((bankRes.data && bankRes.data.length > 0) ? bankRes.data : []);
+        setBankList(bankRes?.data || bankRes?.items || []);
 
         // Fetch BM List for Ads Modal
         const bmRes = await bmAccountApi.getBmAccountList(1, 999);
@@ -444,7 +265,7 @@ const TransactionHistoryList = () => {
       }
     };
     fetchDependencies();
-  }, []);
+  }, [bankAccountType]);
 
   // --- API FETCH TRANSACTIONS ---
   const fetchTransactions = async (isLoadMore = false) => {
@@ -475,7 +296,8 @@ const TransactionHistoryList = () => {
         getBooleanValue(filters.isAmountMismatched),
         filters.bankAccountId || undefined,
         filters.adAccountId || undefined, // Pass AdAccount ID
-        filters.bankCardId || undefined // Pass BankCard ID
+        filters.bankCardId || undefined, // Pass BankCard ID
+        bankAccountType
       );
 
       if (res && res.success) {
@@ -499,7 +321,7 @@ const TransactionHistoryList = () => {
   // --- API FETCH COUNTS ---
   const fetchCounts = async () => {
     setIsLoadingCounts(true);
-    
+
     try {
       // Xử lý logic boolean filter (vì select trả về string "true"/"false"/"all")
       const getBooleanValue = (val) => {
@@ -519,9 +341,10 @@ const TransactionHistoryList = () => {
         getBooleanValue(filters.isAmountMismatched),
         filters.bankAccountId || undefined,
         filters.adAccountId || undefined,
-        filters.bankCardId || undefined
+        filters.bankCardId || undefined,
+        bankAccountType
       );
-      
+
       if (res && res.success && res.data) {
         setCountData(res.data);
       }
@@ -569,7 +392,7 @@ const TransactionHistoryList = () => {
     fetchTransactions(false);
     fetchCounts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]); 
+  }, [filters]);
   // Lưu ý: Đưa tất cả field trong filters vào dependency array hoặc object filters
 
   // --- HANDLERS ---
@@ -609,10 +432,12 @@ const TransactionHistoryList = () => {
         getBooleanValue(filters.isAmountMismatched),
         filters.bankAccountId || undefined,
         filters.adAccountId || undefined,
-        filters.bankCardId || undefined
+        filters.bankCardId || undefined,
+        bankAccountType
       );
 
       toast.success("Đồng bộ thành công!");
+      fetchTransactions(false); // Refresh transactions list
       fetchCounts(); // Refresh counts from server
     } catch (err) {
       toast.error(typeof err === "string" ? err : "Đồng bộ thất bại");
@@ -642,22 +467,23 @@ const TransactionHistoryList = () => {
         getBooleanValue(filters.isAmountMismatched),
         filters.bankAccountId || undefined,
         filters.adAccountId || undefined,
-        filters.bankCardId || undefined
+        filters.bankCardId || undefined,
+        bankAccountType
       );
 
       // Create download link
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      
+
       // Generate filename with timestamp
       const timestamp = dayjs().format('YYYYMMDD_HHmmss');
       link.download = `LichSuGiaoDich_${timestamp}.xlsx`;
-      
+
       // Trigger download
       document.body.appendChild(link);
       link.click();
-      
+
       // Cleanup
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
@@ -771,7 +597,7 @@ const TransactionHistoryList = () => {
   // 1. Ads Account Create
   const handleOpenCreateAdsModal = (item) => {
     setCreateAdsFormData({
-      adAccountName: item.fbAccountId || "", 
+      adAccountName: item.fbAccountId || "",
       adAccountIdNumber: item.fbAccountId || "",
       bmAccountId: "", // User must select
     });
@@ -790,9 +616,9 @@ const TransactionHistoryList = () => {
     setSaving(true);
     try {
       if (!createAdsFormData.bmAccountId) {
-          toast.error("Vui lòng chọn BM Account");
-          setSaving(false);
-          return;
+        toast.error("Vui lòng chọn BM Account");
+        setSaving(false);
+        return;
       }
       await adsAccountApi.createAdsAccount(
         createAdsFormData.adAccountName,
@@ -801,8 +627,9 @@ const TransactionHistoryList = () => {
       );
       toast.success("Tạo tài khoản FB thành công");
       setCreateAdsModalOpen(false);
-      // Có thể reload list hoặc update item cục bộ nếu cần
-      // fetchTransactions(false); // Reload trang hiện tại thì hơi nặng, tùy logic
+      // Reload list and counts
+      fetchTransactions(false);
+      fetchCounts();
     } catch (err) {
       console.error(err);
       toast.error(err?.message || "Tạo thất bại");
@@ -835,53 +662,54 @@ const TransactionHistoryList = () => {
 
   const handleSaveBankCard = async () => {
     setSaving(true);
-    
+
     // 1. Copy payload
     const payload = { ...createBankCardFormData };
 
     // 2. Encrypt CVV
     const cvvValue = payload.cvvCode;
     if (cvvValue && String(cvvValue).trim() !== "") {
-        try {
-            payload.cvvCode = await SecurityHelper.encrypt(String(cvvValue));
-        } catch (error) {
-            console.error("Lỗi mã hóa CVV:", error);
-            toast.error("Lỗi mã hóa dữ liệu. Vui lòng thử lại.");
-            setSaving(false);
-            return;
-        }
+      try {
+        payload.cvvCode = await SecurityHelper.encrypt(String(cvvValue));
+      } catch (error) {
+        console.error("Lỗi mã hóa CVV:", error);
+        toast.error("Lỗi mã hóa dữ liệu. Vui lòng thử lại.");
+        setSaving(false);
+        return;
+      }
     }
 
     try {
-        await bankCardApi.createBankCard(
-            payload.cardNumber,
-            payload.cardHolderName,
-            payload.cvvCode,
-            payload.issuedDate,
-            payload.expirationDate,
-            payload.bankAccountId,
-            payload.assignedToUserId
-        );
-        
-        toast.success("Tạo thẻ thành công");
-        setCreateBankCardModalOpen(false);
-        // fetchTransactions(false);
+      await bankCardApi.createBankCard(
+        payload.cardNumber,
+        payload.cardHolderName,
+        payload.cvvCode,
+        payload.issuedDate,
+        payload.expirationDate,
+        payload.bankAccountId,
+        payload.assignedToUserId
+      );
+
+      toast.success("Tạo thẻ thành công");
+      setCreateBankCardModalOpen(false);
+      fetchTransactions(false);
+      fetchCounts();
     } catch (error) {
-        console.error("Lỗi tạo thẻ:", error);
-        toast.error("Tạo thất bại");
+      console.error("Lỗi tạo thẻ:", error);
+      toast.error("Tạo thất bại");
     } finally {
-        setSaving(false);
+      setSaving(false);
     }
   };
 
   // --- EDIT TRANSACTION HANDLERS ---
   const handleOpenEditModal = (item) => {
     setEditFormData({
-        id: item.id,
-        fbTransactionCode: item.fbTransactionCode || "",
-        fbAccountId: item.fbAccountId || "",
-        amountFb: item.amountFb || "",
-        cardLastDigits: item.cardLastDigits || "",
+      id: item.id,
+      fbTransactionCode: item.fbTransactionCode || "",
+      fbAccountId: item.fbAccountId || "",
+      amountFb: item.amountFb || "",
+      cardLastDigits: item.cardLastDigits || "",
     });
     setEditModalOpen(true);
   };
@@ -889,22 +717,22 @@ const TransactionHistoryList = () => {
   const handleSaveEditTransaction = async () => {
     setSaving(true);
     try {
-        await transactionHistoryApi.updateTransaction({
-            Id: editFormData.id,
-            FbTransactionCode: editFormData.fbTransactionCode,
-            FbAccountId: editFormData.fbAccountId,
-            AmountFb: editFormData.amountFb || null,
-            CardLastDigits: editFormData.cardLastDigits || null,
-        });
+      await transactionHistoryApi.updateTransaction({
+        Id: editFormData.id,
+        FbTransactionCode: editFormData.fbTransactionCode,
+        FbAccountId: editFormData.fbAccountId,
+        AmountFb: editFormData.amountFb || null,
+        CardLastDigits: editFormData.cardLastDigits || null,
+      });
 
-        toast.success("Cập nhật giao dịch thành công");
-        setEditModalOpen(false);
-        // Refresh list
-        fetchTransactions(false); // Refresh current view
+      toast.success("Cập nhật giao dịch thành công");
+      setEditModalOpen(false);
+      // Refresh list
+      fetchTransactions(false); // Refresh current view
     } catch (err) {
-        toast.error(typeof err === "string" ? err : "Cập nhật thất bại");
+      toast.error(typeof err === "string" ? err : "Cập nhật thất bại");
     } finally {
-        setSaving(false);
+      setSaving(false);
     }
   };
 
@@ -926,7 +754,7 @@ const TransactionHistoryList = () => {
         selectedTransactionForAddCard.cardLastDigits
       );
       toast.success("Thêm thẻ thành công");
-      
+
       // Update local state to hide the button immediately
       setTransactions((prev) =>
         prev.map((item) =>
@@ -935,10 +763,10 @@ const TransactionHistoryList = () => {
             : item
         )
       );
-      
+
       setAddCardModalOpen(false);
       setSelectedTransactionForAddCard(null);
-      
+
       // Refresh transactions to get updated data from server
       fetchTransactions(false);
     } catch (err) {
@@ -958,7 +786,7 @@ const TransactionHistoryList = () => {
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">Thời gian quét:</label>
           <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
-            Từ: {dayjs(filters.fromEffectiveDate).format('DD/MM/YYYY HH:mm:ss')}<br/>
+            Từ: {dayjs(filters.fromEffectiveDate).format('DD/MM/YYYY HH:mm:ss')}<br />
             Đến: {dayjs(filters.toEffectiveDate).format('DD/MM/YYYY HH:mm:ss')}
           </div>
         </div>
@@ -1001,11 +829,10 @@ const TransactionHistoryList = () => {
           <button
             onClick={handleScanTransaction}
             disabled={!selectedAccount || !selectedAccount.accountBankNumber || !selectedAccount.loginUsername}
-            className={`px-4 py-2 text-sm rounded-md ${
-              selectedAccount && selectedAccount.accountBankNumber && selectedAccount.loginUsername
-                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }`}
+            className={`px-4 py-2 text-sm rounded-md ${selectedAccount && selectedAccount.accountBankNumber && selectedAccount.loginUsername
+              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
           >
             Bắt đầu quét
           </button>
@@ -1022,7 +849,7 @@ const TransactionHistoryList = () => {
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">Khoảng thời gian:</label>
           <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
-            Từ: {dayjs(filters.fromEffectiveDate).format('DD/MM/YYYY HH:mm:ss')}<br/>
+            Từ: {dayjs(filters.fromEffectiveDate).format('DD/MM/YYYY HH:mm:ss')}<br />
             Đến: {dayjs(filters.toEffectiveDate).format('DD/MM/YYYY HH:mm:ss')}
           </div>
         </div>
@@ -1045,7 +872,7 @@ const TransactionHistoryList = () => {
     </div>
   );
 
-return (
+  return (
     <div className="p-6 bg-gray-50 min-h-screen font-sans">
       <h1 className="text-lg font-bold mb-3">Lịch sử giao dịch</h1>
 
@@ -1058,11 +885,10 @@ return (
             type="button"
             onClick={() => setScanModalOpen(true)}
             disabled={isDateRangeTooLarge}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-              isDateRangeTooLarge
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
-            }`}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${isDateRangeTooLarge
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
             title={isDateRangeTooLarge ? 'Khoảng thời gian không được vượt quá 3 ngày' : ''}
           >
             Quét giao dịch
@@ -1071,11 +897,10 @@ return (
             type="button"
             onClick={() => setFacebookModalOpen(true)}
             disabled={isDateRangeTooLarge}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-              isDateRangeTooLarge
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-green-600 text-white hover:bg-green-700'
-            }`}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${isDateRangeTooLarge
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-green-600 text-white hover:bg-green-700'
+              }`}
             title={isDateRangeTooLarge ? 'Khoảng thời gian không được vượt quá 3 ngày' : ''}
           >
             Đối chiếu bill Facebook
@@ -1084,11 +909,10 @@ return (
             type="button"
             onClick={handleExportExcel}
             disabled={isExporting}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 ${
-              isExporting
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-amber-600 text-white hover:bg-amber-700'
-            }`}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 ${isExporting
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-amber-600 text-white hover:bg-amber-700'
+              }`}
           >
             {isExporting ? (
               <>
@@ -1113,209 +937,209 @@ return (
       {/* --- FILTER & SEARCH SECTION (Nhóm chung) --- */}
       <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-           {/* Search FB Trans Code */}
-           <div>
-             <label className="block text-sm font-medium text-gray-700 mb-1">Mã GD Facebook</label>
-             <input
-               type="text"
-               placeholder="Nhập mã GD..."
-               className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
-               value={filters.fbTransactionCode}
-               onChange={(e) => handleFilterChange("fbTransactionCode", e.target.value)}
-             />
-           </div>
-           {/* Search FB Account ID (Autocomplete) */}
-           <div className="relative">
-             <label className="block text-sm font-medium text-gray-700 mb-1">FB Account ID</label>
-             <div className="relative">
-                <input
-                    type="text"
-                    placeholder="Nhập FB Account ID..."
-                    className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
-                    value={searchAdsAccountTerm}
-                    onChange={(e) => setSearchAdsAccountTerm(e.target.value)}
-                    onFocus={() => setShowAdsAccountSuggestions(true)}
-                    // onBlur={() => setTimeout(() => setShowAdsAccountSuggestions(false), 200)} // Delay to allow click
-                />
-                {/* Clear button if has value */}
-                {searchAdsAccountTerm && (
-                    <button
-                        onClick={() => {
-                            setSearchAdsAccountTerm("");
-                            handleFilterChange("adAccountId", ""); // Clear filter
-                        }}
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          {/* Search FB Trans Code */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Mã GD Facebook</label>
+            <input
+              type="text"
+              placeholder="Nhập mã GD..."
+              className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+              value={filters.fbTransactionCode}
+              onChange={(e) => handleFilterChange("fbTransactionCode", e.target.value)}
+            />
+          </div>
+          {/* Search FB Account ID (Autocomplete) */}
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-1">FB Account ID</label>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Nhập FB Account ID..."
+                className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                value={searchAdsAccountTerm}
+                onChange={(e) => setSearchAdsAccountTerm(e.target.value)}
+                onFocus={() => setShowAdsAccountSuggestions(true)}
+              // onBlur={() => setTimeout(() => setShowAdsAccountSuggestions(false), 200)} // Delay to allow click
+              />
+              {/* Clear button if has value */}
+              {searchAdsAccountTerm && (
+                <button
+                  onClick={() => {
+                    setSearchAdsAccountTerm("");
+                    handleFilterChange("adAccountId", ""); // Clear filter
+                  }}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  &times;
+                </button>
+              )}
+            </div>
+
+            {/* Suggestions Dropdown */}
+            {showAdsAccountSuggestions && searchAdsAccountTerm && (
+              <div
+                className="absolute z-50 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm"
+                onMouseEnter={() => setIsHoveringSuggestions(true)}
+                onMouseLeave={() => setIsHoveringSuggestions(false)}
+              >
+                {isSearchingAds ? (
+                  <div className="px-4 py-2 text-gray-500">Đang tìm kiếm...</div>
+                ) : suggestedAdsAccounts.length > 0 ? (
+                  suggestedAdsAccounts.map((account) => (
+                    <div
+                      key={account.id}
+                      className="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-blue-600 hover:text-white text-gray-900"
+                      onClick={() => {
+                        setSearchAdsAccountTerm(account.adAccountIdNumber); // Display ID
+                        handleFilterChange("adAccountId", account.id); // Set ID for filter
+                        setShowAdsAccountSuggestions(false);
+                      }}
                     >
-                        &times;
-                    </button>
-                )}
-             </div>
-
-             {/* Suggestions Dropdown */}
-             {showAdsAccountSuggestions && searchAdsAccountTerm && (
-                 <div 
-                    className="absolute z-50 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm"
-                    onMouseEnter={() => setIsHoveringSuggestions(true)}
-                    onMouseLeave={() => setIsHoveringSuggestions(false)}
-                 >
-                    {isSearchingAds ? (
-                        <div className="px-4 py-2 text-gray-500">Đang tìm kiếm...</div>
-                    ) : suggestedAdsAccounts.length > 0 ? (
-                        suggestedAdsAccounts.map((account) => (
-                            <div
-                                key={account.id}
-                                className="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-blue-600 hover:text-white text-gray-900"
-                                onClick={() => {
-                                    setSearchAdsAccountTerm(account.adAccountIdNumber); // Display ID
-                                    handleFilterChange("adAccountId", account.id); // Set ID for filter
-                                    setShowAdsAccountSuggestions(false);
-                                }}
-                            >
-                                <span className="block truncate font-medium">
-                                    {account.adAccountIdNumber}
-                                </span>
-                                <span className="block truncate text-xs opacity-75">
-                                    {account.adAccountName}
-                                </span>
-                            </div>
-                        ))
-                    ) : (
-                        <div className="px-4 py-2 text-gray-500">
-                            Không tìm thấy tài khoản.
-                            <button
-                                className="text-blue-600 hover:underline ml-1 font-medium"
-                                onClick={() => {
-                                    handleOpenCreateAdsModal({ fbAccountId: searchAdsAccountTerm });
-                                    setShowAdsAccountSuggestions(false);
-                                }}
-                            >
-                                Tạo mới "{searchAdsAccountTerm}"
-                            </button>
-                        </div>
-                    )}
-                 </div>
-             )}
-           </div>
-
-           {/* Search Bank Card (Autocomplete) */}
-           <div className="relative">
-             <label className="block text-sm font-medium text-gray-700 mb-1">Thẻ ngân hàng</label>
-             <div className="relative">
-                <input
-                    type="text"
-                    placeholder="Nhập 4 số cuối thẻ..."
-                    className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
-                    value={searchBankCardTerm}
-                    onChange={(e) => setSearchBankCardTerm(e.target.value)}
-                    onFocus={() => setShowBankCardSuggestions(true)}
-                />
-                {/* Clear button */}
-                {searchBankCardTerm && (
+                      <span className="block truncate font-medium">
+                        {account.adAccountIdNumber}
+                      </span>
+                      <span className="block truncate text-xs opacity-75">
+                        {account.adAccountName}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="px-4 py-2 text-gray-500">
+                    Không tìm thấy tài khoản.
                     <button
-                        onClick={() => {
-                            setSearchBankCardTerm("");
-                            handleFilterChange("bankCardId", "");
-                        }}
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="text-blue-600 hover:underline ml-1 font-medium"
+                      onClick={() => {
+                        handleOpenCreateAdsModal({ fbAccountId: searchAdsAccountTerm });
+                        setShowAdsAccountSuggestions(false);
+                      }}
                     >
-                        &times;
+                      Tạo mới "{searchAdsAccountTerm}"
                     </button>
+                  </div>
                 )}
-             </div>
+              </div>
+            )}
+          </div>
 
-             {/* Suggestions Dropdown */}
-             {showBankCardSuggestions && searchBankCardTerm && (
-                 <div 
-                    className="absolute z-50 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm"
-                    onMouseEnter={() => setIsHoveringCardSuggestions(true)}
-                    onMouseLeave={() => setIsHoveringCardSuggestions(false)}
-                 >
-                    {isSearchingBankCards ? (
-                        <div className="px-4 py-2 text-gray-500">Đang tìm kiếm...</div>
-                    ) : suggestedBankCards.length > 0 ? (
-                        suggestedBankCards.map((card) => (
-                            <div
-                                key={card.id}
-                                className="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-blue-600 hover:text-white text-gray-900"
-                                onClick={() => {
-                                    // Set Display: CardNumber only as requested
-                                    setSearchBankCardTerm(card.cardNumber);
-                                    handleFilterChange("bankCardId", card.id);
-                                    setShowBankCardSuggestions(false);
-                                }}
-                            >
-                                <span className="block truncate font-medium">
-                                    {card.cardNumber} 
-                                    {card.bankAccountNumber && <span className="text-gray-500 text-xs ml-2">({card.bankAccountNumber})</span>}
-                                </span>
-                                <span className="block truncate text-xs opacity-75">
-                                    {card.cardHolderName}
-                                </span>
-                            </div>
-                        ))
-                    ) : (
-                        <div className="px-4 py-2 text-gray-500">
-                            Không tìm thấy thẻ.
-                            <button
-                                className="text-blue-600 hover:underline ml-1 font-medium"
-                                onClick={() => {
-                                    handleOpenCreateBankCardModal({ cardLastDigits: searchBankCardTerm });
-                                    setShowBankCardSuggestions(false);
-                                }}
-                            >
-                                Tạo mới "{searchBankCardTerm}"
-                            </button>
-                        </div>
-                    )}
-                 </div>
-             )}
-           </div>
-           {/* Bank Account Select */}
-           <div>
-             <label className="block text-sm font-medium text-gray-700 mb-1">Tài khoản ngân hàng</label>
-             <select
-               className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
-               value={filters.bankAccountId}
-               onChange={(e) => handleFilterChange("bankAccountId", e.target.value)}
-             >
-               <option value="">Tất cả tài khoản</option>
-               {bankList.map((bank) => (
-                 <option key={bank.id} value={bank.id}>
-                   {bank.accountBankNumber || bank.accountNumber}
-                 </option>
-               ))}
-             </select>
-           </div>
-           {/* Transaction Type */}
-           <div>
-             <label className="block text-sm font-medium text-gray-700 mb-1">Loại giao dịch</label>
-             <select
-               className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm"
-               value={filters.transactionType}
-               onChange={(e) => handleFilterChange("transactionType", e.target.value)}
-             >
-               <option value="">Tất cả</option>
-               <option value="IN">Tiền vào (IN)</option>
-               <option value="OUT">Tiền ra (OUT)</option>
-             </select>
-           </div>
-           {/* Is Amount Mismatched */}
-           <div>
-             <label className="block text-sm font-medium text-gray-700 mb-1">Đối chiếu GD?</label>
-             <select
-               className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm"
-               value={filters.isAmountMismatched}
-               onChange={(e) => handleFilterChange("isAmountMismatched", e.target.value)}
-             >
-               <option value="all">Tất cả</option>
-               <option value="true">Lệch</option>
-               <option value="false">Khớp</option>
-             </select>
-           </div>
+          {/* Search Bank Card (Autocomplete) */}
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Thẻ ngân hàng</label>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Nhập 4 số cuối thẻ..."
+                className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                value={searchBankCardTerm}
+                onChange={(e) => setSearchBankCardTerm(e.target.value)}
+                onFocus={() => setShowBankCardSuggestions(true)}
+              />
+              {/* Clear button */}
+              {searchBankCardTerm && (
+                <button
+                  onClick={() => {
+                    setSearchBankCardTerm("");
+                    handleFilterChange("bankCardId", "");
+                  }}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  &times;
+                </button>
+              )}
+            </div>
+
+            {/* Suggestions Dropdown */}
+            {showBankCardSuggestions && searchBankCardTerm && (
+              <div
+                className="absolute z-50 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm"
+                onMouseEnter={() => setIsHoveringCardSuggestions(true)}
+                onMouseLeave={() => setIsHoveringCardSuggestions(false)}
+              >
+                {isSearchingBankCards ? (
+                  <div className="px-4 py-2 text-gray-500">Đang tìm kiếm...</div>
+                ) : suggestedBankCards.length > 0 ? (
+                  suggestedBankCards.map((card) => (
+                    <div
+                      key={card.id}
+                      className="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-blue-600 hover:text-white text-gray-900"
+                      onClick={() => {
+                        // Set Display: CardNumber only as requested
+                        setSearchBankCardTerm(card.cardNumber);
+                        handleFilterChange("bankCardId", card.id);
+                        setShowBankCardSuggestions(false);
+                      }}
+                    >
+                      <span className="block truncate font-medium">
+                        {card.cardNumber}
+                        {card.bankAccountNumber && <span className="text-gray-500 text-xs ml-2">({card.bankAccountNumber})</span>}
+                      </span>
+                      <span className="block truncate text-xs opacity-75">
+                        {card.cardHolderName}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="px-4 py-2 text-gray-500">
+                    Không tìm thấy thẻ.
+                    <button
+                      className="text-blue-600 hover:underline ml-1 font-medium"
+                      onClick={() => {
+                        handleOpenCreateBankCardModal({ cardLastDigits: searchBankCardTerm });
+                        setShowBankCardSuggestions(false);
+                      }}
+                    >
+                      Tạo mới "{searchBankCardTerm}"
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          {/* Bank Account Select */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tài khoản ngân hàng</label>
+            <select
+              className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+              value={filters.bankAccountId}
+              onChange={(e) => handleFilterChange("bankAccountId", e.target.value)}
+            >
+              <option value="">Tất cả tài khoản</option>
+              {bankList.map((bank) => (
+                <option key={bank.id} value={bank.id}>
+                  {bank.accountBankNumber || bank.accountNumber}
+                </option>
+              ))}
+            </select>
+          </div>
+          {/* Transaction Type */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Loại giao dịch</label>
+            <select
+              className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm"
+              value={filters.transactionType}
+              onChange={(e) => handleFilterChange("transactionType", e.target.value)}
+            >
+              <option value="">Tất cả</option>
+              <option value="IN">Tiền vào (IN)</option>
+              <option value="OUT">Tiền ra (OUT)</option>
+            </select>
+          </div>
+          {/* Is Amount Mismatched */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Đối chiếu GD?</label>
+            <select
+              className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm"
+              value={filters.isAmountMismatched}
+              onChange={(e) => handleFilterChange("isAmountMismatched", e.target.value)}
+            >
+              <option value="all">Tất cả</option>
+              <option value="true">Lệch</option>
+              <option value="false">Khớp</option>
+            </select>
+          </div>
         </div>
       </div>
 
-    {/* --- TABLE SECTION ĐÃ TỐI ƯU --- */}
+      {/* --- TABLE SECTION ĐÃ TỐI ƯU --- */}
       <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
         {/* --- META DATA & TABS --- */}
         <div className="border-b border-gray-200">
@@ -1325,38 +1149,35 @@ return (
               <button
                 type="button"
                 onClick={() => setActiveTab("all")}
-                className={`px-6 py-3 text-sm font-medium transition-colors ${
-                  activeTab === "all"
-                    ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
-                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
-                }`}
+                className={`px-6 py-3 text-sm font-medium transition-colors ${activeTab === "all"
+                  ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
+                  : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                  }`}
               >
                 Tất cả
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab("fb")}
-                className={`px-6 py-3 text-sm font-medium transition-colors ${
-                  activeTab === "fb"
-                    ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
-                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
-                }`}
+                className={`px-6 py-3 text-sm font-medium transition-colors ${activeTab === "fb"
+                  ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
+                  : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                  }`}
               >
                 Giao dịch FB
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab("other")}
-                className={`px-6 py-3 text-sm font-medium transition-colors ${
-                  activeTab === "other"
-                    ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
-                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
-                }`}
+                className={`px-6 py-3 text-sm font-medium transition-colors ${activeTab === "other"
+                  ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
+                  : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                  }`}
               >
                 Khác
               </button>
             </div>
-            
+
             {/* Meta Data - Bên phải */}
             <div className="flex items-center gap-4 px-4 py-3 flex-wrap">
               {countData && metaConfig.map((config) => {
@@ -1380,31 +1201,31 @@ return (
           </div>
         </div>
         {/* Table container với overflow để responsive */}
-        <div className="w-full overflow-x-auto"> 
+        <div className="w-full overflow-x-auto">
           <table className="w-full divide-y divide-gray-200 table-fixed min-w-[1400px]">
             <thead className="bg-gray-100">
               <tr>
                 {/* 3 cột ngày đặt liền nhau */}
-                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase border-r border-gray-300" style={{width: '80px'}}>Ngày hiệu lực</th>
-                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase border-r border-gray-300" style={{width: '80px'}}>Ngày giao dịch</th>
-                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase border-r border-gray-300" style={{width: '80px'}}>Ngày GD chính xác</th>
-                
-                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{width: '60px'}}>Mã GD</th>
-                <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '45px'}}>Loại</th>
-                <th className="px-2 py-2 text-right text-[10px] font-bold text-gray-600 uppercase" style={{width: '90px'}}>Số tiền</th>
-                <th className="px-2 py-2 text-right text-[10px] font-bold text-gray-600 uppercase" style={{width: '90px'}}>Tiền FB</th>
-                <th className="px-2 py-2 text-right text-[10px] font-bold text-gray-600 uppercase" style={{width: '90px'}}>Số dư</th>
-                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{minWidth: '140px'}}>Nội dung</th>
-                
-                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{width: '85px'}}>Mã GD FB</th>
-                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{width: '125px'}}>FB Account ID</th>
-                
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase border-r border-gray-300" style={{ width: '80px' }}>Ngày hiệu lực</th>
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase border-r border-gray-300" style={{ width: '80px' }}>Ngày giao dịch</th>
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase border-r border-gray-300" style={{ width: '80px' }}>Ngày GD chính xác</th>
+
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{ width: '60px' }}>Mã GD</th>
+                <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{ width: '45px' }}>Loại</th>
+                <th className="px-2 py-2 text-right text-[10px] font-bold text-gray-600 uppercase" style={{ width: '90px' }}>Số tiền</th>
+                <th className="px-2 py-2 text-right text-[10px] font-bold text-gray-600 uppercase" style={{ width: '90px' }}>Tiền FB</th>
+                <th className="px-2 py-2 text-right text-[10px] font-bold text-gray-600 uppercase" style={{ width: '90px' }}>Số dư</th>
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{ minWidth: '140px' }}>Nội dung</th>
+
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{ width: '85px' }}>Mã GD FB</th>
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{ width: '125px' }}>FB Account ID</th>
+
                 {/* <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '60px'}}>Bank ID</th> */}
-                <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '70px'}}>Thẻ</th>
-                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{width: '110px'}}>STK Bank</th>
-                
+                <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{ width: '70px' }}>Thẻ</th>
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{ width: '110px' }}>STK Bank</th>
+
                 {/* <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '80px'}}>Status</th> */}
-                <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '70px'}}>Thao tác</th>
+                <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{ width: '70px' }}>Thao tác</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -1466,8 +1287,8 @@ return (
                 transactions.map((item, index) => {
                   const isLastElement = transactions.length === index + 1;
                   return (
-                    <tr 
-                      key={`${item.id}-${index}`} 
+                    <tr
+                      key={`${item.id}-${index}`}
                       ref={isLastElement ? lastElementRef : null}
                       className="hover:bg-blue-50 transition-colors duration-150 group"
                     >
@@ -1491,30 +1312,28 @@ return (
 
                       {/* Loại */}
                       <td className="px-2 py-2 text-center align-middle">
-                        <span className={`px-2 py-1 inline-flex text-[10px] font-bold rounded ${
-                          item.transactionType === 'IN' 
-                            ? 'bg-green-100 text-green-700' 
-                            : 'bg-red-100 text-red-700'
-                        }`}>
+                        <span className={`px-2 py-1 inline-flex text-[10px] font-bold rounded ${item.transactionType === 'IN'
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-red-100 text-red-700'
+                          }`}>
                           {item.transactionType}
                         </span>
                       </td>
 
                       {/* Số tiền */}
-                      <td className={`px-2 py-2 text-[11px] text-right font-bold align-middle ${
-                         item.transactionType === 'IN' ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                         {item.transactionType === 'IN' ? '+' : '-'}{formatCurrency(item.amount)}
+                      <td className={`px-2 py-2 text-[11px] text-right font-bold align-middle ${item.transactionType === 'IN' ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                        {item.transactionType === 'IN' ? '+' : '-'}{formatCurrency(item.amount)}
                       </td>
 
                       {/* Số tiền FB */}
                       <td className="px-2 py-2 text-[11px] text-right text-gray-600 align-middle">
-                         {item.amountFb ? (
-                             <>
-                                {formatCurrency(item.amountFb)}
-                                {item.isAmountMismatched === true && <span className="text-red-600 font-bold" title="Bị lệch tiền">⚠️</span>}
-                             </>
-                         ) : '-'}
+                        {item.amountFb ? (
+                          <>
+                            {formatCurrency(item.amountFb)}
+                            {item.isAmountMismatched === true && <span className="text-red-600 font-bold" title="Bị lệch tiền">⚠️</span>}
+                          </>
+                        ) : '-'}
                       </td>
 
                       {/* Số dư */}
@@ -1525,33 +1344,33 @@ return (
                       {/* Nội dung */}
                       <td className="px-2 py-2 align-middle">
                         <div className="text-[11px] text-gray-700 truncate cursor-help" title={item.description || "-"}>
-                            {item.description || "-"}
+                          {item.description || "-"}
                         </div>
                       </td>
 
                       {/* Mã GD FB */}
                       <td className="px-2 py-2 align-middle">
                         <div className="text-[10px] text-gray-600 font-medium truncate" title={item.fbTransactionCode || "-"}>
-                            {item.fbTransactionCode || "-"}
+                          {item.fbTransactionCode || "-"}
                         </div>
                       </td>
 
                       {/* FB Account ID */}
                       <td className="px-2 py-2 align-middle group relative">
                         <div className={`text-[10px] text-gray-600 truncate flex items-center justify-between ${item.fbAccountId && !item.isSystemFbAccountExist ? 'text-yellow-600 font-medium' : ''}`} title={item.fbAccountId ? (!item.isSystemFbAccountExist ? 'FB Account không tồn tại trong hệ thống' : item.fbAccountId) : "-"}>
-                             <span>{item.fbAccountId || "-"}</span>
-                             {item.fbAccountId && !item.isSystemFbAccountExist && (
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleOpenCreateAdsModal(item);
-                                    }}
-                                    className="invisible group-hover:visible ml-2 p-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition-all"
-                                    title="Tạo mới tài khoản này"
-                                >
-                                    <PlusCircle size={14} />
-                                </button>
-                             )}
+                          <span>{item.fbAccountId || "-"}</span>
+                          {item.fbAccountId && !item.isSystemFbAccountExist && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenCreateAdsModal(item);
+                              }}
+                              className="invisible group-hover:visible ml-2 p-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition-all"
+                              title="Tạo mới tài khoản này"
+                            >
+                              <PlusCircle size={14} />
+                            </button>
+                          )}
                         </div>
                       </td>
 
@@ -1563,21 +1382,21 @@ return (
                       {/* Đuôi thẻ */}
                       <td className="px-2 py-2 text-[11px] text-center text-gray-600 align-middle group relative">
                         <div className="flex items-center justify-center gap-2">
-                            <span className={`${item.cardLastDigits && !item.isSystemCardExist ? 'text-yellow-600 font-medium' : ''}`} title={item.cardLastDigits ? (!item.isSystemCardExist ? 'Thẻ không tồn tại trong hệ thống' : item.cardLastDigits) : "-"}>
+                          <span className={`${item.cardLastDigits && !item.isSystemCardExist ? 'text-yellow-600 font-medium' : ''}`} title={item.cardLastDigits ? (!item.isSystemCardExist ? 'Thẻ không tồn tại trong hệ thống' : item.cardLastDigits) : "-"}>
                             {item.cardLastDigits || "-"}
-                            </span>
-                             {item.cardLastDigits && !item.isSystemCardExist && (
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleOpenCreateBankCardModal(item);
-                                    }}
-                                    className="invisible group-hover:visible p-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition-all absolute right-0 top-1/2 transform -translate-y-1/2"
-                                    title="Tạo mới thẻ này"
-                                >
-                                    <PlusCircle size={14} />
-                                </button>
-                             )}
+                          </span>
+                          {item.cardLastDigits && !item.isSystemCardExist && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenCreateBankCardModal(item);
+                              }}
+                              className="invisible group-hover:visible p-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition-all absolute right-0 top-1/2 transform -translate-y-1/2"
+                              title="Tạo mới thẻ này"
+                            >
+                              <PlusCircle size={14} />
+                            </button>
+                          )}
                         </div>
                       </td>
 
@@ -1607,37 +1426,37 @@ return (
 
                       {/* Actions - Add Card Button */}
                       <td className="px-2 py-2 text-center align-middle">
-                        {item.isFbTransaction === true && 
-                         item.adAccountBankCardId == null && 
-                         item.isSystemFbAccountExist === true && 
-                         item.isSystemCardExist === true && (
-                          <div className="flex justify-center gap-1">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenAddCardModal(item);
-                            }}
-                            className="px-2 py-1 text-[10px] bg-green-100 text-green-700 rounded hover:bg-green-200 transition-all font-medium whitespace-nowrap"
-                            title="Thêm thẻ vào giao dịch"
-                          >
-                            Đồng bộ
-                          </button>
-                          </div>
-                        )}
+                        {item.isFbTransaction === true &&
+                          item.adAccountBankCardId == null &&
+                          item.isSystemFbAccountExist === true &&
+                          item.isSystemCardExist === true && (
+                            <div className="flex justify-center gap-1">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenAddCardModal(item);
+                                }}
+                                className="px-2 py-1 text-[10px] bg-green-100 text-green-700 rounded hover:bg-green-200 transition-all font-medium whitespace-nowrap"
+                                title="Thêm thẻ vào giao dịch"
+                              >
+                                Đồng bộ
+                              </button>
+                            </div>
+                          )}
                         {/* Edit Button - Visible only for FB Transactions */}
                         {item.isFbTransaction === true && (
-                            <div className="flex justify-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button 
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleOpenEditModal(item);
-                                    }}
-                                    title="Chỉnh sửa giao dịch"
-                                    className="p-1 hover:bg-gray-100 rounded text-blue-600"
-                                >
-                                    <SquarePen size={14} />
-                                </button>
-                            </div>
+                          <div className="flex justify-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenEditModal(item);
+                              }}
+                              title="Chỉnh sửa giao dịch"
+                              className="p-1 hover:bg-gray-100 rounded text-blue-600"
+                            >
+                              <SquarePen size={14} />
+                            </button>
+                          </div>
                         )}
                       </td>
                     </tr>
@@ -1645,38 +1464,38 @@ return (
                 })
               ) : (
                 !isLoading && (
-                    <tr>
-                        <td colSpan="17" className="px-4 py-8 text-center text-gray-500 text-sm">
-                            Không tìm thấy giao dịch nào.
-                        </td>
-                    </tr>
+                  <tr>
+                    <td colSpan="17" className="px-4 py-8 text-center text-gray-500 text-sm">
+                      Không tìm thấy giao dịch nào.
+                    </td>
+                  </tr>
                 )
               )}
             </tbody>
           </table>
         </div>
-        
+
         {/* Loading & Messages */}
         {isLoading && transactions.length > 0 && (
-            <div className="flex justify-center items-center py-2 bg-gray-50 border-t">
-                <span className="text-xs text-gray-500">Đang tải thêm...</span>
-            </div>
+          <div className="flex justify-center items-center py-2 bg-gray-50 border-t">
+            <span className="text-xs text-gray-500">Đang tải thêm...</span>
+          </div>
         )}
       </div>
 
       {/* Edit Transaction Modal */}
-      <EditTransactionModal 
+      <EditTransactionModal
         open={editModalOpen}
         loading={isEditLoading}
         saving={saving}
         formData={editFormData}
         onChange={(e) => {
-            const { name, value } = e.target;
-            setEditFormData(prev => ({ ...prev, [name]: value }));
+          const { name, value } = e.target;
+          setEditFormData(prev => ({ ...prev, [name]: value }));
         }}
         onClose={() => setEditModalOpen(false)}
         onSave={handleSaveEditTransaction}
-        // Optional: pass lists if needed for select inputs
+      // Optional: pass lists if needed for select inputs
       />
 
       {/* Modals */}

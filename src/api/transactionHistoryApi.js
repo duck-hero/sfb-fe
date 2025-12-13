@@ -16,7 +16,8 @@ getTransactionHistoryList: async (
   isAmountMismatched,
   bankAccountId,
   adAccountId, // New param
-  bankCardId // New param
+  bankCardId, // New param
+  bankAccountType // New param (per tab)
 ) => {
   try {
     const params = {};
@@ -52,6 +53,11 @@ getTransactionHistoryList: async (
     // Bank Card ID
     if (bankCardId) params.BankCardId = bankCardId;
 
+    // Bank Account Type
+    if (bankAccountType !== undefined && bankAccountType !== null) {
+      params.BankAccountType = bankAccountType;
+    }
+
     const response = await axiosInstance.get(
       `${api}/TransactionHistory/GetTransactionHistoriesByCursor`,
       { params }
@@ -75,7 +81,8 @@ getTransactionHistoryList: async (
     isAmountMismatched,
     bankAccountId,
     adAccountId,
-    bankCardId
+    bankCardId,
+    bankAccountType
   ) => {
     try {
       const params = {};
@@ -105,6 +112,11 @@ getTransactionHistoryList: async (
       // Bank Card ID
       if (bankCardId) params.BankCardId = bankCardId;
 
+      // Bank Account Type
+      if (bankAccountType !== undefined && bankAccountType !== null) {
+        params.BankAccountType = bankAccountType;
+      }
+
       const response = await axiosInstance.get(
         `${api}/TransactionHistory/GetTransactionHistoryCount`,
         { params }
@@ -128,7 +140,8 @@ getTransactionHistoryList: async (
     isAmountMismatched,
     bankAccountId,
     adAccountId,
-    bankCardId
+    bankCardId,
+    bankAccountType
   ) => {
     try {
       const data = {};
@@ -157,6 +170,11 @@ getTransactionHistoryList: async (
       
       // Bank Card ID
       if (bankCardId) data.BankCardId = bankCardId;
+
+      // Bank Account Type
+      if (bankAccountType !== undefined && bankAccountType !== null) {
+        data.BankAccountType = bankAccountType;
+      }
 
       const response = await axiosInstance.post(
         `${api}/TransactionHistory/SyncAddCard`,
@@ -194,7 +212,8 @@ getTransactionHistoryList: async (
     isAmountMismatched,
     bankAccountId,
     adAccountId,
-    bankCardId
+    bankCardId,
+    bankAccountType
   ) => {
     try {
       const params = {};
@@ -223,6 +242,11 @@ getTransactionHistoryList: async (
       
       // Bank Card ID
       if (bankCardId) params.BankCardId = bankCardId;
+
+      // Bank Account Type
+      if (bankAccountType !== undefined && bankAccountType !== null) {
+        params.BankAccountType = bankAccountType;
+      }
 
       const response = await axiosInstance.get(
         `${api}/TransactionHistory/ExportExcel`,

@@ -3,12 +3,22 @@ import axiosInstance from "./axiosInstance";
 
 const bankAccountApi = {
   // Lấy danh sách tài khoản ngân hàng (có phân trang)
-getBankList: async (pageNumber = 1, pageSize = 10, accountBankNumber, accountBankHolderName, bankId) => {
+getBankList: async (
+  pageNumber = 1,
+  pageSize = 10,
+  accountBankNumber,
+  accountBankHolderName,
+  bankId,
+  bankAccountType
+) => {
   try {
     const params = { PageNumber: pageNumber, PageSize: pageSize };
     if (accountBankNumber) params.AccountBankNumber = accountBankNumber;
     if (accountBankHolderName) params.AccountBankHolderName = accountBankHolderName;
     if (bankId) params.BankId = bankId; // filter bankId
+    if (bankAccountType !== undefined && bankAccountType !== null) {
+      params.BankAccountType = bankAccountType; // optional filter by type (if backend supports)
+    }
 
 
     const response = await axiosInstance.get(
