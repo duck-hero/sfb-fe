@@ -351,5 +351,3 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
     </div>
   );
 }
-
-
