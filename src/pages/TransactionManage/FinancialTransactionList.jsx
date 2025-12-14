@@ -21,13 +21,16 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
   const [nextCursor, setNextCursor] = useState(null);
   const [hasMore, setHasMore] = useState(true);
 
+  // Scan modal state
+  const [scanModalOpen, setScanModalOpen] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState(null);
+
   const [filters, setFilters] = useState({
     transactionCode: "",
     transactionType: "",
     bankAccountId: "",
     fromEffectiveDate: dayjs().startOf("day").toISOString(),
     toEffectiveDate: dayjs().endOf("day").toISOString(),
-    sortOrder: "desc",
   });
 
   const observer = useRef();
@@ -76,7 +79,7 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
       const res = await financialTransactionApi.getFinancialTransactionByCursor(
         cursorToUse,
         20,
-        filters.sortOrder,
+        "desc",
         filters.fromEffectiveDate,
         filters.toEffectiveDate,
         filters.transactionCode || undefined,
@@ -120,6 +123,19 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
     }));
   };
 
+  const handleScanTransaction = () => {
+    if (!selectedAccount) return;
+
+    const fromDate = dayjs(filters.fromEffectiveDate).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z';
+    const toDate = dayjs(filters.toEffectiveDate).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z';
+
+    const url = `https://acb.duckhero.store/trigger?token=999999999&stk=${selectedAccount.accountBankNumber}&fromDate=${fromDate}&toDate=${toDate}&LoginUsername=${selectedAccount.loginUsername}&LoginPassword=${selectedAccount.loginPassword}`;
+
+    window.open(url, '_blank');
+    setScanModalOpen(false);
+    setSelectedAccount(null);
+  };
+
   const formatCurrency = (amount) => {
     if (amount === null || amount === undefined) return "-";
     return new Intl.NumberFormat("vi-VN", {
@@ -132,6 +148,13 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
     const fromDate = dayjs(filters.fromEffectiveDate);
     const toDate = dayjs(filters.toEffectiveDate);
     return toDate.diff(fromDate, "day") > 31; // nới rộng cho thu/chi
+  }, [filters.fromEffectiveDate, filters.toEffectiveDate]);
+
+  const isDateRangeTooLargeForScan = useMemo(() => {
+    const fromDate = dayjs(filters.fromEffectiveDate);
+    const toDate = dayjs(filters.toEffectiveDate);
+    const diffInDays = toDate.diff(fromDate, 'day');
+    return diffInDays > 3;
   }, [filters.fromEffectiveDate, filters.toEffectiveDate]);
 
   return (
@@ -149,6 +172,18 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
             Thời gian:
           </label>
           <DateRangePicker onChange={handleDateRangeChange} />
+          <button
+            type="button"
+            onClick={() => setScanModalOpen(true)}
+            disabled={isDateRangeTooLargeForScan}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${isDateRangeTooLargeForScan
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
+            title={isDateRangeTooLargeForScan ? 'Khoảng thời gian không được vượt quá 3 ngày' : ''}
+          >
+            Quét giao dịch
+          </button>
           {isDateRangeTooLarge && (
             <span className="text-xs text-amber-600">
               Khoảng thời gian lớn có thể tải chậm
@@ -177,13 +212,15 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Loại giao dịch
             </label>
-            <input
-              type="text"
-              placeholder="IN / OUT / ..."
+            <select
               className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
               value={filters.transactionType}
               onChange={(e) => handleFilterChange("transactionType", e.target.value)}
-            />
+            >
+              <option value="">Tất cả</option>
+              <option value="IN">Tiền vào (IN)</option>
+              <option value="OUT">Tiền ra (OUT)</option>
+            </select>
           </div>
 
           <div>
@@ -201,20 +238,6 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
                   {bank.accountBankNumber || bank.accountNumber}
                 </option>
               ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Sắp xếp
-            </label>
-            <select
-              className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm"
-              value={filters.sortOrder}
-              onChange={(e) => handleFilterChange("sortOrder", e.target.value)}
-            >
-              <option value="desc">Mới nhất</option>
-              <option value="asc">Cũ nhất</option>
             </select>
           </div>
         </div>
@@ -348,6 +371,67 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
           </div>
         )}
       </div>
+
+      {/* Scan Transaction Modal */}
+      {scanModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Quét giao dịch</h3>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Thời gian quét:</label>
+              <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+                Từ: {dayjs(filters.fromEffectiveDate).format('DD/MM/YYYY HH:mm:ss')}<br />
+                Đến: {dayjs(filters.toEffectiveDate).format('DD/MM/YYYY HH:mm:ss')}
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Chọn tài khoản ngân hàng:</label>
+              <select
+                value={selectedAccount ? bankList.findIndex(bank =>
+                  (bank.id === selectedAccount.id) ||
+                  (bank.accountBankNumber === selectedAccount.accountBankNumber)
+                ) : ''}
+                onChange={(e) => {
+                  const account = bankList[parseInt(e.target.value)];
+                  setSelectedAccount(account);
+                }}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Chọn tài khoản...</option>
+                {bankList.map((bank, index) => (
+                  <option key={bank.id || bank.accountBankNumber || index} value={index}>
+                    {bank.accountBankNumber || bank.accountNumber} - {bank.accountBankHolderName || 'Unknown'}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setScanModalOpen(false);
+                  setSelectedAccount(null);
+                }}
+                className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleScanTransaction}
+                disabled={!selectedAccount || !selectedAccount.accountBankNumber || !selectedAccount.loginUsername}
+                className={`px-4 py-2 text-sm rounded-md ${selectedAccount && selectedAccount.accountBankNumber && selectedAccount.loginUsername
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+              >
+                Bắt đầu quét
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

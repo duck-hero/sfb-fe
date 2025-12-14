@@ -158,7 +158,7 @@ function DateRangePicker({ onChange }) {
 
             {/* Phần chính */}
             <div className="flex-1 p-5">
-              {/* 2 ô Từ ngày - Đến ngày (giống hệt ảnh) */}
+              {/* 2 ô Từ ngày - Đến ngày */}
               <div className="flex items-center justify-center gap-4 mb-5">
                 <div className="flex items-center border rounded overflow-hidden">
                   <span className="px-3 text-gray-600 text-sm bg-gray-50">Từ ngày</span>
@@ -210,7 +210,12 @@ function DateRangePicker({ onChange }) {
                   onMonthChange={setLeftMonth}
                   value={range.start}
                   onChange={(d) => {
-                    updateRange(d.startOf('day'), range.end);
+                    const newStart = d.startOf('day');
+                    if (newStart.isAfter(range.end)) {
+                      updateRange(newStart, newStart.endOf('day'));
+                    } else {
+                      updateRange(newStart, range.end);
+                    }
                   }}
                 />
                 <CalendarMonth
@@ -281,7 +286,6 @@ function CalendarMonth({ month, onMonthChange, value, onChange }) {
         type="button"
         onClick={() => onChange(date)}
         className={`w-9 h-9 rounded-full text-sm flex items-center justify-center hover:bg-blue-100 transition
-          ${isToday ? 'bg-red-500 text-white font-bold' : ''}
           ${isSelected ? 'bg-blue-600 text-white font-bold' : ''}
         `}
       >
