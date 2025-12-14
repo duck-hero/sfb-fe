@@ -334,9 +334,7 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
                   Nội dung
                 </th>
                 <th
-                  className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase"
-                  style={{ width: "100px" }}
-                >
+                  className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase">
                   Đối tượng hạch toán
                 </th>
                 <th
@@ -400,9 +398,17 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
                           {item.description || "-"}
                         </div>
                       </td>
-                      <td className="px-2 py-2 text-[11px] text-gray-700 align-middle">
-                        {item.accountingObject || "-"}
+                      <td className="px-2 py-2 align-middle">
+                        <div
+                          className="text-[11px] text-gray-700 truncate cursor-help"
+                          title={item.accountingObject || "-"}
+                        >
+                          {item.accountingObject || "-"}
+                        </div>
                       </td>
+                      {/* <td className="px-2 py-2 text-[11px] text-gray-700 align-middle">
+                        {item.accountingObject || "-"}
+                      </td> */}
                       <td className="px-2 py-2 text-[11px] text-gray-700 font-semibold align-middle">
                         {item.accountBankNumber || item.accountBankNumber || "-"}
                       </td>

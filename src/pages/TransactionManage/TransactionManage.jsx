@@ -10,17 +10,17 @@ export default function TransactionManage() {
   const tabs = [
     {
       key: "fbSpend",
-      label: "Tài khoản chi tiêu FB",
+      label: "Giao dịch TK chi tiêu FB",
       icon: <Megaphone className="w-4 h-4" />,
     },
     {
       key: "financial",
-      label: "Giao dịch thu chi",
+      label: "Giao dịch TK thu chi",
       icon: <ArrowLeftRight className="w-4 h-4" />,
     },
     {
       key: "profit",
-      label: "Giao dịch tài khoản lợi nhuận",
+      label: "Giao dịch TK lợi nhuận",
       icon: <BadgeDollarSign className="w-4 h-4" />,
     },
   ];

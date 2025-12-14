@@ -438,7 +438,7 @@ function BankCardList() {
                     className="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 group cursor-pointer"
                     onClick={() => openDetailModal(card.id)}
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3 overflow-x-auto">
                       {/* Chip Icon */}
                       <div className="flex-shrink-0">
                         <div className="w-8 h-7 bg-gradient-to-br from-yellow-200 to-yellow-400 rounded flex items-center justify-center shadow-sm">
@@ -447,38 +447,38 @@ function BankCardList() {
                       </div>
 
                       {/* Card Number */}
-                      <div className="w-40 min-w-0">
-                        <p className="text-sm font-mono font-semibold text-gray-800 truncate">
+                      <div className="flex-shrink-0 w-50">
+                        <p className="text-sm font-mono font-semibold text-gray-800">
                           {card.cardNumber ? card.cardNumber.replace(/(\d{4})(?=\d)/g, '$1 ') : '•••• •••• •••• ••••'}
                         </p>
                       </div>
 
                       {/* Card Holder */}
-                      <div className="w-36 min-w-0">
+                      <div className="flex-shrink-0 w-50">
                         <p className="text-xs text-gray-500 mb-0.5">Chủ thẻ</p>
                         <p className="text-sm font-medium text-gray-800 truncate uppercase">
                           {card.cardHolderName || 'N/A'}
                         </p>
                       </div>
 
-                      {/* Expiry Date */}
-                      <div className="w-24">
+                      {/* Expiry Date - Hidden on mobile */}
+                      <div className="hidden sm:block flex-shrink-0 w-30 text-center">
                         <p className="text-xs text-gray-500 mb-0.5">Hết hạn</p>
                         <p className="text-sm font-medium text-gray-700">
                           {formatDate(card.expirationDate) || 'N/A'}
                         </p>
                       </div>
 
-                      {/* Assigned User */}
-                      <div className="w-28">
+                      {/* Assigned User - Hidden on mobile */}
+                      <div className="hidden md:block flex-shrink-0 w-40">
                         <p className="text-xs text-gray-500 mb-0.5">Vận hành</p>
                         <p className="text-sm text-gray-700 truncate">
                           {card.assignedUserName || 'N/A'}
                         </p>
                       </div>
 
-                      {/* Add Total */}
-                      <div className="w-20 text-center">
+                      {/* Add Total - Hidden on mobile */}
+                      <div className="hidden lg:block flex-shrink-0 w-30 text-center">
                         <p className="text-xs text-gray-500 mb-0.5">Tài khoản QC</p>
                         <p className="text-sm font-semibold text-blue-600">
                           {card.addTotal || 0}
@@ -486,12 +486,12 @@ function BankCardList() {
                       </div>
 
                       {/* Status */}
-                      <div className="w-24 text-center">
+                      <div className="flex-shrink-0 w-30 text-center">
                         {renderStatus(card.status)}
                       </div>
 
                       {/* Actions */}
-                      <div className="flex gap-1.5 ml-auto">
+                      <div className="flex gap-1.5 ml-auto flex-shrink-0">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
