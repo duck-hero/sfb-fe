@@ -440,7 +440,7 @@ const TransactionHistoryList = () => {
         setUserList(userRes?.data || []);
 
       } catch (err) {
-        console.error("Lỗi lấy dữ liệu phụ thuộc (Banks/BMs/Users)", err);
+        toast.error(typeof err === "string" ? err : "Không thể lấy danh sách tài khoản ngân hàng");
       }
     };
     fetchDependencies();
@@ -489,7 +489,7 @@ const TransactionHistoryList = () => {
         // Note: Meta data is no longer updated here, use fetchCounts instead
       }
     } catch (err) {
-      console.error(err);
+      toast.error(typeof err === "string" ? err : "Không thể tải lịch sử giao dịch.");
       setError("Không thể tải lịch sử giao dịch.");
     } finally {
       setIsLoading(false);
@@ -526,7 +526,7 @@ const TransactionHistoryList = () => {
         setCountData(res.data);
       }
     } catch (err) {
-      console.error("Lỗi khi lấy thống kê:", err);
+      // console.error("Lỗi khi lấy thống kê:", err);
       // Don't show error toast for count failures to avoid being too noisy
     } finally {
       setIsLoadingCounts(false);
@@ -665,8 +665,8 @@ const TransactionHistoryList = () => {
 
       toast.success("Xuất file Excel thành công!");
     } catch (err) {
-      console.error(err);
-      toast.error(typeof err === "string" ? err : "Xuất file thất bại");
+      // console.error(err);
+      toast.error(typeof err === "string" ? err : "Không thể xuất file Excel");
     } finally {
       setIsExporting(false);
     }
@@ -806,7 +806,7 @@ const TransactionHistoryList = () => {
       fetchTransactions(false);
       fetchCounts();
     } catch (err) {
-      console.error(err);
+      // console.error(err);
       toast.error(err?.message || "Tạo thất bại");
     } finally {
       setSaving(false);
@@ -945,7 +945,7 @@ const TransactionHistoryList = () => {
       // Refresh transactions to get updated data from server
       fetchTransactions(false);
     } catch (err) {
-      console.error(err);
+      // console.error(err);
       toast.error(err?.message || "Thêm thẻ thất bại");
     } finally {
       setSaving(false);

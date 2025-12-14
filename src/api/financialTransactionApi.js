@@ -41,6 +41,22 @@ const financialTransactionApi = {
       throw handleApiError(error);
     }
   },
+
+  updateFinancialTransaction: async (id, accountingObject) => {
+    try {
+      const response = await axiosInstance.put(
+        `${api}/FinancialTransaction/UpdateFinancialTransaction`,
+        {
+          id: id,
+          accountingObject: accountingObject,
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 };
 
 export default financialTransactionApi;

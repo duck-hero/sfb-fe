@@ -2,12 +2,14 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { toast } from "react-toastify";
+import { SquarePen } from "lucide-react";
 
 import bankAccountApi from "../../api/bankAccountApi";
 import financialTransactionApi from "../../api/financialTransactionApi";
 
 import DateRangePicker from "../../components/DateFilter/DateRangePicker";
 import DateCell from "../../components/DateFilter/DateCell";
+import EditFinancialTransactionModal from "./EditFinancialTransactionModal";
 
 dayjs.extend(utc);
 dayjs.locale("vi");
@@ -24,6 +26,15 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
   // Scan modal state
   const [scanModalOpen, setScanModalOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
+
+  // Edit modal state
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    id: 0,
+    accountingObject: "",
+    description: "",
+  });
+  const [editLoading, setEditLoading] = useState(false);
 
   const [filters, setFilters] = useState({
     transactionCode: "",
@@ -134,6 +145,41 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
     window.open(url, '_blank');
     setScanModalOpen(false);
     setSelectedAccount(null);
+  };
+
+  const handleOpenEditModal = (transaction) => {
+    setEditFormData({
+      id: transaction.id,
+      accountingObject: transaction.accountingObject || "",
+      description: transaction.description || "",
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleEditFormChange = (field, value) => {
+    setEditFormData(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleSaveEdit = async () => {
+    setEditLoading(true);
+    try {
+      await financialTransactionApi.updateFinancialTransaction(
+        editFormData.id,
+        editFormData.accountingObject
+      );
+      toast.success("Cập nhật giao dịch thành công!");
+      setEditModalOpen(false);
+
+      // Refresh data
+      fetchTransactions(false);
+    } catch (err) {
+      toast.error(typeof err === "string" ? err : "Không thể cập nhật giao dịch");
+    } finally {
+      setEditLoading(false);
+    }
   };
 
   const formatCurrency = (amount) => {
@@ -290,9 +336,21 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
                 </th>
                 <th
                   className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase"
+                  style={{ width: "100px" }}
+                >
+                  Đối tượng hạch toán
+                </th>
+                <th
+                  className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase"
                   style={{ width: "120px" }}
                 >
                   STK Bank
+                </th>
+                <th
+                  className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase"
+                  style={{ width: "80px" }}
+                >
+                  Thao tác
                 </th>
               </tr>
             </thead>
@@ -300,7 +358,7 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
               {isLoading && transactions.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={10}
                     className="px-4 py-8 text-center text-gray-500 text-sm"
                   >
                     Đang tải...
@@ -343,8 +401,19 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
                           {item.description || "-"}
                         </div>
                       </td>
+                      <td className="px-2 py-2 text-[11px] text-gray-700 align-middle">
+                        {item.accountingObject || "-"}
+                      </td>
                       <td className="px-2 py-2 text-[11px] text-gray-700 font-semibold align-middle">
                         {item.accountBankNumber || item.accountBankNumber || "-"}
+                      </td>
+                      <td className="px-2 py-2 text-center align-middle">
+                        <button
+                          className="text-blue-600 hover:text-blue-800"
+                          onClick={() => handleOpenEditModal(item)}
+                        >
+                          <SquarePen className="w-4 h-4" />
+                        </button>
                       </td>
                     </tr>
                   );
@@ -353,7 +422,7 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
                 !isLoading && (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={10}
                       className="px-4 py-8 text-center text-gray-500 text-sm"
                     >
                       {error || "Không tìm thấy giao dịch nào."}
@@ -432,6 +501,16 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
           </div>
         </div>
       )}
+
+      {/* Edit Transaction Modal */}
+      <EditFinancialTransactionModal
+        open={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        formData={editFormData}
+        onChange={handleEditFormChange}
+        onSave={handleSaveEdit}
+        loading={editLoading}
+      />
     </div>
   );
 }
