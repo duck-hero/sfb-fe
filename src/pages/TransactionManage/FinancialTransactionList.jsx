@@ -75,7 +75,7 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
         );
         setBankList(res?.data || res?.items || []);
       } catch (err) {
-        console.error("Lỗi lấy danh sách tài khoản ngân hàng:", err);
+        toast.error(typeof err === "string" ? err : "Không thể lấy danh sách tài khoản ngân hàng");
       }
     };
     fetchBankAccounts();
@@ -107,7 +107,6 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
         setHasMore(Boolean(res.pageInfo?.hasNextPage));
       }
     } catch (err) {
-      console.error(err);
       setError("Không thể tải giao dịch.");
       toast.error(typeof err === "string" ? err : "Không thể tải giao dịch.");
     } finally {
