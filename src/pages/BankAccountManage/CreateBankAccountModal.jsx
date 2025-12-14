@@ -104,6 +104,25 @@ export default function CreateBankAccountModal({
                     />
                   </div>
 
+                  {/* Account Type */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Loại tài khoản
+                    </label>
+                    <select
+                      name="bankAccountType"
+                      value={formData.bankAccountType}
+                      onChange={onChange}
+                      disabled={saving}
+                      className="w-full h-12 border border-gray-300 rounded-xl px-3 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                    >
+                      <option value="">-- Chọn loại tài khoản --</option>
+                      <option value="1">Tài khoản chi tiêu FB</option>
+                      <option value="2">Tài khoản thu chi</option>
+                      <option value="3">Tài khoản lợi nhuận</option>
+                    </select>
+                  </div>
+
                   {/* Login Username */}
                   <div>
                     <label className="block text-sm font-medium mb-1">

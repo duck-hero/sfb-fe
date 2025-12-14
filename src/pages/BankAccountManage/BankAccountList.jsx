@@ -20,6 +20,20 @@ function BankAccountList() {
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
 
+  // Helper function để format loại tài khoản
+  const formatAccountType = (type) => {
+    switch (type) {
+      case 1:
+        return "Tài khoản chi tiêu FB";
+      case 2:
+        return "Tài khoản thu chi";
+      case 3:
+        return "Tài khoản lợi nhuận";
+      default:
+        return "Khác";
+    }
+  };
+
   // Search fields
   const [searchAccountNumber, setSearchAccountNumber] = useState("");
   const [searchHolderName, setSearchHolderName] = useState("");
@@ -135,8 +149,9 @@ function BankAccountList() {
         accountBankNumber: acc?.accountBankNumber || "",
         accountBankHolderName: acc?.accountBankHolderName || "",
         loginUsername: acc?.loginUsername || "",
-        loginPassword: "", 
+        loginPassword: "",
         bankId: acc?.bankId || "",
+        bankAccountType: acc?.type || "",
       });
     } catch (err) {
       toast.error("Không tải được thông tin tài khoản");
@@ -341,6 +356,12 @@ function BankAccountList() {
                 </th>
                 <th
                   scope="col"
+                  className="px-3 py-2 text-left text-xs font-medium text-gray-900 tracking-wider w-1/4 text-primary-darkest"
+                >
+                  Loại tài khoản
+                </th>
+                <th
+                  scope="col"
                   className="px-3 py-2 text-left text-xs font-medium text-gray-900 tracking-wider w-1/12 text-primary-darkest"
                 >
                   Tùy chọn
@@ -368,6 +389,9 @@ function BankAccountList() {
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
                     {x.bankCode}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
+                    {formatAccountType(x.type)}
                   </td>
                   <td className="w-1/12 px-3 py-2 whitespace-nowrap text-xs text-gray-500 flex items-center">
                     <button className=" " onClick={() => openEditModal(x.id)}>

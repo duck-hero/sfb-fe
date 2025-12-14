@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
+import weekday from "dayjs/plugin/weekday";
+import isoWeek from "dayjs/plugin/isoWeek";
 import utc from "dayjs/plugin/utc";
 import { toast } from "react-toastify";
 import { PlusCircle, SquarePen } from "lucide-react";
@@ -20,18 +22,202 @@ import EditTransactionModal from "./EditTransactionModal";
 import AddCardApi from "../../api/AddCardApi";
 import SecurityHelper from "../../utils/crypto";
 
-import DateRangePicker from "../../components/DateFilter/DateRangePicker";
-import DateCell from "../../components/DateFilter/DateCell";
 
 // --- CẤU HÌNH DAYJS ---
+dayjs.extend(weekday);
+dayjs.extend(isoWeek);
 dayjs.extend(utc);
 dayjs.locale("vi");
+
+// =============================================================================
+// PHẦN 1: COMPONENT DATE RANGE PICKER (Code của bạn)
+// =============================================================================
+function DateRangePicker({ onChange }) {
+  const [open, setOpen] = useState(false);
+  const [range, setRange] = useState({
+    start: dayjs().startOf("day"),
+    end: dayjs().endOf("day"),
+  });
+  const [preset, setPreset] = useState("Hôm nay");
+  const [leftMonth, setLeftMonth] = useState(dayjs());
+  const [rightMonth, setRightMonth] = useState(dayjs());
+
+  const [inputStart, setInputStart] = useState(dayjs().format("DD/MM/YYYY"));
+  const [inputEnd, setInputEnd] = useState(dayjs().format("DD/MM/YYYY"));
+
+  const popupRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (popupRef.current && !popupRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const presets = {
+    "Hôm nay": () => ({ start: dayjs().startOf("day"), end: dayjs().endOf("day"), label: "Hôm nay" }),
+    "Hôm qua": () => ({ start: dayjs().subtract(1, "day").startOf("day"), end: dayjs().subtract(1, "day").endOf("day"), label: "Hôm qua" }),
+    "Tuần này": () => ({ start: dayjs().startOf("isoWeek"), end: dayjs().endOf("isoWeek"), label: "Tuần này" }),
+    "Tuần trước": () => ({ start: dayjs().subtract(1, "week").startOf("isoWeek"), end: dayjs().subtract(1, "week").endOf("isoWeek"), label: "Tuần trước" }),
+    "Tháng này": () => ({ start: dayjs().startOf("month"), end: dayjs().endOf("month"), label: "Tháng này" }),
+    "Tháng trước": () => ({ start: dayjs().subtract(1, "month").startOf("month"), end: dayjs().subtract(1, "month").endOf("month"), label: "Tháng trước" }),
+  };
+
+  const applyPreset = (key) => {
+    const { start, end, label } = presets[key]();
+    updateRange(start, end, label);
+    setOpen(false);
+    emitValue(start, end);
+  };
+
+  const updateRange = (start, end, newPreset = "") => {
+    setRange({ start, end });
+    setPreset(newPreset);
+    setInputStart(start.format("DD/MM/YYYY"));
+    setInputEnd(end.format("DD/MM/YYYY"));
+    setLeftMonth(start);
+    setRightMonth(end);
+  };
+
+  const emitValue = (start, end) => {
+    onChange?.({
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
+    });
+  };
+
+  const handleInputChange = (type, value) => {
+    const cleaned = value.replace(/[^\d/]/g, "");
+    if (type === "start") setInputStart(cleaned);
+    else setInputEnd(cleaned);
+
+    if (cleaned.length === 10) {
+      const parsed = dayjs(cleaned, "DD/MM/YYYY", true);
+      if (parsed.isValid()) {
+        const newDate = parsed.startOf("day");
+        if (type === "start") {
+          // Logic cập nhật state...
+          const newRange = { ...range, start: newDate };
+          if (newDate.isAfter(range.end)) newRange.end = newDate.endOf('day');
+          setRange(newRange);
+          setLeftMonth(newDate);
+        } else {
+          // Logic cập nhật state...
+          const newRange = { ...range, end: newDate.endOf("day") };
+          if (newDate.isBefore(range.start)) newRange.start = newDate.startOf('day');
+          setRange(newRange);
+          setRightMonth(newDate);
+        }
+        setPreset("");
+      }
+    }
+  };
+
+  const displayText = inputStart && inputEnd ? (inputStart === inputEnd ? inputStart : `${inputStart} - ${inputEnd}`) : "Chọn khoảng thời gian";
+
+  return (
+    <div className="relative inline-block" ref={popupRef}>
+      <button type="button" onClick={() => setOpen(!open)} className="flex items-center justify-between gap-3 px-4 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50 min-w-[280px] text-sm shadow-sm">
+        <span>{displayText}</span>
+        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+      </button>
+      {open && (
+        <div className="absolute top-full mt-2 left-0 bg-white border rounded-lg shadow-2xl z-50 flex overflow-hidden">
+          <div className="w-40 border-r bg-gray-50">
+            {Object.keys(presets).map((key) => (
+              <button key={key} type="button" onClick={() => applyPreset(key)} className={`w-full text-left px-4 py-3 text-sm hover:bg-blue-50 transition ${preset === presets[key]().label ? "bg-blue-100 text-blue-700 font-medium" : ""}`}>{key}</button>
+            ))}
+          </div>
+          <div className="p-5">
+            <div className="flex gap-4 mb-5 justify-center">
+              {/* Input Start */}
+              <div className="flex items-center border rounded">
+                <span className="px-2 text-xs text-gray-500 bg-gray-100 h-full flex items-center">Từ</span>
+                <input className="w-28 px-2 py-1 text-sm outline-none" value={inputStart} onChange={(e) => handleInputChange('start', e.target.value)} />
+              </div>
+              {/* Input End */}
+              <div className="flex items-center border rounded">
+                <span className="px-2 text-xs text-gray-500 bg-gray-100 h-full flex items-center">Đến</span>
+                <input className="w-28 px-2 py-1 text-sm outline-none" value={inputEnd} onChange={(e) => handleInputChange('end', e.target.value)} />
+              </div>
+            </div>
+            <div className="flex gap-6">
+              <CalendarMonth month={leftMonth} onMonthChange={setLeftMonth} value={range.start} onChange={(d) => updateRange(d.startOf("day"), range.end)} />
+              <CalendarMonth month={rightMonth} onMonthChange={setRightMonth} value={range.end} onChange={(d) => {
+                const newEnd = d.endOf("day");
+                if (newEnd.isBefore(range.start)) updateRange(newEnd, newEnd);
+                else updateRange(range.start, newEnd);
+              }} />
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <button onClick={() => setOpen(false)} className="px-4 py-1.5 border rounded text-sm hover:bg-gray-100">Hủy</button>
+              <button onClick={() => { emitValue(range.start, range.end); setOpen(false); }} className="px-4 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">Áp dụng</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+const DateCell = ({ dateString }) => {
+  if (!dateString) return <span className="text-gray-400 text-[11px]">-</span>;
+  const d = dayjs(dateString);
+  return (
+    <div className="flex flex-col leading-tight">
+      <span className="font-semibold text-gray-800 text-[11px]">{d.format("HH:mm:ss")}</span>
+      <span className="text-[10px] text-gray-500">{d.format("DD/MM/YYYY")}</span>
+    </div>
+  );
+};
+
+function CalendarMonth({ month, onMonthChange, value, onChange }) {
+  const currentMonth = month || dayjs();
+  const year = currentMonth.year();
+  const monthNum = currentMonth.month();
+  const startOfMonth = currentMonth.startOf("month");
+  const daysInMonth = currentMonth.daysInMonth();
+  const startDayOfWeek = startOfMonth.day() === 0 ? 6 : startOfMonth.day() - 1; // Điều chỉnh để T2 là đầu tuần nếu cần, ở đây dùng mặc định dayjs locale
+
+  // Sửa lại logic render day grid cho đơn giản theo dayjs locale 'vi' (CN là 0)
+  // Tuy nhiên ở trên bạn import weekday plugin.
+  // Để an toàn với UI của bạn, tôi giữ logic render đơn giản
+
+  const days = [];
+  const emptyDays = startOfMonth.day() === 0 ? 6 : startOfMonth.day() - 1; // Giả sử T2 bắt đầu
+
+  for (let i = 0; i < emptyDays; i++) days.push(<div key={`empty-${i}`} className="w-8 h-8" />);
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = dayjs(new Date(year, monthNum, day));
+    const isSelected = value && date.isSame(value, "day");
+    days.push(
+      <button key={day} onClick={() => onChange(date)} className={`w-8 h-8 rounded-full text-sm hover:bg-blue-100 ${isSelected ? "bg-blue-600 text-white" : ""}`}>{day}</button>
+    );
+  }
+
+  return (
+    <div>
+      <div className="flex justify-between mb-2">
+        <button onClick={() => onMonthChange(currentMonth.subtract(1, "month"))}>&lt;</button>
+        <span className="text-sm font-semibold">Tháng {monthNum + 1}/{year}</span>
+        <button onClick={() => onMonthChange(currentMonth.add(1, "month"))}>&gt;</button>
+      </div>
+      <div className="grid grid-cols-7 gap-1 text-center">
+        {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map(d => <div key={d} className="text-xs text-gray-500">{d}</div>)}
+        {days}
+      </div>
+    </div>
+  );
+}
 
 // =============================================================================
 // PHẦN 2: COMPONENT CHÍNH TransactionHistoryList
 // =============================================================================
 
-const TransactionHistoryList = ({ bankAccountType = 1 }) => {
+const TransactionHistoryList = () => {
   // --- STATE ---
   const [transactions, setTransactions] = useState([]);
   const [bankList, setBankList] = useState([]);
@@ -240,17 +426,10 @@ const TransactionHistoryList = ({ bankAccountType = 1 }) => {
     const fetchDependencies = async () => {
       try {
         // Fetch Bank List (Existing)
-        const bankRes = await bankAccountApi.getBankList(
-          1,
-          999,
-          undefined,
-          undefined,
-          undefined,
-          bankAccountType
-        );
+        const bankRes = await bankAccountApi.getBankList();
         // Use real data if available, else mock (as per your extensive use of mock in original code)
         // But here trying to be consistent with your existing logic
-        setBankList(bankRes?.data || bankRes?.items || []);
+        setBankList((bankRes.data && bankRes.data.length > 0) ? bankRes.data : []);
 
         // Fetch BM List for Ads Modal
         const bmRes = await bmAccountApi.getBmAccountList(1, 999);
@@ -265,7 +444,7 @@ const TransactionHistoryList = ({ bankAccountType = 1 }) => {
       }
     };
     fetchDependencies();
-  }, [bankAccountType]);
+  }, []);
 
   // --- API FETCH TRANSACTIONS ---
   const fetchTransactions = async (isLoadMore = false) => {
@@ -296,8 +475,7 @@ const TransactionHistoryList = ({ bankAccountType = 1 }) => {
         getBooleanValue(filters.isAmountMismatched),
         filters.bankAccountId || undefined,
         filters.adAccountId || undefined, // Pass AdAccount ID
-        filters.bankCardId || undefined, // Pass BankCard ID
-        bankAccountType
+        filters.bankCardId || undefined // Pass BankCard ID
       );
 
       if (res && res.success) {
@@ -341,8 +519,7 @@ const TransactionHistoryList = ({ bankAccountType = 1 }) => {
         getBooleanValue(filters.isAmountMismatched),
         filters.bankAccountId || undefined,
         filters.adAccountId || undefined,
-        filters.bankCardId || undefined,
-        bankAccountType
+        filters.bankCardId || undefined
       );
 
       if (res && res.success && res.data) {
@@ -432,8 +609,7 @@ const TransactionHistoryList = ({ bankAccountType = 1 }) => {
         getBooleanValue(filters.isAmountMismatched),
         filters.bankAccountId || undefined,
         filters.adAccountId || undefined,
-        filters.bankCardId || undefined,
-        bankAccountType
+        filters.bankCardId || undefined
       );
 
       toast.success("Đồng bộ thành công!");
@@ -467,8 +643,7 @@ const TransactionHistoryList = ({ bankAccountType = 1 }) => {
         getBooleanValue(filters.isAmountMismatched),
         filters.bankAccountId || undefined,
         filters.adAccountId || undefined,
-        filters.bankCardId || undefined,
-        bankAccountType
+        filters.bankCardId || undefined
       );
 
       // Create download link
