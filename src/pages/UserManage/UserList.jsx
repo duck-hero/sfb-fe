@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import accountApi from "../../api/accountApi";
 import AddUserModal from "./AddUserModal";
 import { toast } from "react-toastify";

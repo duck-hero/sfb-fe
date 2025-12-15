@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from "react";
 import { Dialog, Transition, Switch } from "@headlessui/react";
 import { Fragment } from "react";
 

@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useEffect } from "react";
+import { Fragment, useState, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { toast } from "react-toastify";
 import accountApi from "../../api/accountApi";

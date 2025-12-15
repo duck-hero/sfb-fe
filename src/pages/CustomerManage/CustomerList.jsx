@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, Plus, Trash, SquarePen } from "lucide-react";
 import { toast } from "react-toastify";
 import customerApi from "../../api/customerApi";

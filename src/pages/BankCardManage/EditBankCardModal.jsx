@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Fragment } from "react";
+import { useEffect, useState, Fragment } from "react";
 import { Dialog, Transition, Switch } from "@headlessui/react";
 import { ClipLoader } from "react-spinners";
 import SecurityHelper from "../../utils/crypto";

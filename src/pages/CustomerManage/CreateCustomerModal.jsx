@@ -1,6 +1,4 @@
-import React from "react";
-
-const CreateCustomerModal = ({ open, onClose, onSave, saving, formData, onChange }) => {
+  const CreateCustomerModal = ({ open, onClose, onSave, saving, formData, onChange }) => {
   if (!open) return null;
 
   return (

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import bankAccountApi from "../../api/bankAccountApi";
 import { Search, Plus, SquarePen, Trash } from "lucide-react";
 import { toast } from "react-toastify";

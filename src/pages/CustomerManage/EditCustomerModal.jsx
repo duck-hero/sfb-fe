@@ -1,6 +1,4 @@
-import React from "react";
-
-const EditCustomerModal = ({ open, onClose, onSave, saving, formData, onChange, loading }) => {
+  const EditCustomerModal = ({ open, onClose, onSave, saving, formData, onChange, loading }) => {
   if (!open) return null;
 
   return (
