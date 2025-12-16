@@ -13,200 +13,202 @@ import CreateBankAccountModal from "./CreateBankAccountModal";
 
 
 function BankAccountList() {
-  const [bankAccounts, setBankAccounts] = useState([]);
-  const [pageNumber, setPageNumber] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [bankAccounts, setBankAccounts] = useState([]);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  // Helper function để format loại tài khoản
-  const formatAccountType = (type) => {
-    switch (type) {
-      case 1:
-        return "Tài khoản chi tiêu FB";
-      case 2:
-        return "Tài khoản thu chi";
-      case 3:
-        return "Tài khoản lợi nhuận";
-      default:
-        return "Khác";
-    }
-  };
+  // Helper function để format loại tài khoản
+  const formatAccountType = (type) => {
+    switch (type) {
+      case 1:
+        return "Tài khoản chi tiêu FB";
+      case 2:
+        return "Tài khoản thu chi";
+      case 3:
+        return "Tài khoản lợi nhuận";
+      default:
+        return "Khác";
+    }
+  };
 
-  // Search fields
-  const [searchAccountNumber, setSearchAccountNumber] = useState("");
-  const [searchHolderName, setSearchHolderName] = useState("");
-  const [searchKeyword, setSearchKeyword] = useState({ accountNumber: "", name: "", bankId: "" });
-  const [bankList, setBankList] = useState([]);
-  const [searchBankId, setSearchBankId] = useState(""); // filter dropdown
-
-
-  // Modal Edit
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isEditLoading, setIsEditLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [selectedId, setSelectedId] = useState(null);
-
-  // Edit form
-  const [formData, setFormData] = useState({
-    id: 0,
-    accountBankNumber: "",
-    accountBankHolderName: "",
-    loginUsername: "",
-    loginPassword: "",
-    bankId: "",
-  });
-  const [passwordInput, setPasswordInput] = useState(""); 
-  const [isPasswordEdited, setIsPasswordEdited] = useState(false);
+  // Search fields
+  const [searchAccountNumber, setSearchAccountNumber] = useState("");
+  const [searchHolderName, setSearchHolderName] = useState("");
+  const [searchKeyword, setSearchKeyword] = useState({ accountNumber: "", name: "", bankId: "" });
+  const [bankList, setBankList] = useState([]);
+  const [searchBankId, setSearchBankId] = useState(""); // filter dropdown
 
 
-  // Modal Create
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  
+  // Modal Edit
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isEditLoading, setIsEditLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
 
-  // Delete
-  const [openDeleteModal, setOpenDeleteModal] = useState(false);
-  const [bankToDelete, setBankToDelete] = useState(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const requestRef = useRef(0);
-
-  // ---------------------- FETCH LIST ----------------------
-  const fetchBanks = async () => {
-    setLoading(true);
-    try {
-      const res = await bankAccountApi.getBankList(
-        pageNumber,
-        pageSize,
-        searchKeyword.accountNumber,
-        searchKeyword.name,
-        searchKeyword.bankId 
-      );
-
-      setBankAccounts(res?.data || []);
-      setTotalItems(res?.totalItems || 0);
-      setTotalPages(res?.totalItems ? Math.ceil(res.totalItems / pageSize) : 1);
-    } catch (err) {
-      console.error(err);
-      toast.error("Lấy danh sách tài khoản thất bại");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchBanks();
-  }, [pageNumber, pageSize, searchKeyword]);
-
-  useEffect(() => {
-    const fetchBanksDropdown = async () => {
-      try {
-        const res = await bankApi.getBankList(1, 50); // mặc định 50
-        setBankList(res?.data || []);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchBanksDropdown();
-  }, []);
+  // Edit form
+  const [formData, setFormData] = useState({
+    id: 0,
+    accountBankNumber: "",
+    accountBankHolderName: "",
+    loginUsername: "",
+    loginPassword: "",
+    bankId: "",
+  });
+  const [passwordInput, setPasswordInput] = useState(""); 
+  const [isPasswordEdited, setIsPasswordEdited] = useState(false);
 
 
-  // Search
-  const handleSearch = () => {
-    setPageNumber(1);
-    setSearchKeyword({
-      accountNumber: searchAccountNumber.trim() || "",
-      name: searchHolderName.trim() || "",
-      bankId: searchBankId || "", // thêm param filter bankId
-    });
-  };
+  // Modal Create
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  
+
+  // Delete
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [bankToDelete, setBankToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const requestRef = useRef(0);
+
+  // ---------------------- FETCH LIST ----------------------
+  const fetchBanks = async () => {
+    setLoading(true);
+    try {
+      const res = await bankAccountApi.getBankList(
+        pageNumber,
+        pageSize,
+        searchKeyword.accountNumber,
+        searchKeyword.name,
+        searchKeyword.bankId 
+      );
+
+      setBankAccounts(res?.data || []);
+      setTotalItems(res?.totalItems || 0);
+      setTotalPages(res?.totalItems ? Math.ceil(res.totalItems / pageSize) : 1);
+    } catch (err) {
+      console.error(err);
+      toast.error("Lấy danh sách tài khoản thất bại");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBanks();
+  }, [pageNumber, pageSize, searchKeyword]);
+
+  useEffect(() => {
+    const fetchBanksDropdown = async () => {
+      try {
+        const res = await bankApi.getBankList(1, 50); // mặc định 50
+        setBankList(res?.data || []);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchBanksDropdown();
+  }, []);
 
 
-  // Pagination
-  const handlePrev = () => pageNumber > 1 && setPageNumber(pageNumber - 1);
-  const handleNext = () => pageNumber < totalPages && setPageNumber(pageNumber + 1);
-  const handlePageSizeChange = (e) => {
-    setPageSize(Number(e.target.value));
-    setPageNumber(1);
-  };
+  // Search
+  const handleSearch = () => {
+    setPageNumber(1);
+    setSearchKeyword({
+      accountNumber: searchAccountNumber.trim() || "",
+      name: searchHolderName.trim() || "",
+      bankId: searchBankId || "", // thêm param filter bankId
+    });
+  };
 
-  // ---------------------- EDIT ----------------------
-  const openEditModal = async (id) => {
-    setIsEditModalOpen(true);
-    setIsEditLoading(true);
-    setSelectedId(id);
 
-    const reqId = ++requestRef.current;
+  // Pagination
+  const handlePrev = () => pageNumber > 1 && setPageNumber(pageNumber - 1);
+  const handleNext = () => pageNumber < totalPages && setPageNumber(pageNumber + 1);
+  const handlePageSizeChange = (e) => {
+    setPageSize(Number(e.target.value));
+    setPageNumber(1);
+  };
 
-    try {
-      const res = await bankAccountApi.getBankAccountById(id);
-      if (requestRef.current !== reqId) return;
+  // ---------------------- EDIT ----------------------
+  const openEditModal = async (id) => {
+    setIsEditModalOpen(true);
+    setIsEditLoading(true);
+    setSelectedId(id);
 
-      const acc = res?.data;
-      setFormData({
-        id: acc?.id || 0,
-        accountBankNumber: acc?.accountBankNumber || "",
-        accountBankHolderName: acc?.accountBankHolderName || "",
-        loginUsername: acc?.loginUsername || "",
-        loginPassword: "",
-        bankId: acc?.bankId || "",
-        bankAccountType: acc?.type || "",
-      });
-    } catch (err) {
+    const reqId = ++requestRef.current;
+
+    try {
+      const res = await bankAccountApi.getBankAccountById(id);
+      if (requestRef.current !== reqId) return;
+
+      const acc = res?.data;
+      setFormData({
+        id: acc?.id || 0,
+        accountBankNumber: acc?.accountBankNumber || "",
+        accountBankHolderName: acc?.accountBankHolderName || "",
+        loginUsername: acc?.loginUsername || "",
+        loginPassword: "",
+        bankId: acc?.bankId || "",
+        bankAccountType: acc?.type || "",
+      });
+    } catch (err) {
       toast.error("Không tải được thông tin tài khoản");
     } finally {
       if (requestRef.current === reqId) setIsEditLoading(false);
     }
   };
 
-  const handleEditChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleEditChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const handleEditSave = async () => {
-    console.log("Dữ liệu gửi đi:", formData);
-    setSaving(true);
+  const handleEditSave = async () => {
+    console.log("Dữ liệu gửi đi:", formData);
+    setSaving(true);
 
-    const payload = {
-      ...formData,
-      loginPassword: isPasswordEdited ? formData.loginPassword : null
-    };
+    const payload = {
+      ...formData,
+      loginPassword: isPasswordEdited ? formData.loginPassword : null
+    };
 
-    try {
-      await bankAccountApi.updateBankAccount(payload);
-      toast.success("Cập nhật thành công");
-      setIsEditModalOpen(false);
-      fetchBanks();
-    } catch (err) {
+    try {
+      await bankAccountApi.updateBankAccount(payload);
+      toast.success("Cập nhật thành công");
+      setIsEditModalOpen(false);
+      fetchBanks();
+    } catch (err) {
       toast.error(typeof err === 'string' ? err : "Cập nhật dữ liệu thất bại");
-    } finally {
-      setSaving(false);
-    }
-  };
+    } finally {
+      setSaving(false);
+    }
+  };
 
 
-  // ---------------------- CREATE ----------------------
-  const openCreateModal = () => {
-    setFormData({
-      accountBankNumber: "",
-      accountBankHolderName: "",
-      loginUsername: "",
-      loginPassword: "",
-      bankId: "",
-    });
-    setIsCreateModalOpen(true);
-  };
+  // ---------------------- CREATE ----------------------
+  const openCreateModal = () => {
+    setFormData({
+      accountBankNumber: "",
+      accountBankHolderName: "",
+      loginUsername: "",
+      loginPassword: "",
+      bankId: "",
+      bankAccountType: "",
+    });
+    setIsCreateModalOpen(true);
+  };
 
-  const handleCreateSave = async () => {
-    setSaving(true);
-    try {
-      await bankAccountApi.createBankAccount(
-        formData.accountBankNumber,
-        formData.accountBankHolderName,
-        formData.loginUsername,
-        formData.loginPassword,
-        formData.bankId
-      );
+  const handleCreateSave = async () => {
+    setSaving(true);
+    try {
+      await bankAccountApi.createBankAccount(
+        formData.accountBankNumber,
+        formData.accountBankHolderName,
+        formData.loginUsername,
+        formData.loginPassword,
+        formData.bankId,
+        formData.bankAccountType
+      );
       toast.success("Thêm tài khoản thành công");
       setIsCreateModalOpen(false);
       fetchBanks();
@@ -217,15 +219,15 @@ function BankAccountList() {
     }
   };
 
-  // ---------------------- DELETE ----------------------
-  const handleOpenDelete = (item) => {
-    setBankToDelete(item);
-    setOpenDeleteModal(true);
-  };
+  // ---------------------- DELETE ----------------------
+  const handleOpenDelete = (item) => {
+    setBankToDelete(item);
+    setOpenDeleteModal(true);
+  };
 
-  const handleConfirmDelete = async () => {
-    setIsDeleting(true);
-    try {
+  const handleConfirmDelete = async () => {
+    setIsDeleting(true);
+    try {
       await bankAccountApi.deleteBankAccountById(bankToDelete.id);
       toast.success("Xóa thành công");
       fetchBanks();
@@ -238,11 +240,11 @@ function BankAccountList() {
   };
 
   // ---------------------- RENDER ----------------------
-  return (
-     <div className="px-4">
+  return (
+     <div className="px-4">
       <h1 className="text-lg font-bold mb-3">Danh sách tài khoản ngân hàng</h1>
 
-       <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+       <div className="flex justify-between items-center pb-2 border-b border-gray-200">
         {/* Cấu trúc Search Bar phức tạp, dùng flex và các input/select riêng biệt, và nút Tìm */}
         <div className="flex items-center w-full max-w-4xl gap-3">
           {/* Input Số tài khoản */}
@@ -311,7 +313,7 @@ function BankAccountList() {
   <Search className="h-4 w-4" /> 
 </button>
 
-         </div>
+        </div>
 
         {/* Nút Tạo mới */}
         <button
@@ -320,13 +322,13 @@ function BankAccountList() {
         >
           <Plus className="h-4 w-4 inline-block mr-1.5" />Tạo mới
         </button>
-      </div>
+      </div>
 
-      {/* Bảng dữ liệu */}
-      {loading ? (
-        <TableSkeleton />
-      ) : (
-         <div className="overflow-x-auto shadow-md rounded-lg">
+      {/* Bảng dữ liệu */}
+      {loading ? (
+        <TableSkeleton />
+      ) : (
+         <div className="overflow-x-auto shadow-md rounded-lg">
           <table className="w-full divide-y divide-gray-200">
             <thead className="bg-white">
               <tr>
@@ -405,7 +407,7 @@ function BankAccountList() {
               ))}
             </tbody>
 
-             {/* Footer và Pagination */}
+            {/* Footer và Pagination */}
             <tfoot className="bg-white">
               <tr>
                 <td colSpan="5" className="px-3 py-2">
@@ -461,43 +463,43 @@ function BankAccountList() {
                 </td>
               </tr>
             </tfoot>
-          </table>
-        </div>
-      )}
+          </table>
+        </div>
+      )}
 
-      {/* Modals */}
-      <EditBankAccountModal
-        open={isEditModalOpen}
-        loading={isEditLoading}
-        saving={saving}
-        formData={formData}
-        onChange={handleEditChange}
-        onClose={() => setIsEditModalOpen(false)}
-        onSave={handleEditSave}
-        bankList={bankList}
-        setIsPasswordEdited={setIsPasswordEdited} // Giữ lại prop này cho logic riêng của EditModal
-      />
+      {/* Modals */}
+      <EditBankAccountModal
+        open={isEditModalOpen}
+        loading={isEditLoading}
+        saving={saving}
+        formData={formData}
+        onChange={handleEditChange}
+        onClose={() => setIsEditModalOpen(false)}
+        onSave={handleEditSave}
+        bankList={bankList}
+        setIsPasswordEdited={setIsPasswordEdited} // Giữ lại prop này cho logic riêng của EditModal
+      />
 
-      <CreateBankAccountModal
-        open={isCreateModalOpen}
-        formData={formData}
-        onChange={handleEditChange}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSave={handleCreateSave}
-        saving={saving}
-        bankList={bankList}
-      />
+      <CreateBankAccountModal
+        open={isCreateModalOpen}
+        formData={formData}
+        onChange={handleEditChange}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSave={handleCreateSave}
+        saving={saving}
+        bankList={bankList}
+      />
 
-      <DeleteConfirmModal
-        open={openDeleteModal}
-        onClose={() => setOpenDeleteModal(false)}
-        onConfirm={handleConfirmDelete}
-        title="Xác nhận"
-        message={`Bạn có chắc chắn muốn xóa tài khoản "${bankToDelete?.accountBankNumber}" không?`}
-        loading={isDeleting}
-      />
-    </div>
-  );
+      <DeleteConfirmModal
+        open={openDeleteModal}
+        onClose={() => setOpenDeleteModal(false)}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận"
+        message={`Bạn có chắc chắn muốn xóa tài khoản "${bankToDelete?.accountBankNumber}" không?`}
+        loading={isDeleting}
+      />
+    </div>
+  );
 }
 
 export default BankAccountList;
