@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useState, useMemo } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { Plus } from "lucide-react";
 import customerApi from "../../api/customerApi";
@@ -103,8 +103,8 @@ const DetailCustomerModal = ({ open, id, onClose }) => {
   }, [open, id]);
 
   // Derived state for filtered list
-  const activeAccounts = data?.adsAccountDtos?.filter(acc => acc.status === 'ACTIVE') || [];
-  const allAccounts = data?.adsAccountDtos || [];
+  const allAccounts = useMemo(() => data?.adsAccountDtos || [], [data]);
+  const activeAccounts = useMemo(() => allAccounts.filter(acc => acc.status === 'ACTIVE'), [allAccounts]);
   
   const displayAccounts = activeTab === 'ACTIVE' ? activeAccounts : allAccounts;
 
@@ -122,10 +122,28 @@ const DetailCustomerModal = ({ open, id, onClose }) => {
     }
   };
 
+  // Helper to get local YYYY-MM-DD
+  const getTodayString = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // New states for API update
+  const [startAt, setStartAt] = useState(getTodayString()); 
+  const [feePercent, setFeePercent] = useState("");
+  const [paymentMode, setPaymentMode] = useState(1); // Default 1: CustomerPays
+
   const handleOpenAddRental = () => {
     setIsAddRentalOpen(true);
     setSelectedAccountId(null);
     setSearchAccount(""); // Reset search
+    // Reset new fields
+    setStartAt(getTodayString());
+    setFeePercent("");
+    setPaymentMode(1);
     fetchAvailableAccounts();
   };
 
@@ -142,9 +160,25 @@ const DetailCustomerModal = ({ open, id, onClose }) => {
     
     setAdding(true);
     try {
+      // Convert feePercent: input 1 => 0.01
+      const fee = feePercent ? parseFloat(feePercent) / 100 : 0;
+      
+      // Convert date to ISO string with current time or start of day? 
+      // User said: "mặc định giá trị là ngày hôm nay rồi muốn đối sang ngày khác thì tùy"
+      // and example: "2025-12-17T02:58:16.695Z"
+      // We will take the chosen date and assume start of day or combine with current time if it's today.
+      // Simplest: take the date from input, creating a date object, set to ISO.
+      // Note: input type="date" returns YYYY-MM-DD.
+      const startDateObj = new Date(startAt);
+      // To match specific format requirements or ensure validity, strict ISO is good.
+      const isoStartAt = startDateObj.toISOString();
+
       await customerAdsAccountApi.createCustomerAdsAccount({
         adAccountId: selectedAccountId,
-        customerId: id
+        customerId: id,
+        startAt: isoStartAt,
+        feePercent: fee,
+        paymentMode: parseInt(paymentMode)
       });
       toast.success("Thêm tài khoản thuê thành công");
       setIsAddRentalOpen(false);
@@ -268,7 +302,7 @@ const DetailCustomerModal = ({ open, id, onClose }) => {
                       <section>
                          <h3 className="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2">
                            <span className="w-1 h-5 bg-green-600 rounded-full block"></span>
-                            Danh sách tài khoản thuê
+                            Danh sách phiên thuê
                         </h3>
 
                         {/* Tabs and Add Button */}
@@ -306,47 +340,72 @@ const DetailCustomerModal = ({ open, id, onClose }) => {
                         <div className="border rounded-lg overflow-hidden border-gray-200">
                              {displayAccounts.length > 0 ? (
                                  <div className="overflow-x-auto max-h-[400px]">
-                                     <table className="min-w-full divide-y divide-gray-200">
-                                         <thead className="bg-gray-50 sticky top-0 z-10">
-                                             <tr>
-                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Tài khoản</th>
-                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên Tài khoản</th>
-                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày thuê</th>
-                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tình trạng TK</th>
-                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái thuê</th>
-                                             </tr>
-                                         </thead>
-                                         <tbody className="bg-white divide-y divide-gray-200">
-                                             {displayAccounts.map((acc) => (
-                                                 <tr key={acc.id} className="hover:bg-gray-50">
-                                                     <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">{acc.adAccountIdNumber}</td>
-                                                     <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500 max-w-xs truncate" title={acc.adAccountName}>
-                                                         {acc.adAccountName}
-                                                     </td>
-                                                     <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{formatDate(acc.rentalDate)}</td>
-                                                     <td className="px-4 py-2 whitespace-nowrap text-sm">
-                                                          {/* statusAdsAccount: true (Locked/Die), false (Live/Normal) */}
-                                                          {acc.statusAdsAccount ? (
-                                                             <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Locked</span>
-                                                          ) : (
-                                                             <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Live</span>
-                                                          )}
-                                                     </td>
-                                                     <td className="px-4 py-2 whitespace-nowrap text-sm">
-                                                          <select
-                                                              value={acc.status || 'ACTIVE'}
-                                                              onChange={(e) => handleStatusChange(acc.customerAdsAccountId, e.target.value)}
-                                                              disabled={updatingStatus[acc.customerAdsAccountId]}
-                                                              className="text-xs font-semibold rounded-md border border-gray-300 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                          >
-                                                              <option value="ACTIVE">Active</option>
-                                                              <option value="INACTIVE">Inactive</option>
-                                                          </select>
+                                      <table className="min-w-full divide-y divide-gray-200">
+                                          <thead className="bg-gray-50 sticky top-0 z-10">
+                                              <tr>
+                                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thông tin Tài khoản</th>
+                                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mode</th>
+                                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phí</th>
+                                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày thuê</th>
+                                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kết thúc</th>
+                                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái TK</th>
+                                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái thuê</th>
+                                              </tr>
+                                          </thead>
+                                          <tbody className="bg-white divide-y divide-gray-200">
+                                              {displayAccounts.map((acc) => (
+                                                  <tr key={acc.customerAdsAccountId || acc.id} className="hover:bg-gray-50">
+                                                      <td className="px-4 py-2 whitespace-nowrap">
+                                                          <div className="flex flex-col">
+                                                              <span className="text-sm font-medium text-gray-900 truncate max-w-[200px]" title={acc.adAccountName}>
+                                                                  {acc.adAccountName}
+                                                              </span>
+                                                              <span className="text-xs text-gray-500 font-mono">{acc.adAccountIdNumber || acc.adAccountId}</span>
+                                                          </div>
                                                       </td>
-                                                 </tr>
-                                             ))}
-                                         </tbody>
-                                     </table>
+                                                      <td className="px-4 py-2 whitespace-nowrap">
+                                                          {/* Payment Mode */}
+                                                          {acc.paymentMode === 1 && (
+                                                              <span className="px-2 py-0.5 text-[10px] font-medium bg-purple-100 text-purple-700 rounded border border-purple-200 whitespace-nowrap">
+                                                                  Thẻ khách
+                                                              </span>
+                                                          )}
+                                                          {acc.paymentMode === 2 && (
+                                                              <span className="px-2 py-0.5 text-[10px] font-medium bg-orange-100 text-orange-700 rounded border border-orange-200 whitespace-nowrap">
+                                                                  Thẻ HDG
+                                                              </span>
+                                                          )}
+                                                      </td>
+                                                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                                                          {(acc.feePercent * 100).toFixed(1)}%
+                                                      </td>
+                                                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{formatDate(acc.rentalDate)}</td>
+                                                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                                                          {acc.endAt ? formatDate(acc.endAt) : <span className="text-green-600 font-medium text-xs">Đang thuê</span>}
+                                                      </td>
+                                                      <td className="px-4 py-2 whitespace-nowrap text-sm">
+                                                           {/* statusAdsAccount: true (Locked/Die), false (Live/Normal) */}
+                                                           {acc.statusAdsAccount ? (
+                                                              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Locked</span>
+                                                           ) : (
+                                                              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Live</span>
+                                                           )}
+                                                      </td>
+                                                      <td className="px-4 py-2 whitespace-nowrap text-sm">
+                                                           <select
+                                                               value={acc.status || 'ACTIVE'}
+                                                               onChange={(e) => handleStatusChange(acc.customerAdsAccountId, e.target.value)}
+                                                               disabled={updatingStatus[acc.customerAdsAccountId]}
+                                                               className="text-xs font-semibold rounded-md border border-gray-300 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                           >
+                                                               <option value="ACTIVE">Active</option>
+                                                               <option value="INACTIVE">Inactive</option>
+                                                           </select>
+                                                       </td>
+                                                  </tr>
+                                              ))}
+                                          </tbody>
+                                      </table>
                                  </div>
                              ) : (
                                  <div className="p-4 text-center text-sm text-gray-500">
@@ -427,6 +486,45 @@ const DetailCustomerModal = ({ open, id, onClose }) => {
                         onChange={(e) => setSearchAccount(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
+                    </div>
+
+                    {/* New Configuration Fields */}
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Ngày bắt đầu</label>
+                            <input
+                                type="date"
+                                value={startAt}
+                                onChange={(e) => setStartAt(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Hình thức thanh toán</label>
+                            <select
+                                value={paymentMode}
+                                onChange={(e) => setPaymentMode(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value={1}>Khách thanh toán (CustomerPays)</option>
+                                <option value={2}>Đại lý thanh toán (AgencyPays)</option>
+                            </select>
+                        </div>
+                        <div className="col-span-2">
+                             <label className="block text-sm font-medium text-gray-700 mb-1">Phần trăm phí (%)</label>
+                             <div className="relative">
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="0.1"
+                                    value={feePercent}
+                                    onChange={(e) => setFeePercent(e.target.value)}
+                                    placeholder="VD: 5"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 pr-8"
+                                />
+                                <span className="absolute right-3 top-2 text-gray-500 text-sm">%</span>
+                             </div>
+                        </div>
                     </div>
 
                     <div className="max-h-80 overflow-y-auto">

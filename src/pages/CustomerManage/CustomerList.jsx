@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { Search, Plus, Trash, SquarePen } from "lucide-react";
+import { Search, Plus, Trash, SquarePen, LineChart } from "lucide-react";
 import { toast } from "react-toastify";
 import customerApi from "../../api/customerApi";
 import CreateCustomerModal from "./CreateCustomerModal";
 import EditCustomerModal from "./EditCustomerModal";
 import DeleteConfirmModal from "../../components/Modal/DeleteConfirmModal";
 import DetailCustomerModal from "./DetailCustomerModal";
+import SpendTrackingModal from "./SpendTrackingModal";
 import TableSkeleton from "../../components/Loading/TableSkeleton";
 
 function CustomerList() {
@@ -20,13 +21,6 @@ function CustomerList() {
 
   // Filter
   const [searchKeyword, setSearchKeyword] = useState("");
-  // const [debouncedKeyword, setDebouncedKeyword] = useState(""); // Removed debounce state to use direct search handler pattern like BmSourceList if desired, but debounce is better. Let's keep debounce logic but maybe align style.
-  // Actually BmSourceList uses explicit Enter or button to search, but let's stick to auto-debounce or Enter. The user asked for pagination *style*, not necessarily removing debounce.
-  // BmSourceList: Input has `onKeyDown Enter -> handleSearch`. Let's adopt that manual trigger style if "like BmSourceList" implies behavior too.
-  // But usually users prefer debounce. I will support BOTH: Enter to search immediately, and debounce if typing stops? 
-  // Let's stick to BmSourceList exact behavior since requested "like BmSourceList". 
-  // BmSourceList uses `searchCode` state and `handleSearch` function triggered by Enter.
-  
   const [searchCode, setSearchCode] = useState("");
 
   // Modals
@@ -37,6 +31,10 @@ function CustomerList() {
   // Detail Modal
   const [detailId, setDetailId] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  // Spend Modal
+  const [spendCustomer, setSpendCustomer] = useState(null);
+  const [isSpendModalOpen, setIsSpendModalOpen] = useState(false);
 
   // Loading states for actions
   const [saving, setSaving] = useState(false);
@@ -188,6 +186,12 @@ function CustomerList() {
       setDetailId(item.id);
       setIsDetailModalOpen(true);
   };
+  
+  // Spend Tracking
+  const handleOpenSpend = (item) => {
+      setSpendCustomer(item);
+      setIsSpendModalOpen(true);
+  }
 
   return (
     <div className="px-4">
@@ -268,7 +272,14 @@ function CustomerList() {
                                      </div>
                                  </td>
                                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500 w-1/12" onClick={(e) => e.stopPropagation()}>
-                                     <div className="flex">
+                                     <div className="flex gap-1">
+                                         <button
+                                              onClick={() => handleOpenSpend(customer)}
+                                              className="mr-2"
+                                              title="Theo dõi chi tiêu"
+                                          >
+                                              <LineChart className="h-4 w-4 text-green-600 flex-shrink-0 cursor-pointer" />
+                                          </button>
                                          <button
                                              onClick={() => handleOpenEdit(customer)}
                                              className="mr-2"
@@ -381,6 +392,12 @@ function CustomerList() {
           open={isDetailModalOpen}
           id={detailId}
           onClose={() => setIsDetailModalOpen(false)}
+      />
+      
+      <SpendTrackingModal
+          open={isSpendModalOpen}
+          customer={spendCustomer}
+          onClose={() => setIsSpendModalOpen(false)}
       />
     </div>
   );
