@@ -134,7 +134,7 @@ const DetailCustomerModal = ({ open, id, onClose }) => {
   // New states for API update
   const [startAt, setStartAt] = useState(getTodayString()); 
   const [feePercent, setFeePercent] = useState("");
-  const [paymentMode, setPaymentMode] = useState(1); // Default 1: CustomerPays
+  const [paymentMode, setPaymentMode] = useState(2); // Default 2: AgencyPays
 
   const handleOpenAddRental = () => {
     setIsAddRentalOpen(true);
@@ -143,7 +143,7 @@ const DetailCustomerModal = ({ open, id, onClose }) => {
     // Reset new fields
     setStartAt(getTodayString());
     setFeePercent("");
-    setPaymentMode(1);
+    setPaymentMode(2);
     fetchAvailableAccounts();
   };
 
@@ -500,18 +500,18 @@ const DetailCustomerModal = ({ open, id, onClose }) => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Hình thức thanh toán</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Mode thanh toán</label>
                             <select
                                 value={paymentMode}
                                 onChange={(e) => setPaymentMode(e.target.value)}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
-                                <option value={1}>Khách thanh toán (CustomerPays)</option>
-                                <option value={2}>Đại lý thanh toán (AgencyPays)</option>
+                                <option value={2}>Thẻ HDG</option>
+                                <option value={1}>Thẻ khách</option>
                             </select>
                         </div>
                         <div className="col-span-2">
-                             <label className="block text-sm font-medium text-gray-700 mb-1">Phần trăm phí (%)</label>
+                             <label className="block text-sm font-medium text-gray-700 mb-1">Phí (%)</label>
                              <div className="relative">
                                 <input
                                     type="number"
@@ -519,7 +519,7 @@ const DetailCustomerModal = ({ open, id, onClose }) => {
                                     step="0.1"
                                     value={feePercent}
                                     onChange={(e) => setFeePercent(e.target.value)}
-                                    placeholder="VD: 5"
+                                    placeholder="VD: 1"
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 pr-8"
                                 />
                                 <span className="absolute right-3 top-2 text-gray-500 text-sm">%</span>

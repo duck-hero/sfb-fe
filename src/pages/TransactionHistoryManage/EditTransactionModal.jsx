@@ -126,6 +126,21 @@ export default function EditTransactionModal({
                          />
                     </div>
 
+                    {/* Accounting Object */}
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Đối tượng hạch toán
+                      </label>
+                      <input
+                        type="text"
+                        name="accountingObject"
+                        value={formData.accountingObject || ""}
+                        onChange={onChange}
+                        disabled={saving}
+                        className="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+
                     {/* Footer Buttons */}
                     <div className="mt-8 flex justify-end gap-3">
                       <button

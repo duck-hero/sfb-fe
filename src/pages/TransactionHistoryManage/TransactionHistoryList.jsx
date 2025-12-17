@@ -885,6 +885,7 @@ const TransactionHistoryList = () => {
       fbAccountId: item.fbAccountId || "",
       amountFb: item.amountFb || "",
       cardLastDigits: item.cardLastDigits || "",
+      accountingObject: item.accountingObject || "",
     });
     setEditModalOpen(true);
   };
@@ -898,6 +899,7 @@ const TransactionHistoryList = () => {
         FbAccountId: editFormData.fbAccountId,
         AmountFb: editFormData.amountFb || null,
         CardLastDigits: editFormData.cardLastDigits || null,
+        AccountingObject: editFormData.accountingObject || null,
       });
 
       toast.success("Cập nhật giao dịch thành công");
@@ -1399,7 +1401,7 @@ const TransactionHistoryList = () => {
                 <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{ width: '70px' }}>Thẻ</th>
                 <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{ width: '110px' }}>STK Bank</th>
 
-                {/* <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '80px'}}>Status</th> */}
+                <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '80px'}}>Đối tượng hạch toán</th>
                 <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{ width: '70px' }}>Thao tác</th>
               </tr>
             </thead>
@@ -1580,24 +1582,12 @@ const TransactionHistoryList = () => {
                         {item.accountBankNumber}
                       </td>
 
-                      {/* Trạng thái */}
-                      {/* <td className="px-2 py-2 text-center align-middle">
-                        <div className="flex flex-col gap-1 items-center justify-center">
-                            {item.isFbTransaction && (
-                                <span className="w-5 h-5 flex items-center justify-center rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold" title="Giao dịch Facebook">
-                                    F
-                                </span>
-                            )}
-                            {item.isAmountMismatched === true && (
-                                <span className="w-5 h-5 flex items-center justify-center rounded-full bg-yellow-100 text-yellow-700 text-[10px] font-bold" title="Lệch số tiền">
-                                    !
-                                </span>
-                            )}
-                            {!item.isFbTransaction && item.isAmountMismatched !== true && (
-                                <span className="text-gray-300 text-[10px]">-</span>
-                            )}
+                      {/* Đối tượng hạch toán */}
+                      <td className="px-2 py-2 align-middle">
+                        <div className="text-[10px] text-gray-600 font-medium truncate" title={item.accountingObject || "-"}>
+                          {item.accountingObject || "-"}
                         </div>
-                      </td> */}
+                      </td>
 
                       {/* Actions - Add Card Button */}
                       <td className="px-2 py-2 text-center align-middle">
@@ -1618,21 +1608,19 @@ const TransactionHistoryList = () => {
                               </button>
                             </div>
                           )}
-                        {/* Edit Button - Visible only for FB Transactions */}
-                        {item.isFbTransaction === true && (
-                          <div className="flex justify-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenEditModal(item);
-                              }}
-                              title="Chỉnh sửa giao dịch"
-                              className="p-1 hover:bg-gray-100 rounded text-blue-600"
-                            >
-                              <SquarePen size={14} />
-                            </button>
-                          </div>
-                        )}
+                        {/* Edit Button - Visible for all transactions */}
+                        <div className="flex justify-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenEditModal(item);
+                            }}
+                            title="Chỉnh sửa giao dịch"
+                            className="p-1 hover:bg-gray-100 rounded text-blue-600"
+                          >
+                            <SquarePen size={14} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
