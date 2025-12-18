@@ -42,14 +42,23 @@ const financialTransactionApi = {
     }
   },
 
-  updateFinancialTransaction: async (id, accountingObject) => {
+  updateFinancialTransaction: async (id, data) => {
     try {
+      // data can be an object with { accountingObject, isCustomerPay, customerId }
+      // Or if legacy call passes string, handle that too (though we will update usage)
+      const payload = { id };
+      if (typeof data === 'string') {
+          payload.accountingObject = data;
+      } else {
+          // Spread valid fields
+          if (data.accountingObject !== undefined) payload.accountingObject = data.accountingObject;
+          if (data.isCustomerPay !== undefined) payload.isCustomerPay = data.isCustomerPay;
+          if (data.customerId !== undefined) payload.customerId = data.customerId;
+      }
+
       const response = await axiosInstance.put(
         `${api}/FinancialTransaction/UpdateFinancialTransaction`,
-        {
-          id: id,
-          accountingObject: accountingObject,
-        }
+        payload
       );
 
       return response.data;
@@ -57,6 +66,7 @@ const financialTransactionApi = {
       throw handleApiError(error);
     }
   },
+
 };
 
 export default financialTransactionApi;

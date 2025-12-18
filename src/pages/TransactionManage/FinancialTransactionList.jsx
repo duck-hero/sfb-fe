@@ -33,6 +33,8 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
     id: 0,
     accountingObject: "",
     description: "",
+    isCustomerPay: false,
+    customerId: null,
   });
   const [editLoading, setEditLoading] = useState(false);
 
@@ -151,6 +153,8 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
       id: transaction.id,
       accountingObject: transaction.accountingObject || "",
       description: transaction.description || "",
+      isCustomerPay: transaction.isCustomerPay || false,
+      customerId: transaction.customerId || null,
     });
     setEditModalOpen(true);
   };
@@ -167,7 +171,11 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
     try {
       await financialTransactionApi.updateFinancialTransaction(
         editFormData.id,
-        editFormData.accountingObject
+        {
+          accountingObject: editFormData.accountingObject,
+          isCustomerPay: editFormData.isCustomerPay,
+          customerId: editFormData.customerId,
+        }
       );
       toast.success("Cập nhật giao dịch thành công!");
       setEditModalOpen(false);
