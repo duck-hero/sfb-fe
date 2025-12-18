@@ -139,7 +139,7 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
     const fromDate = dayjs(filters.fromEffectiveDate).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z';
     const toDate = dayjs(filters.toEffectiveDate).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z';
 
-    const url = `https://acb.duckhero.store/trigger?token=999999999&stk=${selectedAccount.accountBankNumber}&fromDate=${fromDate}&toDate=${toDate}&LoginUsername=${selectedAccount.loginUsername}&LoginPassword=${selectedAccount.loginPassword}&bank=bidv`;
+    const url = `https://acb.duckhero.store/trigger?token=999999999&stk=${selectedAccount.accountBankNumber}&fromDate=${fromDate}&toDate=${toDate}&LoginUsername=${selectedAccount.loginUsername}&LoginPassword=${selectedAccount.loginPassword}&bank=${selectedAccount.bankCode.toLowerCase()}`;
 
     window.open(url, '_blank');
     setScanModalOpen(false);
@@ -296,19 +296,19 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
               <tr>
                 <th
                   className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase border-r border-gray-300"
-                  style={{ width: "90px" }}
+                  style={{ width: "80px" }}
                 >
                   Ngày hiệu lực
                 </th>
                 <th
                   className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase border-r border-gray-300"
-                  style={{ width: "90px" }}
+                  style={{ width: "80px" }}
                 >
                   Ngày giao dịch
                 </th>
                 <th
                   className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase"
-                  style={{ width: "70px" }}
+                  style={{ width: "80px" }}
                 >
                   Mã GD
                 </th>
@@ -320,13 +320,13 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
                 </th>
                 <th
                   className="px-2 py-2 text-right text-[10px] font-bold text-gray-600 uppercase"
-                  style={{ width: "120px" }}
+                  style={{ width: "100px" }}
                 >
                   Số tiền
                 </th>
                 <th
                   className="px-2 py-2 text-right text-[10px] font-bold text-gray-600 uppercase"
-                  style={{ width: "120px" }}
+                  style={{ width: "100px" }}
                 >
                   Số dư
                 </th>
@@ -334,12 +334,14 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
                   Nội dung
                 </th>
                 <th
-                  className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase">
+                  className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase"
+                  style={{ width: "110px" }}
+                >
                   Đối tượng hạch toán
                 </th>
                 <th
                   className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase"
-                  style={{ width: "120px" }}
+                  style={{ width: "100px" }}
                 >
                   STK Bank
                 </th>
@@ -368,7 +370,7 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
                     <tr
                       key={`${item.id}-${index}`}
                       ref={isLast ? lastElementRef : null}
-                      className="hover:bg-blue-50 transition-colors duration-150"
+                      className="hover:bg-blue-50 transition-colors duration-150 group"
                     >
                       <td className="px-2 py-2 text-[11px] align-top border-r border-gray-200">
                         <DateCell dateString={item.effectiveDate} />
@@ -379,13 +381,19 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
                       <td className="px-2 py-2 text-[11px] text-gray-900 font-semibold align-middle">
                         {item.transactionCode || "-"}
                       </td>
+                      {/* Loại */}
                       <td className="px-2 py-2 text-center align-middle">
-                        <span className="px-2 py-1 inline-flex text-[10px] font-bold rounded bg-gray-100 text-gray-700">
-                          {item.transactionType || "-"}
+                        <span className={`px-2 py-1 inline-flex text-[10px] font-bold rounded ${item.transactionType === 'IN'
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-red-100 text-red-700'
+                          }`}>
+                          {item.transactionType}
                         </span>
                       </td>
-                      <td className="px-2 py-2 text-[11px] text-right font-bold align-middle">
-                        {formatCurrency(item.amount)}
+                      {/* Số tiền */}
+                      <td className={`px-2 py-2 text-[11px] text-right font-bold align-middle ${item.transactionType === 'IN' ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                        {item.transactionType === 'IN' ? '+' : '-'}{formatCurrency(item.amount)}
                       </td>
                       <td className="px-2 py-2 text-[11px] text-right text-gray-700 font-medium align-middle">
                         {formatCurrency(item.balance)}
