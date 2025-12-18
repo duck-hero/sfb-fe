@@ -52,12 +52,12 @@ function CustomerList() {
     try {
       const res = await customerApi.getCustomerList(page, size, keyword);
       
-      const items = res.data || res.items || [];
+      const items = res.data || [];
       const total = res.totalItems || 0;
       
       setCustomers(items);
       setTotalItems(total);
-      setTotalPages(Math.ceil(total / size) || 1);
+      setTotalPages(res.totalPages || Math.ceil(total / size) || 1);
       setPageNumber(page); // Sync state
       setLoading(false);
     } catch (error) {
@@ -104,7 +104,7 @@ function CustomerList() {
 
   // Create
   const handleOpenCreate = () => {
-    setFormData({ name: "", codeCamp: "" });
+    setFormData({ name: "", agencyCode: "" });
     setIsCreateModalOpen(true);
   };
 
@@ -242,7 +242,13 @@ function CustomerList() {
                              Tên khách hàng
                          </th>
                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-900 uppercase tracking-wider text-primary-darkest">
-                             Code Camp
+                             Mã khách hàng
+                         </th>
+                         <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-900 uppercase tracking-wider text-primary-darkest">
+                             Agency Code
+                         </th>
+                         <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-900 uppercase tracking-wider text-primary-darkest">
+                             Code Khách
                          </th>
                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-900 uppercase tracking-wider w-1/12 text-primary-darkest">
                              Tùy chọn
@@ -252,7 +258,7 @@ function CustomerList() {
                  <tbody className="bg-white divide-y divide-gray-200">
                      {customers.length === 0 ? (
                         <tr>
-                           <td colSpan="3" className="px-3 py-3 text-center text-gray-500 text-sm">
+                           <td colSpan="5" className="px-3 py-3 text-center text-gray-500 text-sm">
                               Không tìm thấy dữ liệu
                            </td>
                         </tr>
@@ -266,10 +272,16 @@ function CustomerList() {
                                  <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
                                      {customer.name}
                                  </td>
+                                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
+                                     {customer.customerCode || "-"}
+                                 </td>
                                  <td className="px-3 py-2 whitespace-nowrap">
                                      <div className="text-sm text-gray-500 bg-gray-100 rounded px-2 py-1 inline-block">
-                                        {customer.codeCamp || "-"}
+                                        {customer.agencyCode || "-"}
                                      </div>
+                                 </td>
+                                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
+                                     {customer.fullCustomerCode || "-"}
                                  </td>
                                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500 w-1/12" onClick={(e) => e.stopPropagation()}>
                                      <div className="flex gap-1">
@@ -303,7 +315,7 @@ function CustomerList() {
                  {/* Footer Pagination */}
                  <tfoot className="bg-white">
                     <tr>
-                        <td colSpan="3" className="px-3 py-2">
+                        <td colSpan="5" className="px-3 py-2">
                            <div className="flex justify-end items-center text-xs">
                               {/* Page Size */}
                               <div className="flex items-center gap-1.5 mr-4">

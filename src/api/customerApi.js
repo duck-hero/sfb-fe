@@ -39,14 +39,14 @@ const customerApi = {
   },
 
   // Tạo mới khách hàng
-  // Customer/CreateCustomer (Body: { name, codeCamp })
+  // Customer/CreateCustomer (Body: { name, agencyCode })
   createCustomer: async (data) => {
     try {
       const response = await axiosInstance.post(
         `${api}/Customer/CreateCustomer`,
         {
           name: data.name,
-          codeCamp: data.codeCamp,
+          agencyCode: data.agencyCode,
         }
       );
       return response.data;
@@ -56,7 +56,7 @@ const customerApi = {
   },
 
   // Cập nhật khách hàng
-  // Customer/UpdateCustomer (Body: { id, name, codeCamp })
+  // Customer/UpdateCustomer (Body: { id, name, agencyCode })
   updateCustomer: async (id, data) => {
     try {
       const response = await axiosInstance.put(
@@ -64,7 +64,7 @@ const customerApi = {
         {
           id: id,
           name: data.name,
-          codeCamp: data.codeCamp,
+          agencyCode: data.agencyCode,
         }
       );
       return response.data;

@@ -1399,9 +1399,9 @@ const TransactionHistoryList = () => {
 
                 {/* <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '60px'}}>Bank ID</th> */}
                 <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{ width: '70px' }}>Thẻ</th>
-                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{ width: '110px' }}>STK Bank</th>
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{ width: '100px' }}>STK Bank</th>
 
-                <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '80px'}}>Đối tượng hạch toán</th>
+                <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '90px'}}>Đối tượng hạch toán</th>
                 <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{ width: '70px' }}>Thao tác</th>
               </tr>
             </thead>

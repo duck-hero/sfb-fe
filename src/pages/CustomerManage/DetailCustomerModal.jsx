@@ -281,14 +281,24 @@ const DetailCustomerModal = ({ open, id, onClose }) => {
                             Thông tin chung
                         </h3>
                         <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                             <DetailField
+                                label="Mã khách hàng"
+                                value={data.customerCode}
+                            />
+
                             <DetailField
                                 label="Tên khách hàng"
                                 value={data.name}
                             />
+
+                            <DetailField
+                                label="Agency Code"
+                                value={data.agencyCode}
+                            />
                             
                             <DetailField
-                                label="Code Camp"
-                                value={data.codeCamp}
+                                label="Code Khách"
+                                value={data.fullCustomerCode}
                             />
 
                             {/* Optional fields if available */}
