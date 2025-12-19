@@ -180,15 +180,17 @@ const InvoiceDetailModal = ({ open, onClose, invoiceData, onConfirmSuccess }) =>
                          <div className="w-full max-w-sm flex justify-between items-center py-1 border-t border-dashed border-gray-200">
                              <span className="text-gray-500">Khách bank (Đã thanh toán):</span>
                              <span className="font-medium text-green-700">
-                                 - {formatCurrency(invoiceData.paidInMonth)}
+                                {formatCurrency(invoiceData.paidInMonth)}
                              </span>
                          </div>
 
-                         {/* Row: Closing Balance = Amount Due + Opening - Paid */}
+                         {/* Row: Closing Balance = Amount Due + Paid + Opening */}
                          <div className="w-full max-w-sm flex justify-between items-center py-2 border-t-2 border-gray-800 mt-2">
-                             <span className="text-base font-bold uppercase text-gray-800">Số tiền còn lại:</span>
+                             <span className="text-base font-bold uppercase text-gray-800">
+                                 {invoiceData.closingBalance < 0 ? "Khách nợ (Dư nợ):" : "Khách dư:"}
+                             </span>
                              <span className={`text-2xl font-black ${invoiceData.closingBalance < 0 ? 'text-red-600' : 'text-blue-700'}`}>
-                                 {formatCurrency(invoiceData.closingBalance)}
+                                 {formatCurrency(Math.abs(invoiceData.closingBalance))}
                              </span>
                          </div>
                     </div>
