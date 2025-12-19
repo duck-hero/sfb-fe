@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Megaphone, ArrowLeftRight, BadgeDollarSign } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 import TransactionHistoryList from "../TransactionHistoryManage/TransactionHistoryList";
 import FinancialTransactionList from "./FinancialTransactionList";
 
 export default function TransactionManage() {
   const [activeTab, setActiveTab] = useState("fbSpend");
+  const { hasRole } = useAuth();
 
   const tabs = [
     {
@@ -18,12 +20,12 @@ export default function TransactionManage() {
       label: "Giao dịch TK thu chi",
       icon: <ArrowLeftRight className="w-4 h-4" />,
     },
-    {
+    hasRole("Admin") && {
       key: "profit",
       label: "Giao dịch TK lợi nhuận",
       icon: <BadgeDollarSign className="w-4 h-4" />,
     },
-  ];
+  ].filter(Boolean);
 
   return (
     <div className="w-full">
@@ -56,7 +58,9 @@ export default function TransactionManage() {
         {activeTab === "financial" && (
           <FinancialTransactionList bankAccountType={2} />
         )}
-        {activeTab === "profit" && <FinancialTransactionList bankAccountType={3} />}
+        {activeTab === "profit" && hasRole("Admin") && (
+          <FinancialTransactionList bankAccountType={3} />
+        )}
       </div>
     </div>
   );

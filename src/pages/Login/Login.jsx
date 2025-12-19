@@ -15,7 +15,6 @@ const Login = () => {
         password: "",
     });
     const [loading, setLoading] = useState(false); // trạng thái loading
-    const [errorMessage, setErrorMessage] = useState(null);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -28,7 +27,7 @@ const Login = () => {
         try {
             const res = await accountApi.login(credentials); 
             const userData = res.data;
-            console.log("API Login:", userData);
+            // console.log("API Login:", userData);
 
             if (userData.requires2FA) {
                 localStorage.setItem("twoFactorUserId", userData.twoFactorUserId);

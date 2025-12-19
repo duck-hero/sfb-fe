@@ -392,7 +392,7 @@ const TransactionHistoryList = () => {
 
   // Debug selectedAccount
   useEffect(() => {
-    console.log("selectedAccount changed:", selectedAccount);
+    // console.log("selectedAccount changed:", selectedAccount);
   }, [selectedAccount]);
 
   // Calculate if date range is greater than 3 days

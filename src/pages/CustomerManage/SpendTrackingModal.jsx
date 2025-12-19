@@ -2,11 +2,16 @@ import { Fragment, useEffect, useState, useRef, useMemo } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { X, ChevronLeft, ChevronRight, Save , RotateCw} from "lucide-react";
 import dailySpendApi from "../../api/dailySpendApi";
+import invoiceApi from "../../api/invoiceApi";
+import InvoiceDetailModal from "./InvoiceDetailModal";
 import { toast } from "react-toastify";
 
 const SpendTrackingModal = ({ open, customer, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
+  const [showTransactions, setShowTransactions] = useState(false);
+  const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
+  const [invoiceData, setInvoiceData] = useState(null);
   const [currentDate, setCurrentDate] = useState(new Date()); // Keep track of current view (Month/Year)
 
   // Helper to format currency
@@ -33,6 +38,20 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
       setData(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGenerateInvoice = async () => {
+    setLoading(true);
+    try {
+        const { year, month } = getMonthParams(currentDate);
+        const res = await invoiceApi.generateInvoice(customer.id, year, month);
+        setInvoiceData(res.data || res);
+        setInvoiceModalOpen(true);
+    } catch (error) {
+        toast.error("Không thể tạo công nợ: " + (error.message || "Lỗi không xác định"));
+    } finally {
+        setLoading(false);
     }
   };
 
@@ -194,64 +213,209 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
               <Dialog.Panel className="w-full max-w-[98vw] h-[95vh] flex flex-col transform overflow-hidden rounded-xl bg-white shadow-2xl transition-all border border-gray-200">
                 
                 {/* Header Section */}
-                <div className="flex items-center justify-between px-4 py-2 border-b bg-white flex-none shadow-sm z-20">
-                  <div className="flex items-center gap-4">
-                    <Dialog.Title className="text-lg font-bold text-gray-800">
-                      Theo dõi chi tiêu
-                    </Dialog.Title>
+                <div className="flex flex-col border-b bg-white flex-none shadow-sm z-20">
+                  {/* Top Bar: Title, Navigation, Actions */}
+                  <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100">
+                    <div className="flex items-center gap-4">
+                      <Dialog.Title className="text-lg font-bold text-gray-800">
+                        Theo dõi chi tiêu
+                      </Dialog.Title>
 
-                    {customer && (
-                        <div className="flex flex-col border-l pl-4 border-gray-300">
-                            <span className="font-bold text-gray-900 text-sm leading-tight">{customer.name}</span>
-                            <span className="text-xs text-gray-500 font-mono">{customer.customerCode || "No Code"}</span>
-                        </div>
-                    )}
-                    
-                    <div className="flex items-center bg-gray-50 rounded-md border border-gray-200 px-1 ml-2">
-                        <button onClick={() => handleMonthChange(-1)} className="p-1 hover:bg-gray-200 rounded text-gray-600 transition">
-                            <ChevronLeft className="w-4 h-4"/>
-                        </button>
-                        <span className="mx-2 font-semibold text-gray-700 text-sm min-w-[80px] text-center">
-                            {currentDate.getMonth() + 1}/{currentDate.getFullYear()}
-                        </span>
-                        <button onClick={() => handleMonthChange(1)} className="p-1 hover:bg-gray-200 rounded text-gray-600 transition">
-                            <ChevronRight className="w-4 h-4"/>
-                        </button>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-4">
-                      {data?.monthlySummary && (
-                          <div className="flex gap-4 text-xs">
-                              <div className="bg-gray-50 px-3 py-1.5 rounded-md border border-gray-100">
-                                  <span className="text-gray-500 font-medium uppercase mr-2">Tổng Tiêu:</span>
-                                  <span className="font-bold text-gray-900 text-sm">{formatCurrency(data.monthlySummary.totalSpend)}</span>
-                              </div>
-                              <div className="bg-gray-50 px-3 py-1.5 rounded-md border border-gray-100">
-                                  <span className="text-gray-500 font-medium uppercase mr-2">Tổng Phí:</span>
-                                  <span className="font-bold text-red-600 text-sm">{formatCurrency(data.monthlySummary.totalFee)}</span>
-                              </div>
-                              <div className="bg-gray-50 px-3 py-1.5 rounded-md border border-gray-100">
-                                  <span className="text-gray-500 font-bold uppercase mr-2">Cần Thu khách:</span>
-                                  <span className="font-bold text-blue-700 text-sm">{formatCurrency(data.monthlySummary.amountDue)}</span>
-                              </div>
+                      {customer && (
+                          <div className="flex flex-col border-l pl-4 border-gray-300">
+                              <span className="font-bold text-gray-900 text-sm leading-tight">{customer.name}</span>
+                              <span className="text-xs text-gray-500 font-mono">{customer.customerCode || "No Code"}</span>
                           </div>
                       )}
                       
-                      <div className="h-6 w-px bg-gray-200 mx-1"></div>
+                      <div className="flex items-center bg-gray-50 rounded-md border border-gray-200 px-1 ml-2">
+                          <button onClick={() => handleMonthChange(-1)} className="p-1 hover:bg-gray-200 rounded text-gray-600 transition">
+                              <ChevronLeft className="w-4 h-4"/>
+                          </button>
+                          <span className="mx-2 font-semibold text-gray-700 text-sm min-w-[80px] text-center">
+                              {currentDate.getMonth() + 1}/{currentDate.getFullYear()}
+                          </span>
+                          <button onClick={() => handleMonthChange(1)} className="p-1 hover:bg-gray-200 rounded text-gray-600 transition">
+                              <ChevronRight className="w-4 h-4"/>
+                          </button>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                        <div className="h-6 w-px bg-gray-200 mx-1"></div>
 
-                      <button 
-                        onClick={() => fetchGrid(currentDate)}
-                        className="p-1.5 hover:bg-blue-50 hover:text-blue-600 rounded-md text-green-500 transition"
-                        title="Refresh"
-                      >
-                        <RotateCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-                      </button>
-                      
-                      <button onClick={onClose} className="p-1.5 hover:bg-red-50 hover:text-red-600 rounded-md text-red-400 transition">
-                        <X className="w-5 h-5" />
-                      </button>
+                        <button 
+                          onClick={handleGenerateInvoice}
+                          className="p-1.5 hover:bg-orange-50 hover:text-orange-600 rounded-md text-orange-500 transition"
+                          title="Chốt công nợ"
+                        >
+                          Chốt công nợ
+                        </button>
+
+                        <button 
+                          onClick={() => fetchGrid(currentDate)}
+                          className="p-1.5 hover:bg-blue-50 hover:text-blue-600 rounded-md text-green-500 transition"
+                          title="Refresh"
+                        >
+                          <RotateCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+                        </button>
+                        
+                        <button onClick={onClose} className="p-1.5 hover:bg-red-50 hover:text-red-600 rounded-md text-red-400 transition">
+                          <X className="w-5 h-5" />
+                        </button>
+                    </div>
                   </div>
+
+                  {/* Bottom Bar: Financial Summaries */}
+                  {(data?.monthlySummary || data?.balancePanel) && (
+                      <div className="flex items-center px-4 py-2 bg-[#f8f9fa] gap-4 overflow-x-auto whitespace-nowrap border-b border-gray-200">
+                          {/* Balance Panel */}
+                          {data?.balancePanel && (
+                              <div className="flex gap-4 items-center border-r border-gray-300 pr-4 mr-2">
+                                  <div className="flex flex-col">
+                                      <span className="text-[10px] uppercase text-gray-500 font-bold">Dư nợ đầu kì</span>
+                                      <span className={`text-sm font-bold ${data.balancePanel.openingBalance < 0 ? 'text-red-600' : 'text-gray-900'}`}>
+                                          {formatCurrency(data.balancePanel.openingBalance)}
+                                      </span>
+                                  </div>
+                                  
+                                  {/* CLICKABLE KHÁCH BANK */}
+                                  <div 
+                                    className="flex flex-col cursor-pointer group relative"
+                                    onClick={() => setShowTransactions(true)}
+                                  >
+                                      <span className="text-[10px] uppercase text-gray-500 font-bold group-hover:text-blue-600 transition-colors flex items-center gap-1">
+                                          Khách bank
+                                          <span className="bg-blue-100 text-blue-600 rounded-full px-1.5 py-0.5 text-[8px] opacity-0 group-hover:opacity-100 transition-opacity">Chi tiết</span>
+                                      </span>
+                                      <span className="text-sm font-bold text-green-700 underline decoration-dotted decoration-green-300 underline-offset-4 group-hover:text-blue-700 group-hover:decoration-blue-300 transition-all">
+                                          {formatCurrency(data.balancePanel.paidInMonth)}
+                                      </span>
+                                  </div>
+
+                                  <div className="flex flex-col">
+                                      <span className="text-[10px] uppercase text-gray-500 font-bold">Số tiền còn lại</span>
+                                      <span className={`text-sm font-bold ${data.balancePanel.closingBalance < 0 ? 'text-red-600' : 'text-purple-700'}`}>
+                                          {formatCurrency(data.balancePanel.closingBalance)}
+                                      </span>
+                                  </div>
+                              </div>
+                          )}
+
+                          {/* Monthly Summary */}
+                          {data?.monthlySummary && (
+                              <div className="flex gap-4 items-center">
+                                  <div className="flex flex-col">
+                                      <span className="text-[10px] uppercase text-gray-500 font-bold">Tổng Ads</span>
+                                      <span className="text-sm font-bold text-gray-900">
+                                          {formatCurrency(data.monthlySummary.totalSpend)}
+                                      </span>
+                                  </div>
+                                  <div className="flex flex-col">
+                                      <span className="text-[10px] uppercase text-gray-500 font-bold">Tổng Phí</span>
+                                      <span className="text-sm font-bold text-red-600">
+                                          {formatCurrency(data.monthlySummary.totalFee)}
+                                      </span>
+                                  </div>
+                                  <div className="flex flex-col">
+                                      <span className="text-[10px] uppercase text-gray-500 font-bold">Tổng tiền Ads + Phí</span>
+                                      <span className="text-sm font-bold text-blue-700">
+                                          {formatCurrency(data.monthlySummary.amountDue)}
+                                      </span>
+                                  </div>
+                              </div>
+                          )}
+                      </div>
+                  )}
+
+                  {/* Transactions Modal (Nested) */}
+                  <Transition appear show={showTransactions} as={Fragment}>
+                    <Dialog as="div" className="relative z-[60]" onClose={() => setShowTransactions(false)}>
+                        <Transition.Child
+                            as={Fragment}
+                            enter="ease-out duration-300"
+                            enterFrom="opacity-0"
+                            enterTo="opacity-100"
+                            leave="ease-in duration-200"
+                            leaveFrom="opacity-100"
+                            leaveTo="opacity-0"
+                        >
+                            <div className="fixed inset-0 bg-black/25" />
+                        </Transition.Child>
+
+                        <div className="fixed inset-0 overflow-y-auto">
+                            <div className="flex min-h-full items-center justify-center p-4 text-center">
+                                <Transition.Child
+                                    as={Fragment}
+                                    enter="ease-out duration-300"
+                                    enterFrom="opacity-0 scale-95"
+                                    enterTo="opacity-100 scale-100"
+                                    leave="ease-in duration-200"
+                                    leaveFrom="opacity-100 scale-100"
+                                    leaveTo="opacity-0 scale-95"
+                                >
+                                    <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                                        <Dialog.Title
+                                            as="h3"
+                                            className="text-lg font-medium leading-6 text-gray-900 flex justify-between items-center mb-4"
+                                        >
+                                            <span>Chi tiết giao dịch</span>
+                                            <button onClick={() => setShowTransactions(false)} className="text-gray-400 hover:text-gray-600">
+                                                <X className="w-5 h-5" />
+                                            </button>
+                                        </Dialog.Title>
+                                        
+                                        <div className="mt-2 overflow-hidden border border-gray-200 rounded-lg">
+                                            {data?.transactions && data.transactions.length > 0 ? (
+                                                <table className="min-w-full divide-y divide-gray-200">
+                                                    <thead className="bg-gray-50">
+                                                        <tr>
+                                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày</th>
+                                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nội dung</th>
+                                                            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Số tiền</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="bg-white divide-y divide-gray-200">
+                                                        {data.transactions.map((tx) => (
+                                                            <tr key={tx.id} className="hover:bg-gray-50">
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                                    {new Date(tx.effectiveDate).toLocaleDateString('vi-VN')}
+                                                                    <div className="text-xs text-gray-500">
+                                                                        {new Date(tx.effectiveDate).toLocaleTimeString('vi-VN', { hour: '2-digit', minute:'2-digit'})}
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" title={tx.description}>
+                                                                    {tx.description}
+                                                                </td>
+                                                                <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-medium`}>
+                                                                    <span className={tx.transactionType === "IN" ? "text-green-600" : "text-red-600"}>
+                                                                        {tx.transactionType === "IN" ? "+" : "-"}{formatCurrency(tx.amount)}
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            ) : (
+                                                <div className="p-8 text-center text-gray-500">Không có giao dịch nào trong tháng này.</div>
+                                            )}
+                                        </div>
+
+                                        <div className="mt-4 flex justify-end">
+                                            <button
+                                                type="button"
+                                                className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                                                onClick={() => setShowTransactions(false)}
+                                            >
+                                                Đóng
+                                            </button>
+                                        </div>
+                                    </Dialog.Panel>
+                                </Transition.Child>
+                            </div>
+                        </div>
+                    </Dialog>
+                  </Transition>
                 </div>
 
                 {/* Content Section - The Grid */}
@@ -336,6 +500,9 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
                                       if (endAtDate) endAtDate.setUTCHours(0,0,0,0);
                                       
                                       let isDisabled = false;
+                                      const isLocked = data?.balancePanel?.isLocked || false;
+                                      
+                                      if (isLocked) isDisabled = true;
                                       if (startAtDate && cellDate < startAtDate) isDisabled = true;
                                       if (endAtDate && cellDate > endAtDate) isDisabled = true;
 
@@ -378,6 +545,20 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
                       </tfoot>
                     </table>
                   )}
+
+                  {/* Stamp for Confirmed Invoice */}
+                  {data?.balancePanel?.invoiceStatus === 1 && (
+                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none select-none">
+                          <div className="border-[8px] border-red-500/30 rounded-xl p-4 rotate-[-15deg] flex flex-col items-center justify-center bg-white/10 backdrop-blur-[1px]">
+                              <span className="text-4xl md:text-6xl font-black text-red-500/30 uppercase tracking-[0.2em] whitespace-nowrap">
+                                  ĐÃ CHỐT CÔNG NỢ
+                              </span>
+                              <span className="text-base md:text-xl font-bold text-red-500/30 uppercase tracking-widest mt-2">
+                                  {currentDate.getMonth() + 1}/{currentDate.getFullYear()}
+                              </span>
+                          </div>
+                      </div>
+                  )}
                 </div>
 
               </Dialog.Panel>
@@ -385,6 +566,14 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
           </div>
         </div>
       </Dialog>
+      
+      {/* Invoice Modal */}
+      <InvoiceDetailModal 
+          open={invoiceModalOpen} 
+          onClose={() => setInvoiceModalOpen(false)} 
+          invoiceData={invoiceData}
+          onConfirmSuccess={() => fetchGrid(currentDate)}
+      />
     </Transition>
   );
 };
