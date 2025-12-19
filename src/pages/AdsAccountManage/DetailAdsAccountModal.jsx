@@ -1,7 +1,8 @@
-import { Fragment, useState } from "react";
+import { Fragment, useState, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { toast } from "react-toastify";
 import AddCardApi from "../../api/AddCardApi";
+import customerAdsAccountApi from "../../api/customerAdsAccountApi";
 
 // Component hiển thị trường thông tin
 const DetailField = ({ label, value, className = "" }) => (
@@ -37,7 +38,7 @@ const ContentSkeleton = () => (
         <InputSkeleton />
       </div>
     </div>
-    
+
     <div className="border-t pt-4 mb-3">
       <div className="h-5 w-56 bg-gray-300 rounded-full animate-pulse mb-3"></div>
       <div className="grid grid-cols-2 gap-x-4 gap-y-3">
@@ -60,11 +61,33 @@ export default function DetailAdsAccountModal({
   refreshData,
 }) {
   const [updatingId, setUpdatingId] = useState(null);
+  const [renterList, setRenterList] = useState([]);
+  const [loadingRenter, setLoadingRenter] = useState(false);
+
+  useEffect(() => {
+    const fetchRenters = async () => {
+      if (accountData?.id && open) {
+        setLoadingRenter(true);
+        try {
+          const res = await customerAdsAccountApi.getByAdAccountId(accountData.id);
+          if (res && res.success) {
+            setRenterList(res.data || []);
+          }
+        } catch (error) {
+          console.error("Failed to fetch renters", error);
+        } finally {
+          setLoadingRenter(false);
+        }
+      }
+    };
+
+    fetchRenters();
+  }, [accountData?.id, open]);
 
   const handleUpdateStatus = async (addCardId, newStatus) => {
     if (!addCardId) {
-        toast.error("Không tìm thấy ID liên kết");
-        return;
+      toast.error("Không tìm thấy ID liên kết");
+      return;
     }
     setUpdatingId(addCardId);
     try {
@@ -123,18 +146,18 @@ export default function DetailAdsAccountModal({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-6xl transform overflow-hidden rounded-2xl bg-white p-6 text-left shadow-xl transition-all">
+              <Dialog.Panel className="w-full max-w-7xl transform overflow-hidden rounded-2xl bg-white p-6 text-left shadow-xl transition-all">
                 <Dialog.Title className="text-xl font-semibold text-center mb-5 border-b pb-3">
                   Chi tiết tài khoản quảng cáo
                 </Dialog.Title>
 
                 {isContentReady ? (
                   <>
-                    {/* Two Column Layout - Equal Width */}
-                    <div className="grid grid-cols-2 gap-6">
+                    {/* Three Column Layout */}
+                    <div className="grid grid-cols-3 gap-6">
                       {/* LEFT COLUMN: Account Details */}
                       <div className="flex flex-col gap-5">
-                        
+
                         {/* --- 1. THÔNG TIN TÀI KHOẢN --- */}
                         <section>
                           <h3 className="text-base font-semibold text-gray-800 mb-3">
@@ -199,7 +222,7 @@ export default function DetailAdsAccountModal({
                               label="Tổng thẻ đã add"
                               value={accountData?.totalAddBankCards || 0}
                             />
-                            
+
                           </div>
                         </section>
 
@@ -229,9 +252,8 @@ export default function DetailAdsAccountModal({
                             accountData.linkedBankCards.map((card, index) => (
                               <div
                                 key={card.bankCardId || index}
-                                className={`group flex items-center justify-between p-2 bg-white border border-gray-200 rounded shadow-sm hover:shadow-md transition-all ${
-                                  card.cardStatus === 'Active' ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-red-500'
-                                }`}
+                                className={`group flex items-center justify-between p-2 bg-white border border-gray-200 rounded shadow-sm hover:shadow-md transition-all ${card.cardStatus === 'Active' ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-red-500'
+                                  }`}
                               >
                                 {/* Left: Card Info */}
                                 <div className="flex-1 min-w-0 mr-2">
@@ -246,22 +268,22 @@ export default function DetailAdsAccountModal({
                                       <span className="text-[10px]" title="Thẻ không hoạt động">❌</span>
                                     )}
                                   </div>
-                                  
+
                                   {/* Details: Holder - Bank - Handler */}
                                   <div className="text-[10px] text-gray-500 space-y-0.5">
                                     <div className="flex gap-2">
-                                       <span className="uppercase font-medium text-gray-700">{card.cardHolderName || 'N/A'}</span>
-                                       <span>|</span>
-                                       <span className="font-medium text-gray-900">{card.codeBank || 'N/A'}</span>
-                                       <span>|</span>
-                                       <span>{card.bankAccountNumber || 'N/A'}</span>
+                                      <span className="uppercase font-medium text-gray-700">{card.cardHolderName || 'N/A'}</span>
+                                      <span>|</span>
+                                      <span className="font-medium text-gray-900">{card.codeBank || 'N/A'}</span>
+                                      <span>|</span>
+                                      <span>{card.bankAccountNumber || 'N/A'}</span>
                                     </div>
                                     <div className="text-[10px] text-gray-400">
                                       Vận hành: <span className="font-medium text-gray-600" title={card.assignedUserEmail}>{card.assignedUserName || 'N/A'}</span>
                                     </div>
                                   </div>
                                 </div>
-                                
+
                                 {/* Right: Status badges */}
                                 <div className="flex flex-col items-end gap-1">
                                   {/* Link Status */}
@@ -272,22 +294,21 @@ export default function DetailAdsAccountModal({
                                       onChange={(e) => handleUpdateStatus(card.id, e.target.value)}
                                       disabled={updatingId === card.id}
                                       onClick={(e) => e.stopPropagation()}
-                                      className={`text-[10px] font-bold cursor-pointer outline-none bg-transparent py-0.5 pl-1 pr-0 text-right ${
-                                        card.linkStatus === 'NEW' ? 'text-blue-700' :
+                                      className={`text-[10px] font-bold cursor-pointer outline-none bg-transparent py-0.5 pl-1 pr-0 text-right ${card.linkStatus === 'NEW' ? 'text-blue-700' :
                                         card.linkStatus === 'OUT' ? 'text-red-700' :
-                                        'text-gray-700'
-                                      } ${updatingId === card.id ? 'opacity-50 cursor-wait' : ''}`}
+                                          'text-gray-700'
+                                        } ${updatingId === card.id ? 'opacity-50 cursor-wait' : ''}`}
                                     >
                                       <option value="NEW">Add thẻ</option>
                                       <option value="OUT">Đá thẻ</option>
                                     </select>
                                     {updatingId === card.id && (
-                                       <span className="absolute -left-3 top-1/2 -translate-y-1/2">
-                                          <svg className="animate-spin h-2.5 w-2.5 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                          </svg>
-                                       </span>
+                                      <span className="absolute -left-3 top-1/2 -translate-y-1/2">
+                                        <svg className="animate-spin h-2.5 w-2.5 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                      </span>
                                     )}
                                   </div>
 
@@ -306,6 +327,61 @@ export default function DetailAdsAccountModal({
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                               </svg>
                               <p className="text-sm">Chưa có thẻ ngân hàng nào</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* RIGHT COLUMN (3rd): Renters List */}
+                      <div className="border-l pl-6">
+                        <h3 className="text-base font-semibold text-gray-800 mb-3">
+                          Khách thuê ({renterList.length || 0})
+                        </h3>
+                        <div className="max-h-[500px] overflow-y-auto pr-2 space-y-3">
+                          {loadingRenter ? (
+                            <div className="space-y-3">
+                              <InputSkeleton />
+                              <InputSkeleton />
+                              <InputSkeleton />
+                            </div>
+                          ) : renterList && renterList.length > 0 ? (
+                            renterList.map((renter, index) => (
+                              <div
+                                key={renter.customerAdsAccountId || index}
+                                className="p-2 bg-gray-50 border border-gray-200 rounded text-xs cursor-pointer hover:bg-blue-50 transition-colors"
+                                onClick={() => {
+                                  if (renter.customerId) {
+                                    window.open(`/customer-management?detailId=${renter.customerId}`, "_blank");
+                                  } else {
+                                    toast.warning("Không tìm thấy ID khách hàng");
+                                  }
+                                }}
+                                title="Click để xem chi tiết khách thuê"
+                              >
+                                <div className="font-medium text-gray-900 mb-1 break-words">
+                                  {renter.customerName || "N/A"} ({renter.fullCustomerCode || "N/A"})
+                                </div>
+                                <div className="flex flex-col gap-0.5 text-[10px] text-gray-500">
+                                  <div className="flex justify-between items-center">
+                                    <span>Trạng thái:</span>
+                                    <span className={renter.status === 'ACTIVE' ? 'text-green-600 font-semibold' : 'text-gray-500'}>
+                                      {renter.status === 'ACTIVE' ? 'Đang thuê' : 'Đã ngừng thuê'}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>Ngày thuê:</span>
+                                    <span>{formatDate(renter.rentalDate)}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>Phí:</span>
+                                    <span>{renter.feePercent ? `${renter.feePercent * 100}%` : '0%'}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="text-center py-8 text-gray-500">
+                              <p className="text-sm">Chưa có khách thuê</p>
                             </div>
                           )}
                         </div>
@@ -330,6 +406,6 @@ export default function DetailAdsAccountModal({
           </div>
         </div>
       </Dialog>
-    </Transition>
+    </Transition >
   );
 }

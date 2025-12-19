@@ -23,6 +23,18 @@ const customerAdsAccountApi = {
       throw handleApiError(error);
     }
   },
+
+  // Lấy danh sách khách thuê theo AdAccountId
+  getByAdAccountId: async (adAccountId) => {
+    try {
+      const response = await axiosInstance.get(`${api}/CustomerAdsAccount/GetByAdAccountId`, {
+        params: { AdAccountID: adAccountId }
+      });
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 };
 
 export default customerAdsAccountApi;
