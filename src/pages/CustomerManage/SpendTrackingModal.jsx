@@ -572,6 +572,7 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
           open={invoiceModalOpen} 
           onClose={() => setInvoiceModalOpen(false)} 
           invoiceData={invoiceData}
+          customer={customer}
           onConfirmSuccess={() => fetchGrid(currentDate)}
       />
     </Transition>

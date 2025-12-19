@@ -5,7 +5,7 @@ import { useState } from "react";
 import invoiceApi from "../../api/invoiceApi";
 import { toast } from "react-toastify";
 
-const InvoiceDetailModal = ({ open, onClose, invoiceData, onConfirmSuccess }) => {
+const InvoiceDetailModal = ({ open, onClose, invoiceData, customer, onConfirmSuccess }) => {
   const [isConfirming, setIsConfirming] = useState(false);
   const [showConfirmStep, setShowConfirmStep] = useState(false);
   
@@ -71,10 +71,18 @@ const InvoiceDetailModal = ({ open, onClose, invoiceData, onConfirmSuccess }) =>
 
                 {/* Header */}
                 <div className="flex justify-between items-center mb-6 relative z-10">
-                    <Dialog.Title as="h3" className="text-xl font-bold leading-6 text-gray-900 flex items-center gap-2">
-                        <Receipt className="w-6 h-6 text-blue-600"/>
-                        Chi tiết công nợ tháng {invoiceData?.yearMonth ? `${String(invoiceData.yearMonth).slice(4)}/${String(invoiceData.yearMonth).slice(0,4)}` : ''}
-                    </Dialog.Title>
+                    <div className="flex flex-col">
+                        <Dialog.Title as="h3" className="text-xl font-bold leading-6 text-gray-900 flex items-center gap-2">
+                            <Receipt className="w-6 h-6 text-blue-600"/>
+                            Chi tiết công nợ tháng {invoiceData?.yearMonth ? `${String(invoiceData.yearMonth).slice(4)}/${String(invoiceData.yearMonth).slice(0,4)}` : ''}
+                        </Dialog.Title>
+                        {customer && (
+                            <div className="flex items-center gap-2 mt-1 ml-8">
+                                <span className="text-sm font-bold text-gray-700">{customer.name}</span>
+                                <span className="text-xs text-gray-400 font-mono">({customer.customerCode || "No Code"})</span>
+                            </div>
+                        )}
+                    </div>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition">
                         <X className="w-6 h-6" />
                     </button>
