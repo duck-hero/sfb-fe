@@ -23,7 +23,7 @@ const MainLayout = () => {
           hasSidebar={true}
           sidebarWidth={sidebarWidth}
         />
-        <div className="pt-14 p-6 bg-gray-100 min-h-screen">
+        <div className="pt-14 p-5 bg-gray-100 min-h-screen">
           <Outlet />
         </div>
       </div>

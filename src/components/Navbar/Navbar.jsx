@@ -53,7 +53,7 @@ const Navbar = ({ hasSidebar = true, sidebarWidth = "16rem" }) => {
     <div className="relative flex items-center gap-3" ref={dropdownRef}>
       <span
         className="flex items-center cursor-pointer gap-2 font-medium"
-        onClick={() => setDropdownOpen(!dropdownOpen)}
+        onClick={() => setDropdownOpen(prev => !prev)}
       >
         <FaUserAlt className="text-gray-600" />
         {user.userName || "User"}

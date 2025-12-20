@@ -1,33 +1,3 @@
-// import React from 'react'
-// import { BrowserRouter, Route, Routes } from 'react-router-dom';
-// import Login from '../pages/Login/Login';
-
-// import MainLayout from '../layouts/MainLayout';
-// import UserInfo from '../pages/UserSettings/UserInfo';
-// import Verify2FA from '../pages/Login/Verify2FA';
-// import BankList from '../pages/BankManage/BankList';
-// import BankAccountList from '../pages/BankAccountManage/BankAccountList';
-// import BankCardList from '../pages/BankCardManage/bankCardList';
-
-// export default function AppRoutes() {
-//   return (
-//      <BrowserRouter>
-//       <Routes>
-//          <Route path="/" element={<MainLayout />}>
-//         {/* <Route index element={<Dashboard />} />
-//         <Route path="sample" element={<SamplePage />} /> */}
-//           <Route path="bank-management" element={<BankList />} />
-//              <Route path="bank-account-management" element={<BankAccountList />} />
-//                <Route path="bank-card-management" element={<BankCardList />} />
-//       </Route>
-//         <Route path="/login" element={<Login />} />
-//             <Route path="/verify-2fa" element={<Verify2FA />} />
-//           <Route path="/settings" element={<UserInfo />} />
-//       </Routes>
-//     </BrowserRouter>
-//   );
-// }
-
 import React from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -48,6 +18,7 @@ import BankManagePage from "../pages/BankManagePage/BankManagePage";
 import TransactionManage from "../pages/TransactionManage/TransactionManage";
 import CustomerList from "../pages/CustomerManage/CustomerList";
 import UserList from "../pages/UserManage/UserList";
+import Dashboard from "../pages/Dashboard/Dashboard";
 
 // 1. Import ProtectedRoute
 
@@ -86,7 +57,7 @@ export default function AppRoutes() {
               (vì MainLayout có dùng Outlet).
           */}
           <Route path="/" element={<MainLayout />}>
-            {/* <Route index element={<Dashboard />} /> */}
+            <Route index element={<Dashboard />} />
             <Route path="bank-management" element={<BankManagePage />} />
             {/* <Route
               path="bank-account-management"
