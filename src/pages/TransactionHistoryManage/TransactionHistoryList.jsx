@@ -286,7 +286,6 @@ const TransactionHistoryList = () => {
     cardNumber: "",
     cardHolderName: "",
     cvvCode: "",
-    issuedDate: "",
     expirationDate: "",
     bankAccountId: "",
     assignedToUserId: "",
@@ -819,7 +818,6 @@ const TransactionHistoryList = () => {
       cardNumber: item.cardLastDigits ? item.cardLastDigits : "", // Pre-fill with available info
       cardHolderName: "",
       cvvCode: "",
-      issuedDate: "",
       expirationDate: "",
       bankAccountId: item.bankAccountId || "", // Pre-fill if available
       assignedToUserId: "",
@@ -859,7 +857,6 @@ const TransactionHistoryList = () => {
         payload.cardNumber,
         payload.cardHolderName,
         payload.cvvCode,
-        payload.issuedDate,
         payload.expirationDate,
         payload.bankAccountId,
         payload.assignedToUserId

@@ -44,7 +44,6 @@ function BankCardList() {
     cardNumber: "",
     cardHolderName: "",
     cvvCode: "",
-    issuedDate: "",
     expirationDate: "",
     bankAccountId: "",
     assignedToUserId: "",
@@ -176,7 +175,6 @@ function BankCardList() {
         cardNumber: data.cardNumber,
         cardHolderName: data.cardHolderName,
         cvvCode: data.cvvCode,
-        issuedDate: data.issuedDate,
         expirationDate: data.expirationDate,
         bankAccountId: data.bankAccountId,
         assignedToUserId: data.assignedToUserId,
@@ -231,36 +229,12 @@ function BankCardList() {
       cardNumber: "",
       cardHolderName: "",
       cvvCode: "",
-      issuedDate: "",
       expirationDate: "",
       bankAccountId: "",
       assignedToUserId: "",
     });
     setIsCreateModalOpen(true);
   };
-
-  // const handleCreateSave = async () => {
-  //   setSaving(true);
-  //   try {
-  //               console.log("Create", formData)
-  //     await bankCardApi.createBankCard(
-  //       formData.cardNumber,
-  //       formData.cardHolderName,
-  //       formData.cvvCode,
-  //       formData.issuedDate,
-  //       formData.expirationDate,
-  //       formData.bankAccountId,
-  //       formData.assignedToUserId
-  //     );
-  //     toast.success("Tạo thẻ thành công");
-  //     setIsCreateModalOpen(false);
-  //     fetchCards();
-  //   } catch {
-  //     toast.error("Tạo thất bại");
-  //   } finally {
-  //     setSaving(false);
-  //   }
-  // };
 
   const handleCreateSave = async () => {
     setSaving(true);
@@ -290,7 +264,6 @@ function BankCardList() {
             payload.cardNumber,
             payload.cardHolderName,
             payload.cvvCode,
-            payload.issuedDate,
             payload.expirationDate,
             payload.bankAccountId,
             payload.assignedToUserId

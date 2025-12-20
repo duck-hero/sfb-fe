@@ -235,24 +235,6 @@ const handleCardNumberFocus = () => {
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium mb-1">
-                            Ngày phát hành
-                          </label>
-                          <input
-                            type="date"
-                            name="issuedDate"
-                            value={
-                              formData.issuedDate
-                                ? formData.issuedDate.split("T")[0]
-                                : ""
-                            }
-                            onChange={onChange}
-                            disabled={saving}
-                            className="w-full h-12 border border-gray-300 rounded-xl px-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium mb-1">
                             Ngày hết hạn
                           </label>
                           <input
