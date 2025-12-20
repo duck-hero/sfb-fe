@@ -245,7 +245,7 @@ export default function DetailAdsAccountModal({
                       {/* RIGHT COLUMN: Bank Cards List */}
                       <div className="border-l pl-6">
                         <h3 className="text-base font-semibold text-gray-800 mb-3">
-                          Danh sách thẻ đã ADD ({accountData?.linkedBankCards?.length || 0})
+                          Thẻ ({accountData?.linkedBankCards?.length || 0})
                         </h3>
                         <div className="max-h-[500px] overflow-y-auto pr-2 space-y-3">
                           {accountData?.linkedBankCards && accountData.linkedBankCards.length > 0 ? (
