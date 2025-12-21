@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "react-toastify"; // Giả sử bạn dùng thư viện này
-import { Search, Plus, SquarePen, Trash, RefreshCcw, DollarSign } from "lucide-react"; // Hoặc icon từ thư viện bạn đang dùng
+import { Plus, SquarePen, Trash, RefreshCcw, DollarSign, Upload } from "lucide-react"; // Hoặc icon từ thư viện bạn đang dùng
 import DeleteConfirmModal from "../../components/Modal/DeleteConfirmModal";
 
 // Import API
@@ -12,28 +12,47 @@ import CreateAdsAccountModal from "./CreateAdsAccountModal";
 import EditAdsAccountModal from "./EditAdsAccountModal";
 import DetailAdsAccountModal from "./DetailAdsAccountModal";
 import TableSkeleton from "../../components/Loading/TableSkeleton";
+import { getBmWorkingDisplayText, getBmWorkingOptions } from "../../utils/bmConstants";
 
-// Import các Modal Create/Edit của bạn (nếu đã tạo)
-// import CreateAdsAccountModal from ...
-// import EditAdsAccountModal from ...
+// Custom debounce hook
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
 
 function AdsAccountList() {
   const [adsAccounts, setAdsAccounts] = useState([]);
   const [pageNumber, setPageNumber] = useState(1);
-  const [pageSize, setPageSize] = useState(10); // Mặc định 10 cho dễ nhìn
+  const [pageSize, setPageSize] = useState(15); // Mặc định 15 cho dễ nhìn
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
 
   // --- SEARCH & FILTER STATES ---
-  const [searchAdAccountId, setSearchAdAccountId] = useState(""); // Input
+  const [searchAdAccountId, setSearchAdAccountId] = useState(""); // Input - real-time typing
   const [filterBmAccountId, setFilterBmAccountId] = useState(""); // Select
+  const [filterBmWorking, setFilterBmWorking] = useState(""); // Select (Integer: "", "1", "2", ...)
   const [filterLocked, setFilterLocked] = useState(""); // Select (Boolean: "", "true", "false")
 
-  // State lưu giá trị thực sự khi ấn nút Search
+  // Debounced search text (300ms delay)
+  const debouncedSearchText = useDebounce(searchAdAccountId, 300);
+
+  // State lưu giá trị thực sự được sử dụng cho API call
   const [queryKeyword, setQueryKeyword] = useState({
     adAccountIdNumber: "",
     bmAccountId: "",
+    bmWorking: "", // "" là all, hoặc giá trị integer
     locked: "", // "" là all
   });
 
@@ -52,6 +71,7 @@ function AdsAccountList() {
     adAccountName: "",
     adAccountIdNumber: "",
     bmAccountId: "",
+    bmWorking: "", // Integer value: 1, 2, etc.
     locked: false,
   });
 
@@ -82,12 +102,19 @@ function AdsAccountList() {
       if (queryKeyword.locked === "true") lockedParam = true;
       if (queryKeyword.locked === "false") lockedParam = false;
 
+      // Xử lý bmWorking: convert string sang number hoặc null
+      let bmWorkingParam = null;
+      if (queryKeyword.bmWorking && queryKeyword.bmWorking !== "") {
+        bmWorkingParam = parseInt(queryKeyword.bmWorking, 10);
+      }
+
       const res = await adsAccountApi.getAdsAccountList(
         pageNumber,
         pageSize,
         queryKeyword.adAccountIdNumber,
         lockedParam,
-        queryKeyword.bmAccountId
+        queryKeyword.bmAccountId,
+        bmWorkingParam // Thêm param bmWorking
       );
 
       setAdsAccounts(res?.data || []);
@@ -119,15 +146,21 @@ function AdsAccountList() {
     fetchBmDropdown();
   }, []);
 
-  // --- 3. HANDLE SEARCH ---
-  const handleSearch = () => {
-    setPageNumber(1);
+  // --- 3. AUTO FILTER EFFECT ---
+  // Auto update queryKeyword when filters change (debounced for search input)
+  useEffect(() => {
     setQueryKeyword({
-      adAccountIdNumber: searchAdAccountId.trim(),
+      adAccountIdNumber: debouncedSearchText.trim(),
       bmAccountId: filterBmAccountId,
+      bmWorking: filterBmWorking,
       locked: filterLocked,
     });
-  };
+  }, [debouncedSearchText, filterBmAccountId, filterBmWorking, filterLocked]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setPageNumber(1);
+  }, [queryKeyword]);
 
   // --- PAGINATION HELPERS ---
   // const handlePrev = () => pageNumber > 1 && setPageNumber(pageNumber - 1);
@@ -139,6 +172,7 @@ function AdsAccountList() {
       adAccountName: "",
       adAccountIdNumber: "",
       bmAccountId: "",
+      bmWorking: "", // Mặc định
       locked: false, // Mặc định
     });
     setIsCreateModalOpen(true);
@@ -147,10 +181,14 @@ function AdsAccountList() {
   const handleCreateSave = async () => {
     setSaving(true);
     try {
+      // Xử lý bmWorking: convert sang number nếu có giá trị
+      const bmWorkingValue = formData.bmWorking ? parseInt(formData.bmWorking, 10) : null;
+
       await adsAccountApi.createAdsAccount(
         formData.adAccountName,
         formData.adAccountIdNumber,
-        formData.bmAccountId
+        formData.bmAccountId,
+        bmWorkingValue // Thêm bmWorking param
       );
       toast.success("Tạo tài khoản thành công");
       setIsCreateModalOpen(false);
@@ -179,6 +217,7 @@ function AdsAccountList() {
         adAccountName: data.adAccountName,
         adAccountIdNumber: data.adAccountIdNumber,
         bmAccountId: data.bmAccountId,
+        bmWorking: data.bmWorking ? data.bmWorking.toString() : "", // Convert sang string cho form
         locked: data.locked,
         // Các trường khác nếu cần update
       });
@@ -225,10 +264,14 @@ const handleEditSave = async (dataToSend) => {
       const rawData = dataToSend || formData;
 
       // --- SỬA LỖI TẠI ĐÂY ---
+      // Xử lý bmWorking: convert sang number nếu có giá trị
+      const bmWorkingValue = rawData.bmWorking ? parseInt(rawData.bmWorking, 10) : null;
+
       // Tạo payload mới ánh xạ từ "ad..." (frontend) sang "ads..." (API)
       const payload = {
         id: rawData.id,
         bmAccountId: rawData.bmAccountId,
+        bmWorking: bmWorkingValue, // Thêm bmWorking
         locked: rawData.locked,
         // Đổi tên key cho khớp API
         adsAccountName: rawData.adAccountName,       // API cần ads, State đang là ad
@@ -327,71 +370,97 @@ const handleEditSave = async (dataToSend) => {
     }
   };
 
+  const renderBmWorking = (bmWorkingValue) => {
+    const displayText = getBmWorkingDisplayText(bmWorkingValue);
+    return <span className="font-medium text-gray-900">{displayText}</span>;
+  };
+
   return (
     <div className="px-4">
       <h1 className="text-lg font-bold mb-3">Danh sách tài khoản quảng cáo</h1>
 
       {/* --- SEARCH BAR SECTION --- */}
-      <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-        <div className="flex items-center w-full max-w-5xl gap-3">
-          
-          {/* Input 1: Ad Account ID Number (Search) */}
-          <div className="flex-1 flex items-center px-3 py-1.5 bg-white border border-gray-200 rounded-lg shadow-md transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100">
-            <input
-              type="text"
-              placeholder="Tìm theo ID tài khoản FB..."
-              value={searchAdAccountId}
-              onChange={(e) => setSearchAdAccountId(e.target.value)}
-              className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-sm focus:outline-none"
-            />
-          </div>
-
-          {/* Input 2: BM Account (Filter) */}
-          <div className="flex-1 flex items-center px-3 py-1.5 bg-white border border-gray-200 rounded-lg shadow-md transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100">
-            <select
-              value={filterBmAccountId}
-              onChange={(e) => setFilterBmAccountId(e.target.value)}
-              className="w-full text-gray-800 placeholder-primary-darkest bg-transparent text-sm focus:outline-none"
+      <div className="pb-4 border-b border-gray-200">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+          {/* Left Side: Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Button: Import */}
+            <button
+              className="px-4 py-2.5 rounded-lg font-semibold text-sm transition bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 active:bg-green-800 flex items-center justify-center"
             >
-              <option value="">-- Tất cả BM --</option>
-              {bmList.map((bm) => (
-                // Giả sử BM object có id và name
-                <option key={bm.id} value={bm.id}>
-                  {bm.name || bm.bmId} 
-                </option>
-              ))}
-            </select>
-          </div>
+              <Upload className="h-4 w-4 mr-2" /> Import
+            </button>
 
-          {/* Input 3: Locked Status (Filter) */}
-          <div className="w-40 flex items-center px-3 py-1.5 bg-white border border-gray-200 rounded-lg shadow-md transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100">
-            <select
-              value={filterLocked}
-              onChange={(e) => setFilterLocked(e.target.value)}
-              className="w-full text-gray-800 bg-transparent text-sm focus:outline-none"
+            {/* Button: Create New */}
+            <button
+              className="px-4 py-2.5 rounded-lg font-semibold text-sm transition bg-primary-dark text-white hover:bg-primary-darkest focus:outline-none focus:ring-2 focus:ring-primary-dark focus:ring-offset-2 active:bg-primary-darkest flex items-center justify-center"
+              onClick={openCreateModal}
             >
-              <option value="">-- Trạng thái --</option>
-              <option value="false">Hoạt động</option>
-              <option value="true">Đã khóa</option>
-            </select>
+              <Plus className="h-4 w-4 mr-2" /> Tạo mới
+            </button>
           </div>
 
-          {/* Button: Search */}
-          <button
-            onClick={handleSearch}
-            className="px-3 py-1.5 rounded-lg font-semibold text-sm transition bg-primary-dark text-white hover:bg-primary-darkest cursor-pointer whitespace-nowrap flex items-center justify-center"
-          >
-            <Search className="h-4 w-4" />
-          </button>
+          {/* Right Side: Search Filters */}
+          <div className="flex-1 lg:max-w-2xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+              {/* Input 1: Ad Account ID Number (Search) */}
+              <div className="flex items-center px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100 hover:shadow-md">
+                <input
+                  type="text"
+                  placeholder="ID tài khoản FB..."
+                  value={searchAdAccountId}
+                  onChange={(e) => setSearchAdAccountId(e.target.value)}
+                  className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-sm focus:outline-none"
+                />
+              </div>
+
+              {/* Input 2: BM Account (Filter) */}
+              <div className="flex items-center px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100 hover:shadow-md">
+                <select
+                  value={filterBmAccountId}
+                  onChange={(e) => setFilterBmAccountId(e.target.value)}
+                  className="w-full text-gray-800 placeholder-primary-darkest bg-transparent text-sm focus:outline-none"
+                >
+                  <option value="">-- BM Gốc --</option>
+                  {bmList.map((bm) => (
+                    <option key={bm.id} value={bm.id}>
+                      {bm.name || bm.bmId}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Input 3: BM Working (Filter) */}
+              <div className="flex items-center px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100 hover:shadow-md">
+                <select
+                  value={filterBmWorking}
+                  onChange={(e) => setFilterBmWorking(e.target.value)}
+                  className="w-full text-gray-800 bg-transparent text-sm focus:outline-none"
+                >
+                  <option value="">-- BM Cầm --</option>
+                  {getBmWorkingOptions().map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Input 4: Locked Status (Filter) */}
+              <div className="flex items-center px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100 hover:shadow-md">
+                <select
+                  value={filterLocked}
+                  onChange={(e) => setFilterLocked(e.target.value)}
+                  className="w-full text-gray-800 bg-transparent text-sm focus:outline-none"
+                >
+                  <option value="">-- Trạng thái --</option>
+                  <option value="false">Hoạt động</option>
+                  <option value="true">Đã khóa</option>
+                </select>
+              </div>
+            </div>
+          </div>
         </div>
-
-        {/* Button: Create New */}
-        <button
-          className="px-3 py-1.5 rounded-lg font-semibold text-sm transition bg-primary-dark text-white hover:bg-primary-darkest cursor-pointer"
-          onClick={openCreateModal}
-        >
-          <Plus className="h-4 w-4 inline-block mr-1.5" /> Tạo mới
-        </button>
       </div>
 
       {/* --- TABLE SECTION --- */}
@@ -431,7 +500,10 @@ const handleEditSave = async (dataToSend) => {
                   Thời gian cập nhật dư nợ
                 </th>
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-900  tracking-wider text-primary-darkest">
-                BM
+                  BM Gốc
+                </th>
+                <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-900  tracking-wider text-primary-darkest">
+                  BM Cầm
                 </th>
                 <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-900  tracking-wider text-primary-darkest">
                   Trạng thái tài khoản
@@ -447,7 +519,7 @@ const handleEditSave = async (dataToSend) => {
             <tbody className="bg-white divide-y divide-gray-200">
               {adsAccounts.length === 0 && (
                 <tr>
-                   <td colSpan="10" className="px-3 py-3 text-center text-gray-500 text-sm">
+                   <td colSpan="11" className="px-3 py-3 text-center text-gray-500 text-sm">
                       Không tìm thấy dữ liệu
                    </td>
                 </tr>
@@ -497,6 +569,11 @@ const handleEditSave = async (dataToSend) => {
                   <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-700">
                     {/* Hiển thị tên BM, nếu API trả về bmName thì dùng, không thì check logic */}
                     {x.bmAccountname}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-700">
+                    <div className="flex items-center justify-center">
+                      {renderBmWorking(x.bmWorking)}
+                    </div>
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap">
                     <div className="flex items-center justify-center">
@@ -552,7 +629,7 @@ const handleEditSave = async (dataToSend) => {
             {/* Footer Pagination */}
             <tfoot className="bg-white">
               <tr>
-                <td colSpan="10" className="px-3 py-2">
+                <td colSpan="11" className="px-3 py-2">
                   <div className="flex justify-end items-center text-xs">
                     {/* Select Page Size */}
                     <div className="flex items-center gap-1.5 mr-4">
@@ -565,9 +642,8 @@ const handleEditSave = async (dataToSend) => {
                         }}
                         className="border border-gray-300 rounded px-1.5 py-0.5 text-gray-700 focus:outline-none text-xs"
                       >
-                        <option value={5}>5</option>
-                        <option value={10}>10</option>
-                        <option value={20}>20</option>
+                        <option value={15}>15</option>
+                        <option value={30}>30</option>
                         <option value={50}>50</option>
                       </select>
                     </div>

@@ -1,6 +1,7 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { ClipLoader } from "react-spinners";
+import { getBmWorkingOptions } from "../../utils/bmConstants";
 
 export default function CreateAdsAccountModal({
   open,
@@ -97,11 +98,32 @@ export default function CreateAdsAccountModal({
                       disabled={saving}
                       className="w-full h-12 border border-gray-300 rounded-xl px-3 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
                     >
-                      <option value="">-- Chọn BM --</option>
+                      <option value="">-- BM Gốc --</option>
                       {bmList.map((bm) => (
                         <option key={bm.id} value={bm.id}>
                           {/* Hiển thị Tên BM hoặc ID BM */}
                           {bm.name || bm.bmId || `BM #${bm.id}`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Input 4: BM Working (bmWorking) */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      BM Cầm
+                    </label>
+                    <select
+                      name="bmWorking" // Map API: bmWorking
+                      value={formData.bmWorking}
+                      onChange={onChange}
+                      disabled={saving}
+                      className="w-full h-12 border border-gray-300 rounded-xl px-3 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                    >
+                      <option value="">-- BM Cầm --</option>
+                      {getBmWorkingOptions().map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
                         </option>
                       ))}
                     </select>

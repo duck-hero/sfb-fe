@@ -1,6 +1,7 @@
 // import React from "react";
 import { Dialog, Transition, Switch } from "@headlessui/react";
 import { Fragment } from "react";
+import { getBmWorkingOptions } from "../../utils/bmConstants";
 
 // Component Spinner CSS nội bộ
 const TailwindSpinner = () => (
@@ -24,6 +25,7 @@ const ContentSkeleton = () => (
       <InputSkeleton />
       <InputSkeleton />
       <InputSkeleton />
+      <InputSkeleton /> {/* Thêm skeleton cho BM Working */}
       {/* Skeleton cho Switch */}
       <div className="flex justify-between items-center mt-2">
         <div className="h-4 w-32 bg-gray-200 rounded-full animate-pulse"></div>
@@ -140,7 +142,7 @@ export default function EditAdsAccountModal({
                       {/* Input 3: BM Account (bmAccountId) */}
                       <div>
                         <label className="block text-sm font-medium mb-1">
-                          Chọn nguồn BM
+                          BM Gốc
                         </label>
                         <select
                           name="bmAccountId" // Map API: bmAccountId
@@ -149,10 +151,31 @@ export default function EditAdsAccountModal({
                           disabled={saving}
                           className="w-full h-12 border border-gray-300 rounded-xl px-3 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
                         >
-                          <option value="">-- Chọn BM --</option>
+                          <option value="">-- BM Gốc --</option>
                           {bmList.map((bm) => (
                             <option key={bm.id} value={bm.id}>
                               {bm.name || bm.bmId || `BM #${bm.id}`}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Input 4: BM Working (bmWorking) */}
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          BM Cầm
+                        </label>
+                        <select
+                          name="bmWorking" // Map API: bmWorking
+                          value={formData.bmWorking || ""}
+                          onChange={onChange}
+                          disabled={saving}
+                          className="w-full h-12 border border-gray-300 rounded-xl px-3 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                        >
+                          <option value="">-- BM Cầm --</option>
+                          {getBmWorkingOptions().map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
                             </option>
                           ))}
                         </select>

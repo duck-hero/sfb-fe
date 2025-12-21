@@ -48,7 +48,7 @@ export default function CreateBmAccountModal({
                 
                 {/* Title */}
                 <Dialog.Title className="text-2xl font-semibold text-center mb-5">
-                  Thêm BM Account
+                  Thêm BM Gốc
                 </Dialog.Title>
 
                 {/* Form */}
@@ -57,7 +57,7 @@ export default function CreateBmAccountModal({
                   {/* Input 1: Tên Account (name) */}
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      Tên Account
+                      Tên BM Gốc
                     </label>
                     <input
                       type="text"

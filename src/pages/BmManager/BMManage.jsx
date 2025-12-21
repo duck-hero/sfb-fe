@@ -15,7 +15,7 @@ export default function BMManage() {
     },
     {
       key: "account",
-      label: "BM",
+      label: "BM Gốc",
       icon: <UserCog className="w-4 h-4" />,
     },
     {

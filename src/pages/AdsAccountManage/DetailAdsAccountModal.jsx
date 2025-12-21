@@ -3,6 +3,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { toast } from "react-toastify";
 import AddCardApi from "../../api/AddCardApi";
 import customerAdsAccountApi from "../../api/customerAdsAccountApi";
+import { getBmWorkingDisplayText } from "../../utils/bmConstants";
 
 // Component hiển thị trường thông tin
 const DetailField = ({ label, value, className = "" }) => (
@@ -42,6 +43,8 @@ const ContentSkeleton = () => (
     <div className="border-t pt-4 mb-3">
       <div className="h-5 w-56 bg-gray-300 rounded-full animate-pulse mb-3"></div>
       <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+        <InputSkeleton />
+        <InputSkeleton />
         <InputSkeleton />
         <InputSkeleton />
       </div>
@@ -234,8 +237,14 @@ export default function DetailAdsAccountModal({
                           <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                             {/* BM Account */}
                             <DetailField
-                              label="BM Account"
+                              label="BM Gốc"
                               value={accountData?.bmAccountname}
+                              className="col-span-2"
+                            />
+                            {/* BM Working */}
+                            <DetailField
+                              label="BM Cầm"
+                              value={getBmWorkingDisplayText(accountData?.bmWorking)}
                               className="col-span-2"
                             />
                           </div>

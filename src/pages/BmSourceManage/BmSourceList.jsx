@@ -2,11 +2,27 @@ import { useEffect, useRef, useState } from "react";
 import DeleteConfirmModal from "../../components/Modal/DeleteConfirmModal";
 import bmSourceApi from "../../api/bmSourceApi";
 import { toast } from "react-toastify";
-import { Search, Plus, SquarePen, Trash } from "lucide-react";
+import { Search, Plus, SquarePen, Trash, Upload } from "lucide-react";
 import TableSkeleton from "../../components/Loading/TableSkeleton";
 import CreateBmModal from "./CreateBmModal";
 import EditBmSourceModal from "./EditBmSourceModal";
 
+// Custom debounce hook
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
 
 function BmSourceList() {
   const [bmSources, setBmSources] = useState([]);
@@ -16,7 +32,7 @@ function BmSourceList() {
   const [loading, setLoading] = useState(false);
 
   const [searchCode, setSearchCode] = useState("");
-  const [searchKeyword, setSearchKeyword] = useState("");
+  const debouncedSearchCode = useDebounce(searchCode, 300);
 
   // Modal states
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -62,8 +78,13 @@ function BmSourceList() {
   };
 
   useEffect(() => {
-    fetchBmSources(pageNumber, pageSize, searchKeyword);
-  }, [pageNumber, pageSize, searchKeyword]);
+    fetchBmSources(pageNumber, pageSize, debouncedSearchCode.trim());
+  }, [pageNumber, pageSize, debouncedSearchCode]);
+
+  // Reset page when search changes
+  useEffect(() => {
+    setPageNumber(1);
+  }, [debouncedSearchCode]);
 
   const handlePrev = () => pageNumber > 1 && setPageNumber(pageNumber - 1);
   const handleNext = () =>
@@ -73,10 +94,6 @@ function BmSourceList() {
     setPageNumber(1);
   };
 
-  const handleSearch = () => {
-    setPageNumber(1);
-    setSearchKeyword(searchCode.trim());
-  };
 
   // ------------------------- EDIT BANK -------------------------
   const openEditModal = async (id) => {
@@ -114,7 +131,7 @@ function BmSourceList() {
       toast.success("Cập nhật ngân hàng thành công");
       setIsEditModalOpen(false);
       requestRef.current++;
-      fetchBmSources(pageNumber, pageSize, searchCode.trim());
+      fetchBmSources(pageNumber, pageSize, debouncedSearchCode.trim());
     } catch (err) {
       toast.error(typeof err === "string" ? err : "Cập nhật thất bại");
     } finally {
@@ -140,7 +157,7 @@ function BmSourceList() {
       await bmSourceApi.createBmSource(formData.sourceName);
       toast.success("Thêm Bm thành công");
       setIsCreateModalOpen(false);
-      fetchBmSources(pageNumber, pageSize, searchCode.trim());
+      fetchBmSources(pageNumber, pageSize, debouncedSearchCode.trim());
     } catch (err) {
       toast.error(typeof err === "string" ? err : "Thêm thất bại!");
     } finally {
@@ -159,7 +176,7 @@ function BmSourceList() {
     try {
       await bmSourceApi.deleteBmSourceById(bmSourceToDelete.id);
       toast.success("Xóa thành công");
-      fetchBmSources(pageNumber, pageSize, searchCode.trim());
+      fetchBmSources(pageNumber, pageSize, debouncedSearchCode.trim());
     } catch (err) {
       console.error(err);
       toast.error(typeof err === "string" ? err : "Xóa thất bại");
@@ -174,52 +191,33 @@ function BmSourceList() {
     <div className="px-4">
       <h1 className="text-lg font-bold mb-3">Danh sách BM</h1>
 
-      <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-        <div className="w-full max-w-3xl">
-          <div
-            className="flex items-center w-full px-3 py-1.5 bg-white 
-                   border border-gray-200 rounded-lg shadow-md 
-                   transition-all duration-300 ease-in-out
-                   focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100"
-          >
-            {/* Icon tìm kiếm màu xanh nằm bên trái */}
-            <Search className="h-4 w-4 text-primary-darkest mr-2 flex-shrink-0" />
-
-            {/* Input field, chiếm hết không gian còn lại */}
-            <input
-              type="text"
-              placeholder="Tìm kiếm theo BM..."
-              value={searchCode}
-              onChange={(e) => setSearchCode(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleSearch();
-                }
-              }}
-              // Input không có border và outline riêng, để container quản lý style
-              className="w-full text-gray-800 placeholder-gray-500 bg-transparent 
-                     text-sm focus:outline-none"
-            />
+      {/* --- SEARCH BAR SECTION --- */}
+      <div className="pb-4 border-b border-gray-200">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+          {/* Left Side: Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Button: Create New */}
+            <button
+              className="px-4 py-2.5 rounded-lg font-semibold text-sm transition bg-primary-dark text-white hover:bg-primary-darkest focus:outline-none focus:ring-2 focus:ring-primary-dark focus:ring-offset-2 active:bg-primary-darkest flex items-center justify-center"
+              onClick={openCreateModal}
+            >
+              <Plus className="h-4 w-4 mr-2" /> Tạo mới
+            </button>
           </div>
-          {/* <button
 
-          className="px-4 py-2 bg-blue-600 text-white rounded"
-
-          onClick={handleSearch}
-
-        >
-
-    <Search />
-
-        </button> */}
+          {/* Right Side: Search Input */}
+          <div className="flex-1 lg:max-w-sm">
+            <div className="flex items-center px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100 hover:shadow-md">
+              <input
+                type="text"
+                placeholder="Tên BM..."
+                value={searchCode}
+                onChange={(e) => setSearchCode(e.target.value)}
+                className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-sm focus:outline-none"
+              />
+            </div>
+          </div>
         </div>
-        <button
-          className="px-3 py-1.5 rounded-lg font-semibold text-sm transition bg-primary-dark text-white hover:bg-primary-darkest cursor-pointer"
-          onClick={openCreateModal}
-        >
-                <Plus className="h-4 w-4 inline-block mr-1.5" />
-          Tạo mới
-        </button>
       </div>
 
       {loading ? (

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Search, Plus, SquarePen, Trash } from "lucide-react";
+import { Search, Plus, SquarePen, Trash, Upload } from "lucide-react";
 import { toast } from "react-toastify";
 
 // API Imports
@@ -12,6 +12,22 @@ import bmSourceApi from "../../api/bmSourceApi";
 import CreateBmAccountModal from "./CreateBmAccountModal";
 import EditBmAccountModal from "./EditBmAccountModal";
 
+// Custom debounce hook
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
 
 function BmAccountList() {
   // --- STATE QUẢN LÝ DỮ LIỆU ---
@@ -23,9 +39,9 @@ function BmAccountList() {
   const [loading, setLoading] = useState(false);
 
   // --- STATE TÌM KIẾM ---
-  // Chỉ tìm kiếm theo tên
-  const [searchTerm, setSearchTerm] = useState(""); 
-  const [triggerSearch, setTriggerSearch] = useState(""); // State để kích hoạt useEffect khi nhấn Enter/Click tìm
+  // Chỉ tìm kiếm theo tên với debounce 300ms
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   // --- STATE DROPDOWN (BM SOURCE) ---
   const [bmSourceList, setBmSourceList] = useState([]);
@@ -60,7 +76,7 @@ function BmAccountList() {
       const res = await bmAccountApi.getBmAccountList(
         pageNumber,
         pageSize,
-        triggerSearch // Param 'Name'
+        debouncedSearchTerm.trim() // Sử dụng debounced search term
       );
 
       setBmAccounts(res?.data || []);
@@ -77,7 +93,12 @@ function BmAccountList() {
   useEffect(() => {
     fetchBmAccounts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageNumber, pageSize, triggerSearch]);
+  }, [pageNumber, pageSize, debouncedSearchTerm]);
+
+  // Reset page when search term changes
+  useEffect(() => {
+    setPageNumber(1);
+  }, [debouncedSearchTerm]);
 
   // ---------------------- 2. FETCH DROPDOWN (BM SOURCES) ----------------------
   useEffect(() => {
@@ -93,11 +114,6 @@ function BmAccountList() {
     };
     fetchBmSources();
   }, []);
-  // ---------------------- 3. SEARCH HANDLER ----------------------
-  const handleSearch = () => {
-    setPageNumber(1);
-    setTriggerSearch(searchTerm.trim());
-  };
 
   // ---------------------- 4. PAGINATION ----------------------
   const handlePrev = () => pageNumber > 1 && setPageNumber(pageNumber - 1);
@@ -232,38 +248,36 @@ function BmAccountList() {
   // ---------------------- RENDER ----------------------
   return (
     <div className="px-4">
-      <h1 className="text-lg font-bold mb-3">Danh sách tài khoản BM</h1>
+      <h1 className="text-lg font-bold mb-3">Danh sách BM Gốc</h1>
 
-      <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-        {/* Search Bar - Chỉ giữ lại tìm theo Tên */}
-        <div className="flex items-center w-full max-w-lg gap-3">
-          <div className="flex-1 flex items-center px-3 py-1.5 bg-white border border-gray-200 rounded-lg shadow-md transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100">
-            <input
-              type="text"
-              placeholder="Tìm theo tên account..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
-              className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-sm focus:outline-none"
-            />
+      {/* --- SEARCH BAR SECTION --- */}
+      <div className="pb-4 border-b border-gray-200">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+          {/* Left Side: Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3">
+
+            {/* Button: Create New */}
+            <button
+              className="px-4 py-2.5 rounded-lg font-semibold text-sm transition bg-primary-dark text-white hover:bg-primary-darkest focus:outline-none focus:ring-2 focus:ring-primary-dark focus:ring-offset-2 active:bg-primary-darkest flex items-center justify-center"
+              onClick={openCreateModal}
+            >
+              <Plus className="h-4 w-4 mr-2" /> Tạo mới
+            </button>
           </div>
 
-          <button
-            onClick={handleSearch}
-            className="px-3 py-1.5 rounded-lg font-semibold text-sm transition bg-primary-dark text-white hover:bg-primary-darkest cursor-pointer flex items-center justify-center shadow-md"
-          >
-            <Search className="h-4 w-4" />
-          </button>
+          {/* Right Side: Search Filters */}
+          <div className="flex-1 lg:max-w-sm">
+            <div className="flex items-center px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100 hover:shadow-md">
+              <input
+                type="text"
+                placeholder="Tên BM..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-sm focus:outline-none"
+              />
+            </div>
+          </div>
         </div>
-
-        {/* Nút Tạo mới */}
-        <button
-          className="px-3 py-1.5 rounded-lg font-semibold text-sm transition bg-primary-dark text-white hover:bg-primary-darkest cursor-pointer shadow-md"
-          onClick={openCreateModal}
-        >
-          <Plus className="h-4 w-4 inline-block mr-1.5" />
-          Tạo mới
-        </button>
       </div>
 
       {/* Bảng dữ liệu */}
@@ -278,7 +292,7 @@ function BmAccountList() {
                   #
                 </th>
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-900 tracking-wider w-1/3 text-primary-darkest">
-                  BM
+                  BM Gốc
                 </th>
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-900 tracking-wider w-1/3 text-primary-darkest">
                   Nguồn (Source)

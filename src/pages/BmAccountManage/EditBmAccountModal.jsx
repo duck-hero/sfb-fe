@@ -92,7 +92,7 @@ export default function EditBmAccountModal({
             >
               <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-8 text-left shadow-xl transition-all">
                 <Dialog.Title className="text-2xl font-semibold text-center mb-5">
-                  Chỉnh sửa BM Account
+                  Chỉnh sửa BM Gốc
                 </Dialog.Title>
 
                 {isContentReady ? (
@@ -101,7 +101,7 @@ export default function EditBmAccountModal({
                       
                       {/* Input 1: Tên Account (name) - Hiện giá trị mặc định từ formData.name */}
                       <div>
-                        <label className="block text-sm font-medium mb-1">Tên Account</label>
+                        <label className="block text-sm font-medium mb-1">Tên BM Gốc</label>
                         <input
                           name="name"
                           value={formData.name || ""}

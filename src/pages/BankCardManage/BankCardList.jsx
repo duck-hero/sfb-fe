@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Search, Plus, SquarePen, Trash } from "lucide-react";
+import { Search, Plus, SquarePen, Trash, Upload } from "lucide-react";
 import { toast } from "react-toastify";
 import bankCardApi from "../../api/bankCardApi";
 import accountApi from "../../api/accountApi";
@@ -11,6 +11,23 @@ import EditBankCardModal from "./EditBankCardModal";
 import DetailBankCardModal from "./DetailBankCardModal";
 import SecurityHelper from "../../utils/crypto";
 
+// Custom debounce hook
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
+
 function BankCardList() {
   const [bankCards, setBankCards] = useState([]);
   const [pageNumber, setPageNumber] = useState(1);
@@ -19,15 +36,14 @@ function BankCardList() {
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  // Search fields
+  // Search fields with debounce
   const [searchCardNumber, setSearchCardNumber] = useState("");
   const [searchHolderName, setSearchHolderName] = useState("");
   const [searchAssignedTo, setSearchAssignedTo] = useState("");
-  const [searchKeyword, setSearchKeyword] = useState({
-    cardNumber: "",
-    cardHolderName: "",
-    assignedToUserId: "",
-  });
+
+  // Debounced search values (300ms delay)
+  const debouncedCardNumber = useDebounce(searchCardNumber, 300);
+  const debouncedHolderName = useDebounce(searchHolderName, 300);
 
   const [userList, setUserList] = useState([]);
 
@@ -91,9 +107,9 @@ function BankCardList() {
       const res = await bankCardApi.getBankCardList(
         pageNumber,
         pageSize,
-        searchKeyword.cardNumber,
-        searchKeyword.cardHolderName,
-        searchKeyword.assignedToUserId
+        debouncedCardNumber.trim(),
+        debouncedHolderName.trim(),
+        searchAssignedTo
       );
 
       setBankCards(res?.data || []);
@@ -108,7 +124,12 @@ function BankCardList() {
 
   useEffect(() => {
     fetchCards();
-  }, [pageNumber, pageSize, searchKeyword]);
+  }, [pageNumber, pageSize, debouncedCardNumber, debouncedHolderName, searchAssignedTo]);
+
+  // Reset page when search changes
+  useEffect(() => {
+    setPageNumber(1);
+  }, [debouncedCardNumber, debouncedHolderName, searchAssignedTo]);
 
   // Fetch Users
   useEffect(() => {
@@ -136,15 +157,6 @@ function BankCardList() {
     fetchBankAccounts();
   }, []);
 
-  // Search
-  const handleSearch = () => {
-    setPageNumber(1);
-    setSearchKeyword({
-      cardNumber: searchCardNumber.trim() || "",
-      cardHolderName: searchHolderName.trim() || "",
-      assignedToUserId: searchAssignedTo || "",
-    });
-  };
 
   // Pagination
   const handlePrev = () => pageNumber > 1 && setPageNumber(pageNumber - 1);
@@ -333,62 +345,69 @@ function BankCardList() {
       <h1 className="text-lg font-bold mb-3">Danh sách thẻ ngân hàng</h1>
 
       {/* --- SEARCH BAR SECTION --- */}
-      <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-        <div className="flex items-center w-full max-w-4xl gap-3">
-          {/* Input: Card Number */}
-          <div className="flex-1 flex items-center px-3 py-1.5 bg-white border border-gray-200 rounded-lg shadow-md transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100">
-            <input
-              type="text"
-              placeholder="Tìm theo số thẻ..."
-              value={searchCardNumber}
-              onChange={(e) => setSearchCardNumber(e.target.value)}
-              className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-sm focus:outline-none"
-            />
-          </div>
-
-          {/* Input: Holder Name */}
-          <div className="flex-1 flex items-center px-3 py-1.5 bg-white border border-gray-200 rounded-lg shadow-md transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100">
-            <input
-              type="text"
-              placeholder="Tìm theo tên chủ thẻ..."
-              value={searchHolderName}
-              onChange={(e) => setSearchHolderName(e.target.value)}
-              className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-sm focus:outline-none"
-            />
-          </div>
-
-          {/* Select: Assigned User */}
-          <div className="flex-1 flex items-center px-3 py-1.5 bg-white border border-gray-200 rounded-lg shadow-md transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100">
-            <select
-              value={searchAssignedTo}
-              onChange={(e) => setSearchAssignedTo(e.target.value)}
-              className="w-full text-gray-800 placeholder-primary-darkest bg-transparent text-sm focus:outline-none"
+      <div className="pb-4 border-b border-gray-200">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+          {/* Left Side: Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Button: Import */}
+            {/* <button
+              className="px-4 py-2.5 rounded-lg font-semibold text-sm transition bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 active:bg-green-800 flex items-center justify-center"
             >
-              <option value="">-- Vận hành --</option>
-              {userList.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.userName}
-                </option>
-              ))}
-            </select>
+              <Upload className="h-4 w-4 mr-2" /> Import
+            </button> */}
+
+            {/* Button: Create New */}
+            <button
+              className="px-4 py-2.5 rounded-lg font-semibold text-sm transition bg-primary-dark text-white hover:bg-primary-darkest focus:outline-none focus:ring-2 focus:ring-primary-dark focus:ring-offset-2 active:bg-primary-darkest flex items-center justify-center"
+              onClick={openCreateModal}
+            >
+              <Plus className="h-4 w-4 mr-2" /> Tạo mới
+            </button>
           </div>
 
-          {/* Button: Search */}
-          <button
-            onClick={handleSearch}
-            className="px-3 py-1.5 rounded-lg font-semibold text-sm transition bg-primary-dark text-white hover:bg-primary-darkest cursor-pointer whitespace-nowrap flex items-center justify-center"
-          >
-            <Search className="h-4 w-4" />
-          </button>
-        </div>
+          {/* Right Side: Search Filters */}
+          <div className="flex-1 lg:max-w-2xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+              {/* Input: Card Number */}
+              <div className="flex items-center px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100 hover:shadow-md">
+                <input
+                  type="text"
+                  placeholder="Số thẻ..."
+                  value={searchCardNumber}
+                  onChange={(e) => setSearchCardNumber(e.target.value)}
+                  className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-sm focus:outline-none"
+                />
+              </div>
 
-        {/* Button: Create New */}
-        <button
-          className="px-3 py-1.5 rounded-lg font-semibold text-sm transition bg-primary-dark text-white hover:bg-primary-darkest cursor-pointer"
-          onClick={openCreateModal}
-        >
-          <Plus className="h-4 w-4 inline-block mr-1.5" /> Tạo mới
-        </button>
+              {/* Input: Holder Name */}
+              <div className="flex items-center px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100 hover:shadow-md">
+                <input
+                  type="text"
+                  placeholder="Tên chủ thẻ..."
+                  value={searchHolderName}
+                  onChange={(e) => setSearchHolderName(e.target.value)}
+                  className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-sm focus:outline-none"
+                />
+              </div>
+
+              {/* Select: Assigned User */}
+              <div className="flex items-center px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100 hover:shadow-md">
+                <select
+                  value={searchAssignedTo}
+                  onChange={(e) => setSearchAssignedTo(e.target.value)}
+                  className="w-full text-gray-800 placeholder-primary-darkest bg-transparent text-sm focus:outline-none"
+                >
+                  <option value="">-- Vận hành --</option>
+                  {userList.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.userName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
 

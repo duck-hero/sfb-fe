@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import bankAccountApi from "../../api/bankAccountApi";
-import { Search, Plus, SquarePen, Trash } from "lucide-react";
+import { Search, Plus, SquarePen, Trash, Upload } from "lucide-react";
 import { toast } from "react-toastify";
 
 // import EditBankAccountModal from "./EditBankAccountModal";   // <-- modal edit tài khoản ngân hàng
@@ -11,6 +11,22 @@ import bankApi from "../../api/bankApi";
 import EditBankAccountModal from "./EditBankAccountModal";
 import CreateBankAccountModal from "./CreateBankAccountModal";
 
+// Custom debounce hook
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
 
 function BankAccountList() {
   const [bankAccounts, setBankAccounts] = useState([]);
@@ -34,12 +50,15 @@ function BankAccountList() {
     }
   };
 
-  // Search fields
+  // Search fields with debounce
   const [searchAccountNumber, setSearchAccountNumber] = useState("");
   const [searchHolderName, setSearchHolderName] = useState("");
-  const [searchKeyword, setSearchKeyword] = useState({ accountNumber: "", name: "", bankId: "" });
   const [bankList, setBankList] = useState([]);
   const [searchBankId, setSearchBankId] = useState(""); // filter dropdown
+
+  // Debounced search values (300ms delay)
+  const debouncedAccountNumber = useDebounce(searchAccountNumber, 300);
+  const debouncedHolderName = useDebounce(searchHolderName, 300);
 
 
   // Modal Edit
@@ -79,9 +98,9 @@ function BankAccountList() {
       const res = await bankAccountApi.getBankList(
         pageNumber,
         pageSize,
-        searchKeyword.accountNumber,
-        searchKeyword.name,
-        searchKeyword.bankId 
+        debouncedAccountNumber.trim(),
+        debouncedHolderName.trim(),
+        searchBankId
       );
 
       setBankAccounts(res?.data || []);
@@ -97,7 +116,12 @@ function BankAccountList() {
 
   useEffect(() => {
     fetchBanks();
-  }, [pageNumber, pageSize, searchKeyword]);
+  }, [pageNumber, pageSize, debouncedAccountNumber, debouncedHolderName, searchBankId]);
+
+  // Reset page when search changes
+  useEffect(() => {
+    setPageNumber(1);
+  }, [debouncedAccountNumber, debouncedHolderName, searchBankId]);
 
   useEffect(() => {
     const fetchBanksDropdown = async () => {
@@ -112,15 +136,6 @@ function BankAccountList() {
   }, []);
 
 
-  // Search
-  const handleSearch = () => {
-    setPageNumber(1);
-    setSearchKeyword({
-      accountNumber: searchAccountNumber.trim() || "",
-      name: searchHolderName.trim() || "",
-      bankId: searchBankId || "", // thêm param filter bankId
-    });
-  };
 
 
   // Pagination
@@ -244,84 +259,63 @@ function BankAccountList() {
      <div className="px-4">
       <h1 className="text-lg font-bold mb-3">Danh sách tài khoản ngân hàng</h1>
 
-       <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-        {/* Cấu trúc Search Bar phức tạp, dùng flex và các input/select riêng biệt, và nút Tìm */}
-        <div className="flex items-center w-full max-w-4xl gap-3">
-          {/* Input Số tài khoản */}
-          <div 
-            className="flex-1 flex items-center px-3 py-1.5 bg-white border border-gray-200 rounded-lg shadow-md transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100"
-          >
-         
-            <input
-              type="text"
-              placeholder="Tìm theo số tài khoản..."
-              value={searchAccountNumber}
-              onChange={(e) => setSearchAccountNumber(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
-              className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-sm focus:outline-none"
-            />
-          </div>
-
-          {/* Input Tên chủ tài khoản */}
-          <div 
-            className="flex-1 flex items-center px-3 py-1.5 bg-white border border-gray-200 rounded-lg shadow-md transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100"
-          >
-      
-            <input
-              type="text"
-              placeholder="Tìm theo tên chủ tài khoản..."
-              value={searchHolderName}
-              onChange={(e) => setSearchHolderName(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
-              className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-sm focus:outline-none"
-            />
-          </div>
-        
-          {/* Dropdown Ngân hàng */}
-          <div 
-            className="flex-1 flex items-center px-3 py-1.5 bg-white border border-gray-200 rounded-lg shadow-md transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100"
-          >
-            <select
-              value={searchBankId}
-              onChange={(e) => setSearchBankId(e.target.value)}
-              className="w-full text-gray-800 placeholder-primary-darkest bg-transparent text-sm focus:outline-none"
+      {/* --- SEARCH BAR SECTION --- */}
+      <div className="pb-4 border-b border-gray-200">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+          {/* Left Side: Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Button: Create New */}
+            <button
+              className="px-4 py-2.5 rounded-lg font-semibold text-sm transition bg-primary-dark text-white hover:bg-primary-darkest focus:outline-none focus:ring-2 focus:ring-primary-dark focus:ring-offset-2 active:bg-primary-darkest flex items-center justify-center"
+              onClick={openCreateModal}
             >
-              <option value="">-- Chọn ngân hàng --</option>
-              {bankList.map((bank) => (
-                <option key={bank.id} value={bank.id}>
-                  {bank.codeBank} - {bank.name}
-                </option>
-              ))}
-            </select>
+              <Plus className="h-4 w-4 mr-2" /> Tạo mới
+            </button>
           </div>
-        
-          {/* Nút Tìm */}
-<button
-  onClick={handleSearch}
-  className="
-    px-3 py-1.5 rounded-lg font-semibold text-sm transition 
-    bg-primary-dark text-white hover:bg-primary-darkest cursor-pointer 
-    whitespace-nowrap
-    /* CÁC LỮP BỔ SUNG ĐỂ CĂN GIỮA ICON */
-    flex 
-    items-center 
-    justify-center
-  "
->
-  {/* Đảm bảo biểu tượng Search nằm chính giữa */}
-  {/* Lớp `inline-block` có thể giữ hoặc bỏ, nhưng thường bỏ khi dùng Flex */}
-  <Search className="h-4 w-4" /> 
-</button>
 
+          {/* Right Side: Search Filters */}
+          <div className="flex-1 lg:max-w-2xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+              {/* Input Số tài khoản */}
+              <div className="flex items-center px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100 hover:shadow-md">
+                <input
+                  type="text"
+                  placeholder="Số tài khoản..."
+                  value={searchAccountNumber}
+                  onChange={(e) => setSearchAccountNumber(e.target.value)}
+                  className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-sm focus:outline-none"
+                />
+              </div>
+
+              {/* Input Tên chủ tài khoản */}
+              <div className="flex items-center px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100 hover:shadow-md">
+                <input
+                  type="text"
+                  placeholder="Tên chủ tài khoản..."
+                  value={searchHolderName}
+                  onChange={(e) => setSearchHolderName(e.target.value)}
+                  className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-sm focus:outline-none"
+                />
+              </div>
+
+              {/* Dropdown Ngân hàng */}
+              <div className="flex items-center px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100 hover:shadow-md">
+                <select
+                  value={searchBankId}
+                  onChange={(e) => setSearchBankId(e.target.value)}
+                  className="w-full text-gray-800 placeholder-primary-darkest bg-transparent text-sm focus:outline-none"
+                >
+                  <option value="">-- Ngân hàng --</option>
+                  {bankList.map((bank) => (
+                    <option key={bank.id} value={bank.id}>
+                      {bank.codeBank} - {bank.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
         </div>
-
-        {/* Nút Tạo mới */}
-        <button
-          className="px-3 py-1.5 rounded-lg font-semibold text-sm transition bg-primary-dark text-white hover:bg-primary-darkest cursor-pointer"
-          onClick={openCreateModal}
-        >
-          <Plus className="h-4 w-4 inline-block mr-1.5" />Tạo mới
-        </button>
       </div>
 
       {/* Bảng dữ liệu */}
