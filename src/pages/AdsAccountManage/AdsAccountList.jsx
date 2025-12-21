@@ -11,6 +11,7 @@ import bmAccountApi from "../../api/bmAccountApi";
 import CreateAdsAccountModal from "./CreateAdsAccountModal";
 import EditAdsAccountModal from "./EditAdsAccountModal";
 import DetailAdsAccountModal from "./DetailAdsAccountModal";
+import ImportAdsAccountModal from "./ImportAdsAccountModal";
 import TableSkeleton from "../../components/Loading/TableSkeleton";
 import { getBmWorkingDisplayText, getBmWorkingOptions } from "../../utils/bmConstants";
 
@@ -62,6 +63,7 @@ function AdsAccountList() {
   // --- MODAL STATES ---
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isEditLoading, setIsEditLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   
@@ -386,6 +388,7 @@ const handleEditSave = async (dataToSend) => {
           <div className="flex flex-col sm:flex-row gap-3">
             {/* Button: Import */}
             <button
+              onClick={() => setIsImportModalOpen(true)}
               className="px-4 py-2.5 rounded-lg font-semibold text-sm transition bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 active:bg-green-800 flex items-center justify-center"
             >
               <Upload className="h-4 w-4 mr-2" /> Import
@@ -733,7 +736,16 @@ const handleEditSave = async (dataToSend) => {
         onClose={() => setIsDetailModalOpen(false)}
         refreshData={() => openDetailModal(detailData?.id)}
       />
-     
+
+      <ImportAdsAccountModal
+        open={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onSuccess={() => {
+          fetchAdsAccounts();
+          setIsImportModalOpen(false);
+        }}
+      />
+
     </div>
   );
 }

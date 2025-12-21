@@ -72,6 +72,21 @@ createAdsAccount: async (adAccountName, adAccountIdNumber, bmAccountId, bmWorkin
     throw handleApiError(error);
   }
 },
+
+  // Import Ads Accounts
+  importAdsAccounts: async (formData) => {
+    try {
+      const response = await axiosInstance.post(`${api}/AdsAccount/ImportAdsAccount`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 };
 
 export default adsAccountApi;
