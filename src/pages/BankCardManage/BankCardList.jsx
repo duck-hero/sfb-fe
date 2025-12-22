@@ -471,7 +471,7 @@ function BankCardList() {
 
                       {/* Add Total - Hidden on mobile */}
                       <div className="hidden lg:block flex-shrink-0 w-30 text-center">
-                        <p className="text-xs text-gray-500 mb-0.5">Tài khoản QC</p>
+                        <p className="text-xs text-gray-500 mb-0.5">Tổng số lần ADD THẺ</p>
                         <p className="text-sm font-semibold text-blue-600">
                           {card.addTotal || 0}
                         </p>
