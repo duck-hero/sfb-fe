@@ -9,6 +9,7 @@ import DeleteConfirmModal from "../../components/Modal/DeleteConfirmModal";
 import DetailCustomerModal from "./DetailCustomerModal";
 import SpendTrackingModal from "./SpendTrackingModal";
 import TableSkeleton from "../../components/Loading/TableSkeleton";
+import MonthlyCustomerReconciliation from "./MonthlyCustomerReconciliation";
 
 function CustomerList() {
     const [customers, setCustomers] = useState([]);
@@ -207,6 +208,9 @@ function CustomerList() {
     return (
         <div className="px-4">
             <h1 className="text-lg font-bold mb-3">Danh sách khách hàng</h1>
+
+            {/* Monthly Reconciliation Component */}
+            <MonthlyCustomerReconciliation />
 
             {/* --- Toolbar (Matched BmSourceList Style) --- */}
             <div className="flex justify-between items-center pb-2 border-b border-gray-200">

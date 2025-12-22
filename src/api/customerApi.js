@@ -88,6 +88,28 @@ const customerApi = {
       throw handleApiError(error);
     }
   },
+
+  // Lấy dữ liệu đối soát công nợ tháng của khách hàng
+  // /api/customers/invoices/reconciliation?year=2025&month=12&pageSize=10&cursor=...
+  getMonthlyReconciliation: async (year, month, pageSize = 10, cursor = null) => {
+    try {
+      const response = await axiosInstance.get(
+        `${api}/customers/invoices/reconciliation`,
+        {
+          params: {
+            year,
+            month,
+            pageSize,
+            cursor,
+            sortOrder: "desc",
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 };
 
 export default customerApi;
