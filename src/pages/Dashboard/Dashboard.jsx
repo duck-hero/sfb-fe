@@ -359,7 +359,7 @@ const Dashboard = () => {
             <tr>
               <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 uppercase">Tên TK</th>
               <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 uppercase">ID TK</th>
-              <th className="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase">Chi tiêu thực tế</th>
+              <th className="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase">Pay Facebook</th>
               <th className="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase">Chi tiêu ghi nhận</th>
               <th className="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase">Chênh lệch</th>
               <th className="px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase">KH</th>
