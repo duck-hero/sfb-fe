@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Search, Plus, Trash, SquarePen, LineChart } from "lucide-react";
+import { Search, Plus, Trash, SquarePen, LineChart, RotateCw } from "lucide-react";
 import { toast } from "react-toastify";
 import customerApi from "../../api/customerApi";
 import CreateCustomerModal from "./CreateCustomerModal";
@@ -10,6 +10,7 @@ import DetailCustomerModal from "./DetailCustomerModal";
 import SpendTrackingModal from "./SpendTrackingModal";
 import TableSkeleton from "../../components/Loading/TableSkeleton";
 import MonthlyCustomerReconciliation from "./MonthlyCustomerReconciliation";
+import CustomerDetailView from "./CustomerDetailView";
 
 function CustomerList() {
     const [customers, setCustomers] = useState([]);
@@ -39,6 +40,9 @@ function CustomerList() {
     const [spendCustomer, setSpendCustomer] = useState(null);
     const [isSpendModalOpen, setIsSpendModalOpen] = useState(false);
 
+    // Inline Detail
+    const [inlineDetailId, setInlineDetailId] = useState(null);
+
     // Loading states for actions
     const [saving, setSaving] = useState(false);
     const [isEditLoading, setIsEditLoading] = useState(false);
@@ -62,6 +66,12 @@ function CustomerList() {
             setTotalItems(total);
             setTotalPages(res.totalPages || Math.ceil(total / size) || 1);
             setPageNumber(page); // Sync state
+            
+            // Auto select first customer if none selected and items exist
+            if (items.length > 0 && !inlineDetailId) {
+                setInlineDetailId(items[0].id);
+            }
+            
             setLoading(false);
         } catch (error) {
             console.error("Failed to fetch customers", error);
@@ -195,8 +205,7 @@ function CustomerList() {
 
     // Click Row for Detail
     const handleRowClick = (item) => {
-        setDetailId(item.id);
-        setIsDetailModalOpen(true);
+        setInlineDetailId(item.id);
     };
 
     // Spend Tracking
@@ -207,182 +216,155 @@ function CustomerList() {
 
     return (
         <div className="px-4">
-            <h1 className="text-lg font-bold mb-3">Danh sách khách hàng</h1>
+            <h1 className="text-lg font-bold mb-3">Khách hàng</h1>
 
             {/* Monthly Reconciliation Component */}
-            <MonthlyCustomerReconciliation />
+            <MonthlyCustomerReconciliation onCustomerClick={handleOpenSpend} />
 
-            {/* --- Toolbar (Matched BmSourceList Style) --- */}
-            <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                <div className="w-full max-w-3xl">
-                    <div
-                        className="flex items-center w-full px-3 py-1.5 bg-white 
-                   border border-gray-200 rounded-lg shadow-md 
-                   transition-all duration-300 ease-in-out
-                   focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100"
-                    >
-                        <Search className="h-4 w-4 text-primary-darkest mr-2 flex-shrink-0" />
-                        <input
-                            type="text"
-                            placeholder="Tìm kiếm theo tên..."
-                            value={searchCode}
-                            onChange={(e) => setSearchCode(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter") handleSearch();
-                            }}
-                            className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-sm focus:outline-none"
-                        />
+            {/* --- Split Layout Section --- */}
+            <div className="grid grid-cols-10 gap-4 mt-4 min-h-[600px]">
+                {/* Left Column: List (4/10) */}
+                <div className="col-span-4 flex flex-col gap-3 h-full">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full">
+                        {/* Integrated Toolbar */}
+                        <div className="p-3 border-b border-gray-100 bg-gray-50/30 flex flex-col gap-2">
+                             <div className="flex items-center gap-2">
+                                <div className="flex-1 relative group">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                                    <input
+                                        type="text"
+                                        placeholder="Tìm kiếm..."
+                                        value={searchCode}
+                                        onChange={(e) => setSearchCode(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter") handleSearch();
+                                        }}
+                                        className="w-full pl-9 pr-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                                    />
+                                </div>
+                                <button
+                                    onClick={handleOpenCreate}
+                                    className="p-1.5 rounded-lg bg-primary-dark text-white hover:bg-primary-darkest transition-colors shadow-sm"
+                                    title="Tạo mới"
+                                >
+                                    <Plus className="h-4 w-4" />
+                                </button>
+                             </div>
+                        </div>
+
+                        {loading ? (
+                            <div className="p-10 flex justify-center"><RotateCw className="w-8 h-8 animate-spin text-blue-500" /></div>
+                        ) : (
+                            <>
+                                <div className="overflow-x-auto flex-1">
+                                    <table className="w-full divide-y divide-gray-100">
+                                        <thead className="bg-gray-50/50">
+                                            <tr>
+                                                <th scope="col" className="px-3 py-2 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                                                    Khách hàng
+                                                </th>
+                                                <th scope="col" className="px-3 py-2 text-right text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                                                    Thao tác
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-50">
+                                            {customers.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan="2" className="px-3 py-10 text-center text-gray-400 text-xs italic">
+                                                        Không tìm thấy dữ liệu
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                customers.map((customer) => (
+                                                    <tr
+                                                        key={customer.id}
+                                                        className={`hover:bg-blue-50 transition-colors cursor-pointer ${inlineDetailId === customer.id ? 'bg-blue-50/80 border-l-4 border-blue-500' : 'border-l-4 border-transparent'}`}
+                                                        onClick={() => handleRowClick(customer)}
+                                                    >
+                                                        <td className="px-3 py-2">
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[12px] font-bold text-gray-800 leading-tight">
+                                                                    {customer.name}
+                                                                </span>
+                                                                <span className="text-[9px] text-gray-400 font-medium">
+                                                                    {customer.fullCustomerCode || customer.customerCode || "-"}
+                                                                </span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-3 py-2 text-right" onClick={(e) => e.stopPropagation()}>
+                                                            <div className="flex justify-end gap-1.5">
+                                                                <button
+                                                                    onClick={() => handleOpenSpend(customer)}
+                                                                    className="p-1 hover:bg-green-50 rounded transition-colors"
+                                                                    title="Theo dõi chi tiêu"
+                                                                >
+                                                                    <LineChart className="h-3.5 w-3.5 text-green-600" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleOpenEdit(customer)}
+                                                                    className="p-1 hover:bg-orange-50 rounded transition-colors"
+                                                                    title="Sửa"
+                                                                >
+                                                                    <SquarePen className="h-3.5 w-3.5 text-warning" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleOpenDelete(customer)}
+                                                                    className="p-1 hover:bg-red-50 rounded transition-colors"
+                                                                    title="Xóa"
+                                                                >
+                                                                    <Trash className="h-3.5 w-3.5 text-error" />
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {/* Footer Pagination */}
+                                <div className="p-2 border-t border-gray-100 bg-gray-50/50 flex justify-between items-center text-[11px]">
+                                    <div className="flex items-center gap-2">
+                                        <select
+                                            value={pageSize}
+                                            onChange={handlePageSizeChange}
+                                            className="border border-gray-200 rounded px-1.5 py-0.5 bg-white text-gray-600 outline-none focus:ring-1 focus:ring-blue-500 shadow-sm"
+                                        >
+                                            <option value={10}>10</option>
+                                            <option value={20}>20</option>
+                                            <option value={50}>50</option>
+                                        </select>
+                                        <span className="text-gray-400 font-medium">{totalItems} khách</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <button
+                                            onClick={handlePrev}
+                                            disabled={pageNumber === 1}
+                                            className="p-1 rounded bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-30 transition-all shadow-sm"
+                                        >
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                        </button>
+                                        <span className="font-bold text-gray-700 px-1">{pageNumber}/{totalPages}</span>
+                                        <button
+                                            onClick={handleNext}
+                                            disabled={pageNumber === totalPages}
+                                            className="p-1 rounded bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-30 transition-all shadow-sm"
+                                        >
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
 
-                {/* Add Button */}
-                <button
-                    onClick={handleOpenCreate}
-                    className="px-3 py-1.5 rounded-lg font-semibold text-sm transition bg-primary-dark text-white hover:bg-primary-darkest cursor-pointer"
-                >
-                    <Plus className="h-4 w-4 inline-block mr-1.5" />
-                    Tạo mới
-                </button>
-            </div>
-
-            {/* --- List/Table --- */}
-            {loading ? (
-                <TableSkeleton />
-            ) : (
-                <div className="overflow-x-auto shadow-md rounded-lg">
-                    <table className="w-full divide-y divide-gray-200">
-                        <thead className="bg-white">
-                            <tr>
-                                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-900 uppercase tracking-wider text-primary-darkest">
-                                    Tên khách hàng
-                                </th>
-                                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-900 uppercase tracking-wider text-primary-darkest">
-                                    Mã khách hàng
-                                </th>
-                                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-900 uppercase tracking-wider text-primary-darkest">
-                                    Agency Code
-                                </th>
-                                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-900 uppercase tracking-wider text-primary-darkest">
-                                    Code Khách
-                                </th>
-                                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-900 uppercase tracking-wider w-1/12 text-primary-darkest">
-                                    Tùy chọn
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {customers.length === 0 ? (
-                                <tr>
-                                    <td colSpan="5" className="px-3 py-3 text-center text-gray-500 text-sm">
-                                        Không tìm thấy dữ liệu
-                                    </td>
-                                </tr>
-                            ) : (
-                                customers.map((customer) => (
-                                    <tr
-                                        key={customer.id}
-                                        className="hover:bg-blue-50 transition-colors group cursor-pointer"
-                                        onClick={() => handleRowClick(customer)}
-                                    >
-                                        <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            {customer.name}
-                                        </td>
-                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
-                                            {customer.customerCode || "-"}
-                                        </td>
-                                        <td className="px-3 py-2 whitespace-nowrap">
-                                            <div className="text-sm text-gray-500 bg-gray-100 rounded px-2 py-1 inline-block">
-                                                {customer.agencyCode || "-"}
-                                            </div>
-                                        </td>
-                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
-                                            {customer.fullCustomerCode || "-"}
-                                        </td>
-                                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500 w-1/12" onClick={(e) => e.stopPropagation()}>
-                                            <div className="flex gap-1">
-                                                <button
-                                                    onClick={() => handleOpenSpend(customer)}
-                                                    className="mr-2"
-                                                    title="Theo dõi chi tiêu"
-                                                >
-                                                    <LineChart className="h-4 w-4 text-green-600 flex-shrink-0 cursor-pointer" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleOpenEdit(customer)}
-                                                    className="mr-2"
-                                                    title="Sửa"
-                                                >
-                                                    <SquarePen className="h-4 w-4 text-warning flex-shrink-0 cursor-pointer" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleOpenDelete(customer)}
-                                                    className=""
-                                                    title="Xóa"
-                                                >
-                                                    <Trash className="h-4 w-4 text-error flex-shrink-0 cursor-pointer" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                        {/* Footer Pagination */}
-                        <tfoot className="bg-white">
-                            <tr>
-                                <td colSpan="5" className="px-3 py-2">
-                                    <div className="flex justify-end items-center text-xs">
-                                        {/* Page Size */}
-                                        <div className="flex items-center gap-1.5 mr-4">
-                                            <span className="text-gray-700">Hiển thị:</span>
-                                            <select
-                                                value={pageSize}
-                                                onChange={handlePageSizeChange}
-                                                className="border border-gray-300 rounded px-1.5 py-0.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
-                                            >
-                                                <option value={5}>5</option>
-                                                <option value={10}>10</option>
-                                                <option value={15}>15</option>
-                                                <option value={20}>20</option>
-                                            </select>
-                                        </div>
-
-                                        {/* Count Info */}
-                                        <span className="text-gray-700 mr-4">
-                                            {(pageNumber - 1) * pageSize + 1}–
-                                            {Math.min(pageNumber * pageSize, totalItems)} trên {totalItems}
-                                        </span>
-
-                                        {/* Nav Buttons */}
-                                        <div className="flex items-center gap-1.5">
-                                            <button
-                                                onClick={handlePrev}
-                                                disabled={pageNumber === 1}
-                                                className={`p-1.5 rounded-full transition duration-150 ${pageNumber === 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-100"
-                                                    }`}
-                                            >
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
-                                                </svg>
-                                            </button>
-                                            <button
-                                                onClick={handleNext}
-                                                disabled={pageNumber === totalPages}
-                                                className={`p-1.5 rounded-full transition duration-150 ${pageNumber === totalPages ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-100"
-                                                    }`}
-                                            >
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tfoot>
-                    </table>
+                {/* Right Column: Detail (6/10) */}
+                <div className="col-span-6 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col h-full ring-1 ring-black/5">
+                    <CustomerDetailView id={inlineDetailId} />
                 </div>
-            )}
+            </div>
 
             {/* --- Modals --- */}
             <CreateCustomerModal

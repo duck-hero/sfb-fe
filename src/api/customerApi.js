@@ -110,6 +110,48 @@ const customerApi = {
       throw handleApiError(error);
     }
   },
+
+  // Lấy danh sách thanh toán thủ công
+  // /api/customers/{customerId}/manual-payments?year=2025&month=12
+  getManualPayments: async (customerId, year, month) => {
+    try {
+      const response = await axiosInstance.get(
+        `${api}/customers/${customerId}/manual-payments`,
+        {
+          params: { year, month },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  // Tạo mới thanh toán thủ công
+  // body { customerId, amount, year, month, date, note }
+  createManualPayment: async (data) => {
+    try {
+      const response = await axiosInstance.post(
+        `${api}/customers/manual-payments`,
+        data
+      );
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  // Xóa thanh toán thủ công
+  deleteManualPayment: async (id) => {
+    try {
+      const response = await axiosInstance.delete(
+        `${api}/customers/manual-payments/${id}`
+      );
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 };
 
 export default customerApi;
