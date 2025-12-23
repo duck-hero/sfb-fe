@@ -143,14 +143,15 @@ export default function AddUserModal({ open, onClose, onSuccess, userToEdit = nu
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-bold text-blue-700">Mã nhân viên (Code)</label>
+                    <label className="block text-sm font-medium text-gray-700">Mã nhân viên (Code)</label>
                     <input
                       type="text"
                       name="code"
                       value={formData.code}
                       onChange={handleChange}
                       placeholder="VD: NV001"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 font-bold text-blue-600 uppercase"
+                      disabled={!!userToEdit}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 bg-gray-50"
                     />
                   </div>
                   <div>
