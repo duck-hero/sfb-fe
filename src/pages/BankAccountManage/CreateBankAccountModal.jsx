@@ -53,6 +53,22 @@ export default function CreateBankAccountModal({
                 {/* Form */}
                 <div className="flex flex-col gap-4">
 
+                  {/* Code TK */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Code TK
+                    </label>
+                    <input
+                      type="text"
+                      name="code"
+                      value={formData.code}
+                      onChange={onChange}
+                      disabled={saving}
+                      placeholder="VD: TK_CHI_TIEU_01"
+                      className="w-full h-12 border border-gray-300 rounded-xl px-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                  </div>
+
                   {/* Bank Select */}
                   <div>
                     <label className="block text-sm font-medium mb-1">

@@ -67,9 +67,10 @@ getBankList: async (
     }
   },
   // Thêm mới tài khoản ngân hàng
-createBankAccount: async (accountBankNumber, accountBankHolderName, loginUsername, loginPassword, bankId, bankAccountType) => {
+createBankAccount: async (code, accountBankNumber, accountBankHolderName, loginUsername, loginPassword, bankId, bankAccountType) => {
   try {
     const response = await axiosInstance.post(`${api}/BankAccount/CreateBankAccount`, {
+      code: code,
       accountBankNumber: accountBankNumber,
       accountBankHolderName: accountBankHolderName,
       loginUsername: loginUsername,

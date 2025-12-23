@@ -100,6 +100,17 @@ export default function EditBankAccountModal({
                   <>
                     <div className="flex flex-col gap-4">
                       <div>
+                        <label className="block text-sm font-medium mb-1">Code TK</label>
+                        <input
+                          name="code"
+                          value={formData.code || ""}
+                          onChange={onChange}
+                          disabled={saving}
+                          className="w-full h-12 border border-gray-300 rounded-xl px-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-bold text-blue-600"
+                        />
+                      </div>
+
+                      <div>
                         <label className="block text-sm font-medium mb-1">Số tài khoản</label>
                         <input
                           name="accountBankNumber"

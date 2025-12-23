@@ -70,6 +70,7 @@ function BankAccountList() {
   // Edit form
   const [formData, setFormData] = useState({
     id: 0,
+    code: "",
     accountBankNumber: "",
     accountBankHolderName: "",
     loginUsername: "",
@@ -161,6 +162,7 @@ function BankAccountList() {
       const acc = res?.data;
       setFormData({
         id: acc?.id || 0,
+        code: acc?.code || "",
         accountBankNumber: acc?.accountBankNumber || "",
         accountBankHolderName: acc?.accountBankHolderName || "",
         loginUsername: acc?.loginUsername || "",
@@ -203,6 +205,7 @@ function BankAccountList() {
   // ---------------------- CREATE ----------------------
   const openCreateModal = () => {
     setFormData({
+      code: "",
       accountBankNumber: "",
       accountBankHolderName: "",
       loginUsername: "",
@@ -217,6 +220,7 @@ function BankAccountList() {
     setSaving(true);
     try {
       await bankAccountApi.createBankAccount(
+        formData.code,
         formData.accountBankNumber,
         formData.accountBankHolderName,
         formData.loginUsername,
@@ -348,7 +352,13 @@ function BankAccountList() {
                   scope="col"
                   className="px-3 py-2 text-left text-xs font-medium text-gray-900 tracking-wider w-1/4 text-primary-darkest"
                 >
-                  Mã ngân hàng
+                  Ngân hàng
+                </th>
+                <th
+                  scope="col"
+                  className="px-3 py-2 text-left text-xs font-medium text-gray-900 tracking-wider w-1/4 text-primary-darkest"
+                >
+                  Code TK
                 </th>
                 <th
                   scope="col"
@@ -367,7 +377,7 @@ function BankAccountList() {
             <tbody className="bg-white divide-y divide-gray-200">
                 {bankAccounts.length === 0 && (
                 <tr>
-                   <td colSpan="6" className="px-3 py-3 text-center text-gray-500 text-sm">
+                    <td colSpan="7" className="px-3 py-3 text-center text-gray-500 text-sm">
                       Không tìm thấy dữ liệu
                    </td>
                 </tr>
@@ -385,6 +395,9 @@ function BankAccountList() {
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
                     {x.bankCode}
+                  </td>
+                   <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
+                    {x.code || "-"}
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
                     {formatAccountType(x.type)}
@@ -404,7 +417,7 @@ function BankAccountList() {
             {/* Footer và Pagination */}
             <tfoot className="bg-white">
               <tr>
-                <td colSpan="5" className="px-3 py-2">
+                 <td colSpan="6" className="px-3 py-2">
                   <div className="flex justify-end items-center text-xs">
                     {/* Component chọn số lượng hàng trên mỗi trang */}
                     <div className="flex items-center gap-1.5 mr-4">

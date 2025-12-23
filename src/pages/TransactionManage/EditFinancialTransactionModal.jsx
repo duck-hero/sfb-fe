@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import customerApi from "../../api/customerApi";
+import bmSourceApi from "../../api/bmSourceApi";
+import bankAccountApi from "../../api/bankAccountApi";
+import accountApi from "../../api/accountApi";
 
 export default function EditFinancialTransactionModal({
   open,
@@ -10,6 +13,8 @@ export default function EditFinancialTransactionModal({
   loading,
 }) {
   const [customers, setCustomers] = useState([]);
+  const [dataList, setDataList] = useState([]);
+  const [objectType, setObjectType] = useState("KH");
   const [searchTerm, setSearchTerm] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -28,37 +33,120 @@ export default function EditFinancialTransactionModal({
     };
   }, []);
 
-  // Fetch customers when search term changes
+  // Initialize objectType based on formData ONLY when modal opens
   useEffect(() => {
-    if (!formData.isCustomerPay) return;
+    if (open) {
+      const accObj = formData.accountingObject || "";
+      setSearchTerm(accObj);
+
+      if (formData.isCustomerPay) {
+        setObjectType("KH");
+      } else if (["CP AGC", "Mua BM", "Mua TK"].includes(accObj)) {
+        setObjectType("CP");
+      } else {
+        // No radio selected, show manual text input
+        setObjectType(null); 
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  // Fetch data based on objectType and search term
+  useEffect(() => {
+    if (!open) return;
+    if (!objectType || objectType === "CP") {
+      setDataList([]);
+      return;
+    }
 
     const timer = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const res = await customerApi.getCustomerList(1, 20, searchTerm);
-        setCustomers(res.data || []);
+        let res;
+        switch (objectType) {
+          case "KH":
+            res = await customerApi.getCustomerList(1, 15, searchTerm);
+            setDataList(res.data || []);
+            break;
+          case "NCC":
+            res = await bmSourceApi.getBmSourceList(1, 15, searchTerm);
+            setDataList(res.data || []);
+            break;
+          case "BANK":
+            res = await bankAccountApi.getBankList(1, 15, searchTerm);
+            setDataList(res.data || []);
+            break;
+          case "NV":
+            res = await accountApi.getUserList(1, 50);
+            const filtered = (res.items || res.data || []).filter(u => 
+              u.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+              u.userName?.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setDataList(filtered.slice(0, 15));
+            break;
+          default:
+            setDataList([]);
+        }
       } catch (error) {
-        console.error("Failed to fetch customers", error);
+        console.error("Failed to fetch data", error);
       } finally {
         setIsSearching(false);
       }
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchTerm, formData.isCustomerPay]);
+  }, [searchTerm, objectType, open]);
 
-  // Handle form field changes
-  const handleFormChange = (field, value) => {
-    onChange(field, value);
-    if (field === 'isCustomerPay' && !value) {
-       // Reset customer if unchecked (optional, or keep generic logic)
-       onChange('customerId', null);
+  const handleTypeChange = (type) => {
+    // Toggle logic: if clicking the same type, revert to manual (null)
+    const newType = objectType === type ? null : type;
+    setObjectType(newType);
+    setSearchTerm("");
+    setShowDropdown(false);
+    
+    if (newType === "KH") {
+      onChange("isCustomerPay", true);
+    } else {
+      onChange("isCustomerPay", false);
+      onChange("customerId", null);
+      if (!newType) {
+         // Revert search term to current object name if going to manual
+         setSearchTerm(formData.accountingObject || "");
+      }
+    }
+    
+    // Only reset accountingObject if we are switching to a searchable type
+    if (newType && newType !== "KH") {
+      onChange("accountingObject", "");
     }
   };
 
-  const handleSelectCustomer = (customer) => {
-    onChange('customerId', customer.id);
-    setSearchTerm(customer.name); // Display selected name
+  const handleSelectItem = (item) => {
+    let name = "";
+    let id = null;
+
+    switch (objectType) {
+      case "KH":
+        name = item.customerCode;
+        id = item.id;
+        break;
+      case "NCC":
+        name = item.sourceName;
+        break;
+      case "BANK":
+        name = item.code;
+        break;
+      case "NV":
+        name = item.code;
+        break;
+      case "CP":
+        name = item;
+        break;
+    }
+
+    onChange("accountingObject", name);
+    if (id) onChange("customerId", id);
+    setSearchTerm(name);
     setShowDropdown(false);
   };
   
@@ -76,72 +164,35 @@ export default function EditFinancialTransactionModal({
             <h3 className="text-lg font-semibold mb-4">Chỉnh sửa giao dịch</h3>
 
             <div className="space-y-4">
-              {/* Checkbox Của khách */}
-              <div className="flex items-center">
-                <input
-                  id="isCustomerPay"
-                  type="checkbox"
-                  checked={formData.isCustomerPay || false}
-                  onChange={(e) => handleFormChange("isCustomerPay", e.target.checked)}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="isCustomerPay" className="ml-2 block text-sm text-gray-900">
-                  Của khách ({formData.isCustomerPay ? "True" : "False"})
+              {/* Radio Buttons group */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Loại đối tượng
                 </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: "KH", label: "Khách hàng" },
+                    { id: "NCC", label: "NCC" },
+                    { id: "CP", label: "Chi phí" },
+                    { id: "BANK", label: "Bank nội bộ" },
+                    { id: "NV", label: "Nhân viên" },
+                  ].map((type) => (
+                    <label key={type.id} className="flex items-center gap-2 p-2 border border-gray-100 rounded-md hover:bg-gray-50 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="objectType"
+                        checked={objectType === type.id}
+                        onChange={() => handleTypeChange(type.id)}
+                        className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      />
+                      <span className="text-xs font-medium text-gray-700">{type.label}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
 
-              {formData.isCustomerPay ? (
-                // Customer Selection Mode
-                <div className="relative" ref={dropdownRef}>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Chọn khách hàng
-                  </label>
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => {
-                      setSearchTerm(e.target.value);
-                      setShowDropdown(true);
-                    }}
-                    onFocus={() => setShowDropdown(true)}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Tìm kiếm khách hàng theo tên..."
-                  />
-                  
-                  {/* Selected Info Helper */}
-                  {formData.customerId && (
-                     <div className="text-xs text-green-600 mt-1">
-                        Khách hàng đã chọn (ID: {formData.customerId})
-                     </div>
-                  )}
-
-                  {/* Dropdown Results */}
-                  {showDropdown && (
-                    <div className="absolute z-10 w-full mt-1 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
-                      {isSearching ? (
-                        <div className="px-4 py-2 text-gray-500 text-sm">Đang tìm...</div>
-                      ) : customers.length > 0 ? (
-                        customers.map((customer) => (
-                          <div
-                            key={customer.id}
-                            className={`cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-blue-100 ${
-                              formData.customerId === customer.id ? 'bg-blue-50 font-semibold text-blue-900' : 'text-gray-900'
-                            }`}
-                            onClick={() => handleSelectCustomer(customer)}
-                          >
-                            <span className="block truncate">
-                              {customer.name} - {customer.customerCode || "No Code"}
-                            </span>
-                          </div>
-                        ))
-                      ) : (
-                         <div className="px-4 py-2 text-gray-500 text-sm">Không tìm thấy khách hàng.</div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                // Accounting Object Input Mode
+              {/* Dynamic Input / Selection */}
+              {!objectType ? (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Đối tượng hạch toán
@@ -149,10 +200,96 @@ export default function EditFinancialTransactionModal({
                   <input
                     type="text"
                     value={formData.accountingObject || ""}
-                    onChange={(e) => handleFormChange("accountingObject", e.target.value)}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                    onChange={(e) => onChange("accountingObject", e.target.value)}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 outline-none"
                     placeholder="Nhập đối tượng hạch toán..."
                   />
+                </div>
+              ) : objectType === "CP" ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Chọn khoản chi phí
+                  </label>
+                  <select
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    value={formData.accountingObject || ""}
+                    onChange={(e) => handleSelectItem(e.target.value)}
+                  >
+                    <option value="">-- Chọn chi phí --</option>
+                    <option value="CP AGC">CP AGC</option>
+                    <option value="Mua BM">Mua BM</option>
+                    <option value="Mua TK">Mua TK</option>
+                  </select>
+                </div>
+              ) : (
+                // Searchable Dropdown for KH, NCC, BANK, NV
+                <div className="relative" ref={dropdownRef}>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {objectType === "KH" ? "Tìm khách hàng" : 
+                     objectType === "NCC" ? "Tìm NCC" : 
+                     objectType === "BANK" ? "Tìm Bank" : "Tìm nhân viên"}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 outline-none pr-10"
+                      placeholder={`Tìm kiếm ${objectType === "KH" ? "khách" : objectType}...`}
+                      value={searchTerm}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        setShowDropdown(true);
+                      }}
+                      onFocus={() => setShowDropdown(true)}
+                    />
+                    {isSearching && (
+                      <div className="absolute right-3 top-2.5">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent"></div>
+                      </div>
+                    )}
+                  </div>
+
+                  {showDropdown && (
+                    <div className="absolute z-50 w-full mt-1 bg-white shadow-xl border border-gray-100 max-h-60 rounded-lg py-1 text-sm overflow-auto ring-1 ring-black ring-opacity-5">
+                      {dataList.length > 0 ? (
+                        dataList.map((item, idx) => (
+                          <div
+                            key={idx}
+                            className={`px-4 py-2.5 hover:bg-blue-50 cursor-pointer border-b border-gray-50 last:border-0 ${
+                              (objectType === "KH" && formData.customerId === item.id) || 
+                              (objectType !== "KH" && formData.accountingObject === (item.sourceName || item.accountBankNumber || item.fullName || item.userName)) 
+                              ? "bg-blue-50 font-bold text-blue-700" : "text-gray-700"
+                            }`}
+                            onClick={() => handleSelectItem(item)}
+                          >
+                            {objectType === "KH" && (
+                              <div className="flex flex-col">
+                                <span className="font-bold">{item.customerCode}</span>
+                                <span className="text-[10px] text-gray-400">{item.fullCustomerCode} - {item.name}</span>
+                              </div>
+                            )}
+                            {objectType === "NCC" && <span>{item.sourceName}</span>}
+                            {objectType === "BANK" && (
+                              <div className="flex flex-col">
+                                <span className="font-bold">{item.code || "---"}</span>
+                                <span className="text-[10px] text-gray-400">{item.accountBankNumber} - {item.accountBankHolderName}</span>
+                              </div>
+                            )}
+                            {objectType === "NV" && (
+                                <div className="flex flex-col">
+                                    <span className="font-bold">{item.code}</span>
+                                    <span className="text-[10px] text-gray-400">{item.name} - {item.userName}</span>
+                                </div>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-4 py-3 text-gray-400 italic text-center">Không tìm thấy dữ liệu</div>
+                      )}
+                    </div>
+                  )}
+                  {formData.customerId && objectType === "KH" && (
+                      <div className="mt-1 text-[10px] text-green-600 font-medium">Selected ID: {formData.customerId}</div>
+                  )}
                 </div>
               )}
             </div>

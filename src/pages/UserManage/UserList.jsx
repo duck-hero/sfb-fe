@@ -98,6 +98,7 @@ export default function UserList() {
                 <table className="w-full text-left border-collapse">
                     <thead>
                     <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500 font-semibold">
+                        <th className="px-6 py-4">Mã nhân viên</th>
                         <th className="px-6 py-4">Tên đăng nhập</th>
                         <th className="px-6 py-4">Họ tên</th>
                         <th className="px-6 py-4">Email</th>
@@ -109,19 +110,22 @@ export default function UserList() {
                     <tbody className="divide-y divide-gray-100">
                     {loading ? (
                         <tr>
-                            <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                            <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
                                 Đang tải dữ liệu...
                             </td>
                         </tr>
                     ) : users.length === 0 ? (
                         <tr>
-                            <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                            <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
                                 Không có người dùng nào.
                             </td>
                         </tr>
                     ) : (
                         users.map((user) => (
                         <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                            <td className="px-6 py-3 text-sm font-bold text-blue-600 uppercase">
+                                {user.code || "---"}
+                            </td>
                             <td className="px-6 py-3 text-sm font-medium text-gray-900">{user.userName}</td>
                             <td className="px-6 py-3 text-sm text-gray-700">{user.name}</td>
                             <td className="px-6 py-3 text-sm text-gray-600">{user.email}</td>
