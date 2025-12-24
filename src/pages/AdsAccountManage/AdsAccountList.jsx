@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "react-toastify"; // Giả sử bạn dùng thư viện này
-import { Plus, SquarePen, Trash, RefreshCcw, DollarSign, Upload } from "lucide-react"; // Hoặc icon từ thư viện bạn đang dùng
+import { Plus, SquarePen, Trash, RefreshCcw, DollarSign } from "lucide-react"; // Hoặc icon từ thư viện bạn đang dùng
 import DeleteConfirmModal from "../../components/Modal/DeleteConfirmModal";
 
 // Import API
@@ -368,13 +368,6 @@ const handleEditSave = async (dataToSend) => {
         <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
           {/* Left Side: Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3">
-            {/* Button: Import */}
-            <button
-              onClick={() => setIsImportModalOpen(true)}
-              className="px-4 py-2.5 rounded-lg font-semibold text-sm transition bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 active:bg-green-800 flex items-center justify-center"
-            >
-              <Upload className="h-4 w-4 mr-2" /> Import
-            </button>
 
             {/* Button: Create New */}
             <button
@@ -695,6 +688,9 @@ const handleEditSave = async (dataToSend) => {
         onChange={handleEditChange} // Hàm update state form
         onClose={() => setIsCreateModalOpen(false)}
         onSave={handleCreateSave}
+        onImportClick={() => {
+          setIsImportModalOpen(true);
+        }}
         saving={saving}
         bmList={bmList} // Truyền list BM vào để select
       /> 

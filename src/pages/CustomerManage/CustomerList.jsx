@@ -9,7 +9,6 @@ import DeleteConfirmModal from "../../components/Modal/DeleteConfirmModal";
 import DetailCustomerModal from "./DetailCustomerModal";
 import SpendTrackingModal from "./SpendTrackingModal";
 import TableSkeleton from "../../components/Loading/TableSkeleton";
-import MonthlyCustomerReconciliation from "./MonthlyCustomerReconciliation";
 import CustomerDetailView from "./CustomerDetailView";
 
 function CustomerList() {
@@ -215,16 +214,11 @@ function CustomerList() {
     }
 
     return (
-        <div className="px-4">
-            <h1 className="text-lg font-bold mb-3">Khách hàng</h1>
+        <div className="">
 
-            {/* Monthly Reconciliation Component */}
-            <MonthlyCustomerReconciliation onCustomerClick={handleOpenSpend} />
-
-            {/* --- Split Layout Section --- */}
             <div className="grid grid-cols-10 gap-4 mt-4 min-h-[600px]">
-                {/* Left Column: List (4/10) */}
-                <div className="col-span-4 flex flex-col gap-3 h-full">
+                {/* Left Column: List (7/10) */}
+                <div className="col-span-7 flex flex-col gap-3 h-full">
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full">
                         {/* Integrated Toolbar */}
                         <div className="p-3 border-b border-gray-100 bg-gray-50/30 flex flex-col gap-2">
@@ -260,10 +254,19 @@ function CustomerList() {
                                     <table className="w-full divide-y divide-gray-100">
                                         <thead className="bg-gray-50/50">
                                             <tr>
-                                                <th scope="col" className="px-3 py-2 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-                                                    Khách hàng
+                                                <th scope="col" className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                                    Tên khách
                                                 </th>
-                                                <th scope="col" className="px-3 py-2 text-right text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                                                <th scope="col" className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                                    Mã khách
+                                                </th>
+                                                <th scope="col" className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                                    Mã agency
+                                                </th>
+                                                <th scope="col" className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                                    Code Khách
+                                                </th>
+                                                <th scope="col" className="px-3 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
                                                     Thao tác
                                                 </th>
                                             </tr>
@@ -271,7 +274,7 @@ function CustomerList() {
                                         <tbody className="bg-white divide-y divide-gray-50">
                                             {customers.length === 0 ? (
                                                 <tr>
-                                                    <td colSpan="2" className="px-3 py-10 text-center text-gray-400 text-xs italic">
+                                                    <td colSpan="5" className="px-3 py-10 text-center text-gray-400 text-xs italic">
                                                         Không tìm thấy dữ liệu
                                                     </td>
                                                 </tr>
@@ -283,13 +286,23 @@ function CustomerList() {
                                                         onClick={() => handleRowClick(customer)}
                                                     >
                                                         <td className="px-3 py-2">
-                                                            <div className="flex flex-col">
-                                                                <span className="text-[12px] font-bold text-gray-800 leading-tight">
-                                                                    {customer.name}
-                                                                </span>
-                                                                <span className="text-[9px] text-gray-400 font-medium">
-                                                                    {customer.fullCustomerCode || customer.customerCode || "-"}
-                                                                </span>
+                                                            <div className="text-sm font-bold text-gray-800 leading-tight">
+                                                                {customer.name}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-3 py-2">
+                                                            <div className="text-xs text-gray-600 font-medium">
+                                                                {customer.customerCode || "-"}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-3 py-2">
+                                                            <div className="text-[11px] text-gray-600 font-medium">
+                                                                {customer.agencyCode || "-"}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-3 py-2">
+                                                            <div className="text-xs text-blue-600 font-bold">
+                                                                {customer.fullCustomerCode || "-"}
                                                             </div>
                                                         </td>
                                                         <td className="px-3 py-2 text-right" onClick={(e) => e.stopPropagation()}>
@@ -360,8 +373,8 @@ function CustomerList() {
                     </div>
                 </div>
 
-                {/* Right Column: Detail (6/10) */}
-                <div className="col-span-6 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col h-full ring-1 ring-black/5">
+                {/* Right Column: Detail (3/10) */}
+                <div className="col-span-3 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col h-full ring-1 ring-black/5">
                     <CustomerDetailView id={inlineDetailId} />
                 </div>
             </div>

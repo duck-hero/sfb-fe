@@ -16,7 +16,7 @@ import ProtectedRoute from "../context/ProtectedRoute";
 import BMManage from "../pages/BmManager/BMManage";
 import BankManagePage from "../pages/BankManagePage/BankManagePage";
 import TransactionManage from "../pages/TransactionManage/TransactionManage";
-import CustomerList from "../pages/CustomerManage/CustomerList";
+import CustomerManagementPage from "../pages/CustomerManage/CustomerManagementPage";
 import UserList from "../pages/UserManage/UserList";
 import Dashboard from "../pages/Dashboard/Dashboard";
 
@@ -66,11 +66,13 @@ export default function AppRoutes() {
             <Route path="bank-card-management" element={<BankCardList />} /> */}
             <Route path="bm-management" element={<BMManage />} />
             {/* Chỉ Admin và Kế Toán mới xem được lịch sử giao dịch */}
-            <Route element={<ProtectedRoute allowedRoles={['Admin', 'Kế Toán']} />}>
+            <Route element={<ProtectedRoute allowedRoles={['Admin', 'Kế Toán', 'Kế Toán Tiền']} />}>
               <Route path="transaction-history" element={<TransactionManage />} />
             </Route>
-            {/* Chỉ Admin mới có quyền truy cập */}
-            <Route path="customer-management" element={<CustomerList />} />
+            {/* Chỉ Admin và Kế Toán Công Nợ mới có quyền truy cập */}
+            <Route element={<ProtectedRoute allowedRoles={['Admin', 'Kế Toán Công Nợ']} />}>
+              <Route path="customer-management" element={<CustomerManagementPage />} />
+            </Route>
             <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
               <Route path="user-management" element={<UserList />} />
             </Route>

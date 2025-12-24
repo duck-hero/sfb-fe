@@ -10,7 +10,7 @@ export default function AddUserModal({ open, onClose, onSuccess, userToEdit = nu
     email: "",
     name: "",
     phoneNumber: "",
-    roleId: "",
+    roleIds: [],
     code: "",
   });
 
@@ -29,7 +29,7 @@ export default function AddUserModal({ open, onClose, onSuccess, userToEdit = nu
             email: userToEdit.email || "",
             name: userToEdit.name || "",
             phoneNumber: userToEdit.phoneNumber || "",
-            roleId: "", // Will be set after roles are loaded
+            roleIds: [], // Will be set after roles are loaded
             code: userToEdit.code || "",
             id: userToEdit.id
         });
@@ -39,7 +39,7 @@ export default function AddUserModal({ open, onClose, onSuccess, userToEdit = nu
           email: "",
           name: "",
           phoneNumber: "",
-          roleId: "",
+          roleIds: [],
           code: "",
         });
       }
@@ -47,16 +47,17 @@ export default function AddUserModal({ open, onClose, onSuccess, userToEdit = nu
     }
   }, [open, userToEdit]);
 
-  // New Effect: Sync roleId once roles are loaded and we have a userToEdit
+  // Sync roleIds once roles are loaded and we have a userToEdit
   useEffect(() => {
     if (open && userToEdit && roles.length > 0) {
-       // Find role ID based on role name (assuming first role)
-       const userRoleName = userToEdit.roles && userToEdit.roles.length > 0 ? userToEdit.roles[0] : null;
-       if (userRoleName) {
-           const matchingRole = roles.find(r => r.name === userRoleName);
-           if (matchingRole) {
-               setFormData(prev => ({ ...prev, roleId: matchingRole.id }));
-           }
+       // Find role IDs based on role names
+       const userRoleNames = userToEdit.roles || [];
+       if (userRoleNames.length > 0) {
+           const matchingRoleIds = roles
+            .filter(r => userRoleNames.includes(r.name))
+            .map(r => r.id);
+           
+           setFormData(prev => ({ ...prev, roleIds: matchingRoleIds }));
        }
     }
   }, [roles, userToEdit, open]);
@@ -76,6 +77,17 @@ export default function AddUserModal({ open, onClose, onSuccess, userToEdit = nu
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleRoleToggle = (roleId) => {
+    setFormData(prev => {
+        const currentRoleIds = prev.roleIds || [];
+        if (currentRoleIds.includes(roleId)) {
+            return { ...prev, roleIds: currentRoleIds.filter(id => id !== roleId) };
+        } else {
+            return { ...prev, roleIds: [...currentRoleIds, roleId] };
+        }
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -203,21 +215,21 @@ export default function AddUserModal({ open, onClose, onSuccess, userToEdit = nu
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Quyền (Role)</label>
-                    <select
-                      name="roleId"
-                      value={formData.roleId}
-                      onChange={handleChange}
-                      required
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
-                    >
-                      <option value="">-- Chọn quyền --</option>
+                    <label className="block text-sm font-medium text-gray-700 mb-2 font-bold">Quyền (Roles)</label>
+                    <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto p-3 border rounded-md border-gray-300">
                       {roles.map((role) => (
-                        <option key={role.id} value={role.id}>
-                          {role.name}
-                        </option>
+                        <label key={role.id} className="flex items-center space-x-2 text-sm cursor-pointer hover:bg-gray-50 p-1 rounded transition">
+                          <input
+                            type="checkbox"
+                            checked={formData.roleIds.includes(role.id)}
+                            onChange={() => handleRoleToggle(role.id)}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                          <span className="text-gray-700">{role.name}</span>
+                        </label>
                       ))}
-                    </select>
+                      {roles.length === 0 && <p className="text-xs text-gray-400 italic col-span-2">Đang tải danh sách quyền...</p>}
+                    </div>
                   </div>
 
                   <div className="mt-6 flex justify-end gap-3">

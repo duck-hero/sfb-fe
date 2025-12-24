@@ -1,6 +1,7 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { ClipLoader } from "react-spinners";
+import { Upload } from "lucide-react";
 import { getBmWorkingOptions } from "../../utils/bmConstants";
 
 export default function CreateAdsAccountModal({
@@ -11,6 +12,7 @@ export default function CreateAdsAccountModal({
   onChange,
   saving,
   bmList = [], // Danh sách BM Account để chọn
+  onImportClick,
 }) {
   return (
     <Transition appear show={open} as={Fragment}>
@@ -131,8 +133,19 @@ export default function CreateAdsAccountModal({
 
                 </div>
 
-                {/* Buttons */}
-                <div className="mt-8 flex justify-end gap-3">
+                {/* Import Button (Separate Row) */}
+                <div className="mt-8 pt-6 border-t border-gray-100">
+                  <button
+                    onClick={onImportClick}
+                    disabled={saving}
+                    className="w-full py-2.5 rounded-xl bg-green-600 text-white hover:bg-green-700 transition flex items-center justify-center text-sm font-semibold shadow-sm"
+                  >
+                    <Upload className="h-4 w-4 mr-2" /> Import TK (Excel)
+                  </button>
+                </div>
+
+                {/* Footer Action Buttons */}
+                <div className="mt-4 flex justify-end gap-3">
                   <button
                     onClick={onClose}
                     disabled={saving}
