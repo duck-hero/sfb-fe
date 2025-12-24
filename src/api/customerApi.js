@@ -91,7 +91,7 @@ const customerApi = {
 
   // Lấy dữ liệu đối soát công nợ tháng của khách hàng
   // /api/customers/invoices/reconciliation?year=2025&month=12&pageSize=10&cursor=...
-  getMonthlyReconciliation: async (year, month, pageSize = 10, cursor = null) => {
+  getMonthlyReconciliation: async (year, month, pageSize = 10, cursor = null, day = null) => {
     try {
       const response = await axiosInstance.get(
         `${api}/customers/invoices/reconciliation`,
@@ -99,6 +99,7 @@ const customerApi = {
           params: {
             year,
             month,
+            day, // Thêm param day
             pageSize,
             cursor,
             sortOrder: "desc",

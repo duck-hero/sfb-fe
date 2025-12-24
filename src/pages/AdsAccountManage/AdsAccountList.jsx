@@ -49,13 +49,6 @@ function AdsAccountList() {
   // Debounced search text (300ms delay)
   const debouncedSearchText = useDebounce(searchAdAccountId, 300);
 
-  // State lưu giá trị thực sự được sử dụng cho API call
-  const [queryKeyword, setQueryKeyword] = useState({
-    adAccountIdNumber: "",
-    bmAccountId: "",
-    bmWorking: "", // "" là all, hoặc giá trị integer
-    locked: "", // "" là all
-  });
 
   // Dropdown Data
   const [bmList, setBmList] = useState([]);
@@ -101,21 +94,21 @@ function AdsAccountList() {
     try {
       // Xử lý locked: convert string sang boolean hoặc null
       let lockedParam = null;
-      if (queryKeyword.locked === "true") lockedParam = true;
-      if (queryKeyword.locked === "false") lockedParam = false;
+      if (filterLocked === "true") lockedParam = true;
+      if (filterLocked === "false") lockedParam = false;
 
       // Xử lý bmWorking: convert string sang number hoặc null
       let bmWorkingParam = null;
-      if (queryKeyword.bmWorking && queryKeyword.bmWorking !== "") {
-        bmWorkingParam = parseInt(queryKeyword.bmWorking, 10);
+      if (filterBmWorking && filterBmWorking !== "") {
+        bmWorkingParam = parseInt(filterBmWorking, 10);
       }
 
       const res = await adsAccountApi.getAdsAccountList(
         pageNumber,
         pageSize,
-        queryKeyword.adAccountIdNumber,
+        debouncedSearchText.trim(),
         lockedParam,
-        queryKeyword.bmAccountId,
+        filterBmAccountId,
         bmWorkingParam // Thêm param bmWorking
       );
 
@@ -132,7 +125,7 @@ function AdsAccountList() {
   useEffect(() => {
     fetchAdsAccounts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageNumber, pageSize, queryKeyword]);
+  }, [pageNumber, pageSize, debouncedSearchText, filterBmAccountId, filterBmWorking, filterLocked]);
 
   // --- 2. FETCH DROPDOWN DATA (BM Account) ---
   useEffect(() => {
@@ -148,21 +141,10 @@ function AdsAccountList() {
     fetchBmDropdown();
   }, []);
 
-  // --- 3. AUTO FILTER EFFECT ---
-  // Auto update queryKeyword when filters change (debounced for search input)
-  useEffect(() => {
-    setQueryKeyword({
-      adAccountIdNumber: debouncedSearchText.trim(),
-      bmAccountId: filterBmAccountId,
-      bmWorking: filterBmWorking,
-      locked: filterLocked,
-    });
-  }, [debouncedSearchText, filterBmAccountId, filterBmWorking, filterLocked]);
-
   // Reset to page 1 when filters change
   useEffect(() => {
     setPageNumber(1);
-  }, [queryKeyword]);
+  }, [debouncedSearchText, filterBmAccountId, filterBmWorking, filterLocked]);
 
   // --- PAGINATION HELPERS ---
   // const handlePrev = () => pageNumber > 1 && setPageNumber(pageNumber - 1);

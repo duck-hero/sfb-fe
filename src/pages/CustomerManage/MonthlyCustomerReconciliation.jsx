@@ -13,6 +13,7 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
     const now = new Date();
     const [year, setYear] = useState(now.getFullYear());
     const [month, setMonth] = useState(now.getMonth() + 1);
+    const [day, setDay] = useState(""); // "" means all days
 
     const observer = useRef();
     const lastElementRef = useCallback(node => {
@@ -34,7 +35,8 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
         }
 
         try {
-            const res = await customerApi.getMonthlyReconciliation(year, month, 10, currentCursor);
+            const dayParam = day === "" ? null : Number(day);
+            const res = await customerApi.getMonthlyReconciliation(year, month, 10, currentCursor, dayParam);
             if (res.success) {
                 if (isInitial) {
                     setData(res.data);
@@ -54,7 +56,7 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
 
     useEffect(() => {
         fetchData(null, true);
-    }, [year, month]);
+    }, [year, month, day]);
 
     const formatNumber = (num) => {
         if (num === null || num === undefined) return "0";
@@ -63,6 +65,10 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
 
     const years = Array.from({ length: 5 }, (_, i) => now.getFullYear() - i);
     const months = Array.from({ length: 12 }, (_, i) => i + 1);
+    
+    // Calculate days in the selected month/year
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
     return (
         <div className="bg-white rounded-lg shadow-sm p-3 mb-4">
@@ -70,8 +76,21 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
                 <h2 className="text-xs font-bold text-primary-darkest uppercase">Đối soát công nợ tháng</h2>
                 <div className="flex gap-2">
                     <select
+                        value={day}
+                        onChange={(e) => setDay(e.target.value)}
+                        className="border border-gray-300 rounded px-1.5 py-0.5 text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    >
+                        <option value="">Tất cả ngày</option>
+                        {days.map(d => (
+                            <option key={d} value={d}>Ngày {d}</option>
+                        ))}
+                    </select>
+                    <select
                         value={month}
-                        onChange={(e) => setMonth(Number(e.target.value))}
+                        onChange={(e) => {
+                            setMonth(Number(e.target.value));
+                            // Optional: validation for day if switching to month with fewer days
+                        }}
                         className="border border-gray-300 rounded px-1.5 py-0.5 text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500"
                     >
                         {months.map(m => (
