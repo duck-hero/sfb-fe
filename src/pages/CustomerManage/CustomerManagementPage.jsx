@@ -56,9 +56,7 @@ export default function CustomerManagementPage() {
       <div className="min-h-[600px]">
         {activeTab === "list" && <CustomerList />}
         {activeTab === "reconciliation" && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-             <MonthlyCustomerReconciliation />
-          </div>
+          <MonthlyCustomerReconciliation />
         )}
         {(activeTab === "audit" || activeTab === "profit") && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-10 text-center">

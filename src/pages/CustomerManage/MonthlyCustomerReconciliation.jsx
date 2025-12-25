@@ -71,8 +71,8 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
     return (
-        <div className="bg-white rounded-lg shadow-sm p-3 mb-4">
-            <div className="flex justify-between items-center mb-2">
+        <div className="bg-white rounded-lg p-0 mb-4">
+            <div className="flex justify-between items-center mb-3 px-1">
                 <h2 className="text-xs font-bold text-primary-darkest uppercase">Đối soát công nợ tháng</h2>
                 <div className="flex gap-2">
                     <select
@@ -109,7 +109,7 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
                 </div>
             </div>
 
-            <div className="overflow-x-auto border border-gray-100 rounded-lg custom-scrollbar" style={{ maxHeight: '350px', overflowY: 'auto' }}>
+            <div className="overflow-x-auto border border-gray-100 rounded-lg custom-scrollbar" style={{ maxHeight: '650px', overflowY: 'auto' }}>
                 <table className="w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50 sticky top-0 z-10">
                         <tr>
