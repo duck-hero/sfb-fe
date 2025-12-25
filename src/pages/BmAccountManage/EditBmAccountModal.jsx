@@ -47,13 +47,6 @@ export default function EditBmAccountModal({
 }) {
   // Loại bỏ state passwordInput và isPasswordEdited do không cần thiết cho API update BM Account
   
-  // Logic xử lý khi trạng thái (status) thay đổi
-  const handleStatusChange = (enabled) => {
-    const newStatus = enabled ? "ACTIVE" : "INACTIVE";
-    // Gọi onChange để cập nhật status trong formData của component cha
-    onChange({ target: { name: "status", value: newStatus } });
-  };
-
   // Logic xử lý khi click nút Lưu
   const handleSaveClick = () => {
     // Gọi hàm onSave của component cha
@@ -61,9 +54,6 @@ export default function EditBmAccountModal({
   };
 
   const isContentReady = !loading;
-  // Tính toán trạng thái ACTIVE dựa trên formData.status. Mặc định là 'INACTIVE' nếu chưa có status.
-  const isStatusActive = formData.status === "ACTIVE"; 
-  
   return (
     <Transition appear show={open} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
@@ -132,30 +122,24 @@ export default function EditBmAccountModal({
                         </select>
                       </div>
 
-                      {/* Input 3: Status (ACTIVE/INACTIVE) - Hiển thị trạng thái mặc định */}
-                      <div className="flex items-center justify-between pt-2 pb-2">
-                        <label className="block text-sm font-medium">Trạng thái (Status)</label>
-                        <Switch
-                          // 'checked' được đặt dựa trên giá trị của formData.status
-                          checked={isStatusActive}
-                          onChange={handleStatusChange}
+                      {/* Input 3: Status (LIVE/DIE/BACK) - Hiển thị trạng thái mặc định */}
+                      <div className="flex flex-col gap-1">
+                        <label className="block text-sm font-medium mb-1">Trạng thái (Status)</label>
+                        <select
+                          name="status"
+                          value={formData.status || "N/A"}
+                          onChange={onChange}
                           disabled={saving}
-                          className={`${
-                            isStatusActive ? 'bg-green-600' : 'bg-red-600'
-                          } relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-600`}
+                          className="w-full h-12 border border-gray-300 rounded-xl px-3 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
                         >
-                          <span
-                            className={`${
-                              isStatusActive ? 'translate-x-6' : 'translate-x-1'
-                            } inline-block h-4 w-4 transform rounded-full bg-white transition`}
-                          />
-                        </Switch>
-                        <span className={`text-sm font-semibold w-20 text-right ${isStatusActive ? 'text-green-600' : 'text-red-600'}`}>
-                           {/* Hiển thị giá trị status hiện tại */}
-                           {formData.status || 'INACTIVE'}
-                        </span>
+                          <option value="LIVE">LIVE (Hoạt động)</option>
+                          <option value="DIE">DIE (Khóa)</option>
+                          <option value="BACK">BACK</option>
+                        </select>
                       </div>
-                      <div className="text-xs text-gray-500 -mt-2">Trạng thái hiện tại: {formData.status === 'ACTIVE' ? 'Hoạt động' : 'Không hoạt động'}.</div>
+                      <div className="text-xs text-gray-500 -mt-2">
+                        Trạng thái BM hiện tại ảnh hưởng đến cách hiển thị trong danh sách.
+                      </div>
 
                     </div>
 

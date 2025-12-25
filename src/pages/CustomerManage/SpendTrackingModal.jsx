@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useState, useRef, useMemo } from "react";
-import { Dialog, Transition } from "@headlessui/react";
-import { X, ChevronLeft, ChevronRight, Save, RotateCw, Plus, Trash2 } from "lucide-react";
+import { Dialog, Transition, Menu } from "@headlessui/react";
+import { X, ChevronLeft, ChevronRight, Save, RotateCw, Plus, Trash2, ChevronDown, Eye } from "lucide-react";
 import dailySpendApi from "../../api/dailySpendApi";
 import invoiceApi from "../../api/invoiceApi";
 import customerApi from "../../api/customerApi";
@@ -14,6 +14,7 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
   const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
   const [invoiceData, setInvoiceData] = useState(null);
   const [currentDate, setCurrentDate] = useState(new Date()); // Keep track of current view (Month/Year)
+  const [isDirty, setIsDirty] = useState(false);
 
   const customerId = customer?.customerId || customer?.id;
 
@@ -51,6 +52,7 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
       setData(null);
     } finally {
       setLoading(false);
+      setIsDirty(false); // Reset dirty state on fetch
     }
   };
 
@@ -124,16 +126,33 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
       }
   }, [showTransactions, currentDate]);
 
-  const handleGenerateInvoice = async () => {
+  const handleSaveInvoice = async () => {
     if (!customerId) return;
     setLoading(true);
     try {
         const { year, month } = getMonthParams(currentDate);
         const res = await invoiceApi.generateInvoice(customerId, year, month);
+        toast.success("Đã lưu thành công");
+        setIsDirty(false); // Reset dirty state on save
+        // Optionally refetch grid to see if status changed
+        fetchGrid(currentDate);
+    } catch (error) {
+        toast.error(typeof error === 'string' ? error : "Lưu thất bại");
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  const handleViewInvoice = async () => {
+    if (!customerId) return;
+    setLoading(true);
+    try {
+        const { year, month } = getMonthParams(currentDate);
+        const res = await invoiceApi.getInvoice(customerId, year, month);
         setInvoiceData(res.data || res);
         setInvoiceModalOpen(true);
     } catch (error) {
-        toast.error(typeof error === 'string' ? error : "Tạo thất bại");
+        toast.error(typeof error === 'string' ? error : "Không lấy được dữ liệu công nợ");
     } finally {
         setLoading(false);
     }
@@ -146,6 +165,24 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
         setData(null);
     }
   }, [open, customer, currentDate]);
+
+  // Keyboard Shortcut: Ctrl + S for Save
+  useEffect(() => {
+    const handleKeyDownGlobal = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        handleSaveInvoice();
+      }
+    };
+
+    if (open) {
+      window.addEventListener('keydown', handleKeyDownGlobal);
+    }
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDownGlobal);
+    };
+  }, [open, handleSaveInvoice]);
 
   const handleMonthChange = (offset) => {
     const newDate = new Date(currentDate);
@@ -218,6 +255,8 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
         
         // Update cell
         row.cells[day] = { ...cell, spend: numericValue };
+
+        setIsDirty(true); // Mark as modified
 
         // Recalculate Totals
         return calculateUpdatedSummaries(newData, rowIndex, day, numericValue, oldSpend);
@@ -328,13 +367,61 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
                     <div className="flex items-center gap-2">
                         <div className="h-6 w-px bg-gray-200 mx-1"></div>
 
-                        <button 
-                          onClick={handleGenerateInvoice}
-                          className="p-1.5 hover:bg-orange-50 hover:text-orange-600 rounded-md text-orange-500 transition"
-                          title="Chốt công nợ"
-                        >
-                          Chốt công nợ
-                        </button>
+                        <div className="flex items-center gap-0">
+                          <button 
+                            onClick={handleSaveInvoice}
+                            disabled={loading}
+                            title="Lưu (Ctrl + S)"
+                            className={`h-8 px-3 rounded-l-md text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm
+                              ${isDirty 
+                                ? 'bg-blue-600 text-white hover:bg-blue-700 ring-2 ring-blue-500/20' 
+                                : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}
+                              disabled:opacity-50`}
+                          >
+                            <Save className="w-3.5 h-3.5" />
+                            Lưu
+                          </button>
+                          
+                          <Menu as="div" className="relative h-8">
+                            <Menu.Button 
+                              disabled={loading}
+                              className={`h-full px-1.5 rounded-r-md border-l transition-all disabled:opacity-50
+                                ${isDirty 
+                                  ? 'bg-blue-600 text-white border-blue-500 hover:bg-blue-700' 
+                                  : 'bg-gray-100 text-gray-400 border-gray-200 hover:bg-gray-200'}`}
+                            >
+                              <ChevronDown className="w-4 h-4" />
+                            </Menu.Button>
+                            
+                            <Transition
+                              as={Fragment}
+                              enter="transition ease-out duration-100"
+                              enterFrom="transform opacity-0 scale-95"
+                              enterTo="transform opacity-100 scale-100"
+                              leave="transition ease-in duration-75"
+                              leaveFrom="transform opacity-100 scale-100"
+                              leaveTo="transform opacity-0 scale-95"
+                            >
+                              <Menu.Items className="absolute right-0 mt-1 w-40 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-[70]">
+                                <div className="py-1">
+                                  <Menu.Item>
+                                    {({ active }) => (
+                                      <button
+                                        onClick={handleViewInvoice}
+                                        className={`${
+                                          active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                                        } flex w-full items-center px-4 py-2 text-xs font-medium gap-2`}
+                                      >
+                                        <Eye className="w-3.5 h-3.5 text-blue-500" />
+                                        Chi tiết công nợ
+                                      </button>
+                                    )}
+                                  </Menu.Item>
+                                </div>
+                              </Menu.Items>
+                            </Transition>
+                          </Menu>
+                        </div>
 
                         <button 
                           onClick={() => fetchGrid(currentDate)}

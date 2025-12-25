@@ -22,6 +22,18 @@ const invoiceApi = {
     } catch (error) {
       throw handleApiError(error);
     }
+  },
+
+  // Get Existing Invoice
+  getInvoice: async (customerId, year, month) => {
+    try {
+      const response = await axiosInstance.get(`${api}/customers/${customerId}/invoices/get-invoice`, {
+        params: { year, month }
+      });
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
   }
 };
 

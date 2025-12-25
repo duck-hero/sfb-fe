@@ -166,7 +166,7 @@ function BmAccountList() {
           name: acc?.name || "",
           bmSourceId: acc?.bmSourceId || "",
           // !!! SỬA LỖI: Thêm trường status vào formData !!!
-          status: acc?.status || "INACTIVE", // Giả định API trả về status (vd: "ACTIVE" hoặc "INACTIVE")
+          status: acc?.status || "N/A", // LIVE , DIE , BACK
         });
       } catch (err) {
         toast.error(typeof err === 'string' ? err : "Không tải được thông tin");
@@ -320,8 +320,24 @@ function BmAccountList() {
                       {/* Hiển thị tên Source nếu API trả về, nếu không hiển thị ID */}
                       {x.sourceName }
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
-                      {x.status }
+                    <td className="px-3 py-2 whitespace-nowrap text-xs">
+                      {x.status === "LIVE" ? (
+                        <span className="px-2 py-1 rounded bg-green-100 text-green-700 font-bold uppercase tracking-wider text-[10px]">
+                          LIVE
+                        </span>
+                      ) : x.status === "DIE" ? (
+                        <span className="px-2 py-1 rounded bg-red-100 text-red-700 font-bold uppercase tracking-wider text-[10px]">
+                          DIE
+                        </span>
+                      ) : x.status === "BACK" ? (
+                        <span className="px-2 py-1 rounded bg-gray-100 text-gray-700 font-bold uppercase tracking-wider text-[10px]">
+                          BACK
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 rounded bg-blue-100 text-blue-700 font-bold uppercase tracking-wider text-[10px]">
+                          {x.status || "N/A"}
+                        </span>
+                      )}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500 flex items-center">
                       <button onClick={() => openEditModal(x.id)}>
