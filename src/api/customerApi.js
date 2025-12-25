@@ -49,7 +49,8 @@ const customerApi = {
         {
           name: data.name,
           agencyCode: data.agencyCode,
-          customerGroupId: data.customerGroupId,
+          customerGroupId: data.customerGroupId || null,
+          operatorUserId: data.operatorUserId || null,
         }
       );
       return response.data;
@@ -68,7 +69,8 @@ const customerApi = {
           id: id,
           name: data.name,
           agencyCode: data.agencyCode,
-          customerGroupId: data.customerGroupId,
+          customerGroupId: data.customerGroupId || null,
+          operatorUserId: data.operatorUserId || null,
         }
       );
       return response.data;

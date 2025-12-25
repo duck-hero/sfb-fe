@@ -1,4 +1,4 @@
-  const CreateCustomerModal = ({ open, onClose, onSave, saving, formData, onChange, groups }) => {
+  const CreateCustomerModal = ({ open, onClose, onSave, saving, formData, onChange, groups, users }) => {
   if (!open) return null;
 
   return (
@@ -32,17 +32,34 @@
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nhóm khách hàng</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nhóm</label>
             <select
               name="customerGroupId"
               value={formData.customerGroupId || ""}
               onChange={onChange}
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
             >
-              <option value="">-- Chọn nhóm khách hàng --</option>
+              <option value="">-- Chọn nhóm --</option>
               {groups?.map((group) => (
                 <option key={group.id} value={group.id}>
                   {group.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">NV phụ trách</label>
+            <select
+              name="operatorUserId"
+              value={formData.operatorUserId || ""}
+              onChange={onChange}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+            >
+              <option value="">-- Chọn nhân viên --</option>
+              {users?.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.fullName || user.userName}
                 </option>
               ))}
             </select>

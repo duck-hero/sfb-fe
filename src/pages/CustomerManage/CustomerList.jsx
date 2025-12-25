@@ -157,12 +157,14 @@ function CustomerList() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        // If the empty option is selected for customerGroupId or operatorUserId, use null
+        const finalValue = ((name === "customerGroupId" || name === "operatorUserId") && value === "") ? null : value;
+        setFormData((prev) => ({ ...prev, [name]: finalValue }));
     };
 
     // Create
     const handleOpenCreate = () => {
-        setFormData({ name: "", agencyCode: "", customerGroupId: "" });
+        setFormData({ name: "", agencyCode: "", customerGroupId: null, operatorUserId: null });
         setIsCreateModalOpen(true);
     };
 
@@ -195,13 +197,15 @@ function CustomerList() {
             const detailData = res.data || res;
             setFormData({
                 ...detailData,
-                customerGroupId: detailData.customerGroupId || ""
+                customerGroupId: detailData.customerGroupId || null,
+                operatorUserId: detailData.operatorUserId || null
             });
         } catch (error) {
             toast.error("Không tải được dữ liệu khách hàng");
             setFormData({
                 ...item,
-                customerGroupId: item.customerGroupId || ""
+                customerGroupId: item.customerGroupId || null,
+                operatorUserId: item.operatorUserId || null
             });
         } finally {
             setIsEditLoading(false);
@@ -479,6 +483,7 @@ function CustomerList() {
                 formData={formData}
                 onChange={handleInputChange}
                 groups={groups}
+                users={users}
             />
 
             <EditCustomerModal
@@ -490,6 +495,7 @@ function CustomerList() {
                 formData={formData}
                 onChange={handleInputChange}
                 groups={groups}
+                users={users}
             />
 
             <DeleteConfirmModal

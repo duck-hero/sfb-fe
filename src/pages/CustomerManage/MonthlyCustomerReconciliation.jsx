@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import customerApi from "../../api/customerApi";
 import { Loader2, ChevronRight, ChevronDown } from "lucide-react";
+import { toast } from "react-toastify";
+import SpendTrackingModal from "./SpendTrackingModal";
 
 const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
     const [data, setData] = useState([]);
@@ -9,6 +11,8 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
     const [cursor, setCursor] = useState(null);
     const [hasNextPage, setHasNextPage] = useState(false);
     const [expandedGroups, setExpandedGroups] = useState(new Set());
+    const [isSpendModalOpen, setIsSpendModalOpen] = useState(false);
+    const [selectedCustomer, setSelectedCustomer] = useState(null);
 
     // Default to current year and month
     const now = new Date();
@@ -71,6 +75,15 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
         });
     };
 
+    const handleOpenSpendModal = (customer) => {
+        setSelectedCustomer({
+            id: customer.customerId,
+            customerId: customer.customerId,
+            name: customer.customerName
+        });
+        setIsSpendModalOpen(true);
+    };
+
     useEffect(() => {
         fetchData(null, true);
     }, [year, month, day]);
@@ -126,7 +139,7 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
                 </div>
             </div>
 
-            <div className="overflow-x-auto border border-gray-100 rounded-lg custom-scrollbar" style={{ maxHeight: '650px', overflowY: 'auto' }}>
+            <div className="overflow-x-auto border border-gray-100 rounded-lg custom-scrollbar" style={{ maxHeight: 'calc(100vh - 160px)', overflowY: 'auto' }}>
                 <table className="w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50 sticky top-0 z-10">
                         <tr>
@@ -179,14 +192,21 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
                                                         }
                                                     }}
                                                 >
-                                                    <div className="flex items-center gap-1.5 relative z-10">
+                                                    <div className={`flex items-center gap-1.5 relative z-10 ${!isGroup ? "cursor-pointer" : ""}`}
+                                                         onClick={(e) => {
+                                                             if (!isGroup) {
+                                                                 e.stopPropagation();
+                                                                 handleOpenSpendModal(item);
+                                                             }
+                                                         }}
+                                                    >
                                                         {isGroup && (
                                                             <div className="text-gray-400">
                                                                 {isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                                                             </div>
                                                         )}
                                                         <div className="flex flex-col flex-1 min-w-0">
-                                                            <div className={`text-[11px] text-gray-900 leading-tight truncate group-hover/cell:text-blue-700 transition-colors ${isGroup ? "font-bold" : "font-medium"}`}>
+                                                            <div className={`text-[11px] leading-tight truncate transition-colors ${isGroup ? "font-bold text-gray-900" : "font-medium text-blue-600 hover:text-blue-800 hover:underline"}`}>
                                                                 {item.customerName}
                                                             </div>
                                                             <div className="text-[9px] text-secondary italic leading-tight truncate">{item.fullCustomerCode}</div>
@@ -238,11 +258,16 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
                                                 >
                                                     <td 
                                                         className="px-2 py-1 whitespace-nowrap border-r border-gray-50 relative overflow-hidden cursor-pointer hover:bg-blue-50 transition-colors group/cell pl-6"
-                                                        onClick={() => onCustomerClick?.(child)}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleOpenSpendModal(child);
+                                                        }}
                                                     >
                                                         <div className="flex items-center gap-2 relative z-10">
                                                             <div className="flex flex-col flex-1 min-w-0">
-                                                                <div className="text-[11px] font-medium text-gray-700 leading-tight truncate group-hover/cell:text-blue-700 transition-colors">{child.customerName}</div>
+                                                                <div className="text-[11px] font-medium text-blue-600 hover:text-blue-800 hover:underline leading-tight truncate transition-colors">
+                                                                    {child.customerName}
+                                                                </div>
                                                                 <div className="text-[9px] text-secondary italic leading-tight truncate">{child.fullCustomerCode}</div>
                                                             </div>
                                                         </div>
@@ -285,6 +310,12 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
                     </tbody>
                 </table>
             </div>
+
+            <SpendTrackingModal 
+                open={isSpendModalOpen}
+                onClose={() => setIsSpendModalOpen(false)}
+                customer={selectedCustomer}
+            />
         </div>
     );
 };

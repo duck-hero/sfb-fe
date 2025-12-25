@@ -59,7 +59,7 @@ export default function CustomerManagementPage() {
       </div>
 
       {/* Content */}
-      <div className="min-h-[600px]">
+      <div>
         {activeTab === "list" && <CustomerList />}
         {activeTab === "group" && <CustomerGroupList />}
         {activeTab === "reconciliation" && (
