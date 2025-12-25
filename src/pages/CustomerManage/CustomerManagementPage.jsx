@@ -3,6 +3,7 @@ import { Users, FileSpreadsheet, BarChart3, PieChart } from "lucide-react";
 import CustomerList from "./CustomerList";
 import MonthlyCustomerReconciliation from "./MonthlyCustomerReconciliation";
 import CustomerGroupList from "./CustomerGroupList";
+import AdAccountAuditReport from "./AdAccountAuditReport";
 
 export default function CustomerManagementPage() {
   const [activeTab, setActiveTab] = useState("list");
@@ -65,7 +66,8 @@ export default function CustomerManagementPage() {
         {activeTab === "reconciliation" && (
           <MonthlyCustomerReconciliation />
         )}
-        {(activeTab === "audit" || activeTab === "profit") && (
+        {activeTab === "audit" && <AdAccountAuditReport />}
+        {activeTab === "profit" && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-10 text-center">
             <div className="flex flex-col items-center gap-3">
                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center">

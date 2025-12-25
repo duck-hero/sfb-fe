@@ -87,6 +87,22 @@ createAdsAccount: async (adAccountName, adAccountIdNumber, bmAccountId, bmWorkin
       throw handleApiError(error);
     }
   },
+
+  // Import Ads Accounts Current Spend
+  importAdsAccountCurrentSpend: async (formData, onUploadProgress) => {
+    try {
+      const response = await axiosInstance.post(`${api}/AdsAccount/ImportAdsAccountCurrentSpend`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress,
+      });
+
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 };
 
 export default adsAccountApi;
