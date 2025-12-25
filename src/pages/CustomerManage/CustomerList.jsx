@@ -3,6 +3,8 @@ import { useSearchParams } from "react-router-dom";
 import { Search, Plus, Trash, SquarePen, LineChart, RotateCw } from "lucide-react";
 import { toast } from "react-toastify";
 import customerApi from "../../api/customerApi";
+import customerGroupApi from "../../api/customerGroupApi";
+import accountApi from "../../api/accountApi";
 import CreateCustomerModal from "./CreateCustomerModal";
 import EditCustomerModal from "./EditCustomerModal";
 import DeleteConfirmModal from "../../components/Modal/DeleteConfirmModal";
@@ -13,6 +15,8 @@ import CustomerDetailView from "./CustomerDetailView";
 
 function CustomerList() {
     const [customers, setCustomers] = useState([]);
+    const [groups, setGroups] = useState([]);
+    const [users, setUsers] = useState([]);
     const [searchParams] = useSearchParams();
     const [loading, setLoading] = useState(false);
 
@@ -25,6 +29,8 @@ function CustomerList() {
     // Filter
     const [searchKeyword, setSearchKeyword] = useState("");
     const [searchCode, setSearchCode] = useState("");
+    const [selectedGroupId, setSelectedGroupId] = useState("");
+    const [selectedOperatorId, setSelectedOperatorId] = useState("");
 
     // Modals
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -51,12 +57,41 @@ function CustomerList() {
     const [formData, setFormData] = useState({});
     const [selectedCustomer, setSelectedCustomer] = useState(null);
 
+    // Fetch Groups
+    const fetchGroups = async () => {
+        try {
+            const res = await customerGroupApi.getPagedList(1, 100); // Fetch up to 100 groups
+            if (res.success) {
+                setGroups(res.data || []);
+            }
+        } catch (error) {
+            console.error("Failed to fetch customer groups", error);
+        }
+    };
+
+    // Fetch Users (Operators)
+    const fetchUsers = async () => {
+        try {
+            const res = await accountApi.getUserList(1, 100);
+            if (res.data) {
+                setUsers(res.data || []);
+            }
+        } catch (error) {
+            console.error("Failed to fetch users", error);
+        }
+    };
 
     // Fetch Data
-    const fetchCustomers = async (page = 1, size = 10, keyword = "") => {
+    const fetchCustomers = async (page = 1, size = 10, keyword = null, groupId = null, operatorId = null) => {
         setLoading(true);
         try {
-            const res = await customerApi.getCustomerList(page, size, keyword);
+            const res = await customerApi.getCustomerList(
+                page, 
+                size, 
+                keyword || null, 
+                groupId || null, 
+                operatorId || null
+            );
 
             const items = res.data || [];
             const total = res.totalItems || 0;
@@ -81,7 +116,9 @@ function CustomerList() {
 
     // Initial Load
     useEffect(() => {
-        fetchCustomers(pageNumber, pageSize, searchCode);
+        fetchCustomers(pageNumber, pageSize, searchCode, selectedGroupId, selectedOperatorId);
+        fetchGroups();
+        fetchUsers();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pageNumber, pageSize]); // Trigger when page/size changes. Search is manual or separate.
 
@@ -97,7 +134,7 @@ function CustomerList() {
     // Handlers
     const handleSearch = () => {
         setPageNumber(1);
-        fetchCustomers(1, pageSize, searchCode);
+        fetchCustomers(1, pageSize, searchCode, selectedGroupId, selectedOperatorId);
     };
 
     // Pagination Handlers
@@ -125,7 +162,7 @@ function CustomerList() {
 
     // Create
     const handleOpenCreate = () => {
-        setFormData({ name: "", agencyCode: "" });
+        setFormData({ name: "", agencyCode: "", customerGroupId: "" });
         setIsCreateModalOpen(true);
     };
 
@@ -139,7 +176,7 @@ function CustomerList() {
             await customerApi.createCustomer(formData);
             toast.success("Thêm khách hàng thành công");
             setIsCreateModalOpen(false);
-            fetchCustomers(pageNumber, pageSize, searchCode);
+            fetchCustomers(pageNumber, pageSize, searchCode, selectedGroupId, selectedOperatorId);
         } catch (error) {
             toast.error(typeof error === 'string' ? error : "Thêm thất bại");
         } finally {
@@ -155,10 +192,17 @@ function CustomerList() {
         // Fetch details fresh from API
         try {
             const res = await customerApi.getCustomerById(item.id);
-            setFormData(res.data || res);
+            const detailData = res.data || res;
+            setFormData({
+                ...detailData,
+                customerGroupId: detailData.customerGroupId || ""
+            });
         } catch (error) {
             toast.error("Không tải được dữ liệu khách hàng");
-            setFormData(item);
+            setFormData({
+                ...item,
+                customerGroupId: item.customerGroupId || ""
+            });
         } finally {
             setIsEditLoading(false);
         }
@@ -174,7 +218,7 @@ function CustomerList() {
             await customerApi.updateCustomer(selectedCustomer.id, formData);
             toast.success("Cập nhật thành công");
             setIsEditModalOpen(false);
-            fetchCustomers(pageNumber, pageSize, searchCode);
+            fetchCustomers(pageNumber, pageSize, searchCode, selectedGroupId, selectedOperatorId);
         } catch (error) {
             toast.error(typeof error === 'string' ? error : "Cập nhật thất bại");
         } finally {
@@ -194,7 +238,7 @@ function CustomerList() {
             await customerApi.deleteCustomer(selectedCustomer.id);
             toast.success("Xóa thành công");
             setIsDeleteModalOpen(false);
-            fetchCustomers(pageNumber, pageSize, searchCode);
+            fetchCustomers(pageNumber, pageSize, searchCode, selectedGroupId, selectedOperatorId);
         } catch (error) {
             toast.error(typeof error === 'string' ? error : "Xóa thất bại");
         } finally {
@@ -244,6 +288,37 @@ function CustomerList() {
                                     <Plus className="h-4 w-4" />
                                 </button>
                              </div>
+                             
+                             <div className="flex items-center gap-2">
+                                <select
+                                    value={selectedGroupId}
+                                    onChange={(e) => setSelectedGroupId(e.target.value)}
+                                    className="text-[11px] border border-gray-200 rounded-lg px-2 py-1.5 bg-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium min-w-[140px]"
+                                >
+                                    <option value="">Tất cả nhóm</option>
+                                    {groups.map(g => (
+                                        <option key={g.id} value={g.id}>{g.name}</option>
+                                    ))}
+                                </select>
+
+                                <select
+                                    value={selectedOperatorId}
+                                    onChange={(e) => setSelectedOperatorId(e.target.value)}
+                                    className="text-[11px] border border-gray-200 rounded-lg px-2 py-1.5 bg-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium min-w-[140px]"
+                                >
+                                    <option value="">Tất cả NV phụ trách</option>
+                                    {users.map(u => (
+                                        <option key={u.id} value={u.id}>{u.fullName || u.userName}</option>
+                                    ))}
+                                </select>
+
+                                <button
+                                    onClick={handleSearch}
+                                    className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-[11px] font-bold hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap"
+                                >
+                                    Lọc dữ liệu
+                                </button>
+                             </div>
                         </div>
 
                         {loading ? (
@@ -265,6 +340,12 @@ function CustomerList() {
                                                 </th>
                                                 <th scope="col" className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
                                                     Code Khách
+                                                </th>
+                                                <th scope="col" className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                                    Nhóm
+                                                </th>
+                                                <th scope="col" className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                                    NV phụ trách
                                                 </th>
                                                 <th scope="col" className="px-3 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
                                                     Thao tác
@@ -303,6 +384,16 @@ function CustomerList() {
                                                         <td className="px-3 py-2">
                                                             <div className="text-xs text-blue-600 font-bold">
                                                                 {customer.fullCustomerCode || "-"}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-3 py-2">
+                                                            <div className="text-[11px] text-purple-600 font-bold bg-purple-50 px-1.5 py-0.5 rounded-full inline-block">
+                                                                {customer.customerGroupName || "-"}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-3 py-2">
+                                                            <div className="text-[11px] text-orange-600 font-bold bg-orange-50 px-1.5 py-0.5 rounded-full inline-block">
+                                                                {customer.operatorUserName || "-"}
                                                             </div>
                                                         </td>
                                                         <td className="px-3 py-2 text-right" onClick={(e) => e.stopPropagation()}>
@@ -387,6 +478,7 @@ function CustomerList() {
                 saving={saving}
                 formData={formData}
                 onChange={handleInputChange}
+                groups={groups}
             />
 
             <EditCustomerModal
@@ -397,6 +489,7 @@ function CustomerList() {
                 loading={isEditLoading}
                 formData={formData}
                 onChange={handleInputChange}
+                groups={groups}
             />
 
             <DeleteConfirmModal

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Users, FileSpreadsheet, BarChart3, PieChart } from "lucide-react";
 import CustomerList from "./CustomerList";
 import MonthlyCustomerReconciliation from "./MonthlyCustomerReconciliation";
+import CustomerGroupList from "./CustomerGroupList";
 
 export default function CustomerManagementPage() {
   const [activeTab, setActiveTab] = useState("list");
@@ -11,6 +12,11 @@ export default function CustomerManagementPage() {
       key: "list",
       label: "Danh sách khách hàng",
       icon: <Users className="w-4 h-4" />,
+    },
+    {
+      key: "group",
+      label: "Nhóm",
+      icon: <Users className="w-4 h-4 text-blue-500" />,
     },
     {
       key: "reconciliation",
@@ -55,6 +61,7 @@ export default function CustomerManagementPage() {
       {/* Content */}
       <div className="min-h-[600px]">
         {activeTab === "list" && <CustomerList />}
+        {activeTab === "group" && <CustomerGroupList />}
         {activeTab === "reconciliation" && (
           <MonthlyCustomerReconciliation />
         )}

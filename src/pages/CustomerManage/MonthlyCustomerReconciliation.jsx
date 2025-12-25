@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import customerApi from "../../api/customerApi";
-import { Loader2 } from "lucide-react";
+import { Loader2, ChevronRight, ChevronDown } from "lucide-react";
 
 const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
     const [data, setData] = useState([]);
@@ -8,6 +8,7 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
     const [loadingMore, setLoadingMore] = useState(false);
     const [cursor, setCursor] = useState(null);
     const [hasNextPage, setHasNextPage] = useState(false);
+    const [expandedGroups, setExpandedGroups] = useState(new Set());
 
     // Default to current year and month
     const now = new Date();
@@ -38,13 +39,17 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
             const dayParam = day === "" ? null : Number(day);
             const res = await customerApi.getMonthlyReconciliation(year, month, 10, currentCursor, dayParam);
             if (res.success) {
+                const newData = res.data || [];
                 if (isInitial) {
-                    setData(res.data);
+                    setData(newData);
                 } else {
-                    setData(prev => [...prev, ...res.data]);
+                    setData(prev => [...prev, ...newData]);
                 }
-                setCursor(res.pageInfo.nextCursor);
-                setHasNextPage(res.pageInfo.hasNextPage);
+                
+                if (res.pageInfo) {
+                    setCursor(res.pageInfo.nextCursor);
+                    setHasNextPage(res.pageInfo.hasNextPage);
+                }
             }
         } catch (error) {
             console.error("Failed to fetch reconciliation data", error);
@@ -52,6 +57,18 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
             setLoading(false);
             setLoadingMore(false);
         }
+    };
+
+    const toggleGroup = (groupId) => {
+        setExpandedGroups(prev => {
+            const next = new Set(prev);
+            if (next.has(groupId)) {
+                next.delete(groupId);
+            } else {
+                next.add(groupId);
+            }
+            return next;
+        });
     };
 
     useEffect(() => {
@@ -141,59 +158,123 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
                             </tr>
                         ) : (
                             <>
-                                {data.map((item, index) => (
-                                    <tr 
-                                        key={`${item.invoiceId}-${index}`} 
-                                        className="hover:bg-gray-50 transition-colors group/row"
-                                    >
-                                        <td 
-                                            className="px-2 py-1 whitespace-nowrap border-r border-gray-50 relative overflow-hidden cursor-pointer hover:bg-blue-50 transition-colors group/cell"
-                                            onClick={() => onCustomerClick?.(item)}
-                                        >
-                                            <div className="flex items-center gap-2 relative z-10">
-                                                <div className="flex flex-col flex-1 min-w-0">
-                                                    <div className="text-[11px] font-medium text-gray-900 leading-tight truncate group-hover/cell:text-blue-700 transition-colors">{item.customerName}</div>
-                                                    <div className="text-[9px] text-secondary italic leading-tight truncate">{item.fullCustomerCode}</div>
-                                                </div>
-                                            </div>
-                                            {/* STAMP EFFECT */}
-                                            <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none opacity-20 group-hover/row:opacity-40 transition-opacity">
-                                                {item.status === 1 ? (
-                                                    <div className="border-2 border-red-600 text-red-600 px-1 py-0.5 rounded text-[8px] font-black uppercase -rotate-12 scale-110 tracking-tighter">
-                                                        ĐÃ CHỐT
+                                {data.map((item, index) => {
+                                    const isGroup = item.isGroup;
+                                    const isExpanded = expandedGroups.has(item.customerGroupId);
+                                    const hasChildren = item.children && item.children.length > 0;
+
+                                    return (
+                                        <React.Fragment key={`${item.invoiceId}-${item.customerId}-${item.customerGroupId}-${index}`}>
+                                            {/* Parent Row */}
+                                            <tr 
+                                                className={`${isGroup ? "bg-gray-50/80 font-bold" : "hover:bg-gray-50"} transition-colors group/row`}
+                                            >
+                                                <td 
+                                                    className="px-2 py-1 whitespace-nowrap border-r border-gray-50 relative overflow-hidden cursor-pointer hover:bg-blue-50 transition-colors group/cell"
+                                                    onClick={() => {
+                                                        if (isGroup) {
+                                                            toggleGroup(item.customerGroupId);
+                                                        } else {
+                                                            onCustomerClick?.(item);
+                                                        }
+                                                    }}
+                                                >
+                                                    <div className="flex items-center gap-1.5 relative z-10">
+                                                        {isGroup && (
+                                                            <div className="text-gray-400">
+                                                                {isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                                                            </div>
+                                                        )}
+                                                        <div className="flex flex-col flex-1 min-w-0">
+                                                            <div className={`text-[11px] text-gray-900 leading-tight truncate group-hover/cell:text-blue-700 transition-colors ${isGroup ? "font-bold" : "font-medium"}`}>
+                                                                {item.customerName}
+                                                            </div>
+                                                            <div className="text-[9px] text-secondary italic leading-tight truncate">{item.fullCustomerCode}</div>
+                                                        </div>
                                                     </div>
-                                                ) : (
-                                                    <div className="border-2 border-gray-400 text-gray-400 px-1 py-0.5 rounded text-[8px] font-black uppercase -rotate-12 scale-110 tracking-tighter">
-                                                        NHÁP
+                                                    {/* STAMP EFFECT */}
+                                                    <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none opacity-20 group-hover/row:opacity-40 transition-opacity">
+                                                        {item.status === 1 ? (
+                                                            <div className="border-2 border-red-600 text-red-600 px-1 py-0.5 rounded text-[8px] font-black uppercase -rotate-12 scale-110 tracking-tighter">
+                                                                ĐÃ CHỐT
+                                                            </div>
+                                                        ) : (
+                                                            <div className="border-2 border-gray-400 text-gray-400 px-1 py-0.5 rounded text-[8px] font-black uppercase -rotate-12 scale-110 tracking-tighter">
+                                                                NHÁP
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="px-2 py-1 whitespace-nowrap text-[11px] text-right text-gray-900">
-                                            {formatNumber(item.openingBalance)}
-                                        </td>
-                                        <td className="px-2 py-1 whitespace-nowrap text-[11px] text-right text-gray-600 font-semibold">
-                                            {formatNumber(item.totalSpend)}
-                                        </td>
-                                        <td className="px-2 py-1 whitespace-nowrap text-[11px] text-right text-gray-600 font-semibold border-r border-gray-50">
-                                            {formatNumber(item.totalFee)}
-                                        </td>
-                                        <td className="px-2 py-1 whitespace-nowrap text-[11px] text-right text-blue-600 font-black border-r border-gray-100">
-                                            {formatNumber(item.totalSpendWithFee)}
-                                        </td>
-                                        <td className="px-2 py-1 whitespace-nowrap text-[11px] text-right text-green-700 font-black border-r border-blue-200 bg-blue-50/40">
-                                            {formatNumber(item.paidInMonth)}
-                                        </td>
-                                        <td className="px-2 py-1 whitespace-nowrap text-[11px] text-right text-teal-700 font-black border-r border-blue-200 bg-blue-50/40">
-                                            {formatNumber(item.paidInMonthManual)}
-                                        </td>
-                                        <td className="px-2 py-1 whitespace-nowrap text-[11px] text-right font-black">
-                                            <span className={item.closingBalance < 0 ? "text-red-500" : "text-blue-700"}>
-                                                {formatNumber(item.closingBalance)}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
+                                                </td>
+                                                <td className="px-2 py-1 whitespace-nowrap text-[11px] text-right text-gray-900">
+                                                    {formatNumber(item.openingBalance)}
+                                                </td>
+                                                <td className="px-2 py-1 whitespace-nowrap text-[11px] text-right text-gray-600 font-semibold">
+                                                    {formatNumber(item.totalSpend)}
+                                                </td>
+                                                <td className="px-2 py-1 whitespace-nowrap text-[11px] text-right text-gray-600 font-semibold border-r border-gray-50">
+                                                    {formatNumber(item.totalFee)}
+                                                </td>
+                                                <td className="px-2 py-1 whitespace-nowrap text-[11px] text-right text-blue-600 font-black border-r border-gray-100">
+                                                    {formatNumber(item.totalSpendWithFee)}
+                                                </td>
+                                                <td className="px-2 py-1 whitespace-nowrap text-[11px] text-right text-green-700 font-black border-r border-blue-200 bg-blue-50/40">
+                                                    {formatNumber(item.paidInMonth)}
+                                                </td>
+                                                <td className="px-2 py-1 whitespace-nowrap text-[11px] text-right text-teal-700 font-black border-r border-blue-200 bg-blue-50/40">
+                                                    {formatNumber(item.paidInMonthManual)}
+                                                </td>
+                                                <td className="px-2 py-1 whitespace-nowrap text-[11px] text-right font-black">
+                                                    <span className={item.closingBalance < 0 ? "text-red-500" : "text-blue-700"}>
+                                                        {formatNumber(item.closingBalance)}
+                                                    </span>
+                                                </td>
+                                            </tr>
+
+                                            {/* Children Rows */}
+                                            {isGroup && isExpanded && hasChildren && item.children.map((child, cIdx) => (
+                                                <tr 
+                                                    key={`child-${child.invoiceId}-${child.customerId}-${cIdx}`}
+                                                    className="hover:bg-blue-50/30 transition-colors group/row bg-white"
+                                                >
+                                                    <td 
+                                                        className="px-2 py-1 whitespace-nowrap border-r border-gray-50 relative overflow-hidden cursor-pointer hover:bg-blue-50 transition-colors group/cell pl-6"
+                                                        onClick={() => onCustomerClick?.(child)}
+                                                    >
+                                                        <div className="flex items-center gap-2 relative z-10">
+                                                            <div className="flex flex-col flex-1 min-w-0">
+                                                                <div className="text-[11px] font-medium text-gray-700 leading-tight truncate group-hover/cell:text-blue-700 transition-colors">{child.customerName}</div>
+                                                                <div className="text-[9px] text-secondary italic leading-tight truncate">{child.fullCustomerCode}</div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-2 py-1 whitespace-nowrap text-[10px] text-right text-gray-500 italic">
+                                                        {formatNumber(child.openingBalance)}
+                                                    </td>
+                                                    <td className="px-2 py-1 whitespace-nowrap text-[10px] text-right text-gray-500 italic">
+                                                        {formatNumber(child.totalSpend)}
+                                                    </td>
+                                                    <td className="px-2 py-1 whitespace-nowrap text-[10px] text-right text-gray-500 italic border-r border-gray-50">
+                                                        {formatNumber(child.totalFee)}
+                                                    </td>
+                                                    <td className="px-2 py-1 whitespace-nowrap text-[10px] text-right text-gray-700 font-bold border-r border-gray-100">
+                                                        {formatNumber(child.totalSpendWithFee)}
+                                                    </td>
+                                                    <td className="px-2 py-1 whitespace-nowrap text-[10px] text-right text-green-600 font-bold border-r border-blue-100 bg-blue-50/20">
+                                                        {formatNumber(child.paidInMonth)}
+                                                    </td>
+                                                    <td className="px-2 py-1 whitespace-nowrap text-[10px] text-right text-teal-600 font-bold border-r border-blue-100 bg-blue-50/20">
+                                                        {formatNumber(child.paidInMonthManual)}
+                                                    </td>
+                                                    <td className="px-2 py-1 whitespace-nowrap text-[10px] text-right font-bold">
+                                                        <span className={child.closingBalance < 0 ? "text-red-400" : "text-blue-600"}>
+                                                            {formatNumber(child.closingBalance)}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </React.Fragment>
+                                    );
+                                })}
                                 <tr ref={lastElementRef}>
                                     <td colSpan="8" className="p-2 text-center">
                                         {loadingMore && <Loader2 className="h-5 w-5 animate-spin mx-auto text-primary-dark" />}

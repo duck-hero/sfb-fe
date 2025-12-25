@@ -1,4 +1,4 @@
-  const CreateCustomerModal = ({ open, onClose, onSave, saving, formData, onChange }) => {
+  const CreateCustomerModal = ({ open, onClose, onSave, saving, formData, onChange, groups }) => {
   if (!open) return null;
 
   return (
@@ -29,6 +29,23 @@
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 outline-none"
               placeholder="Nhập agency code"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nhóm khách hàng</label>
+            <select
+              name="customerGroupId"
+              value={formData.customerGroupId || ""}
+              onChange={onChange}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+            >
+              <option value="">-- Chọn nhóm khách hàng --</option>
+              {groups?.map((group) => (
+                <option key={group.id} value={group.id}>
+                  {group.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 

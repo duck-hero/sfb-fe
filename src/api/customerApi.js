@@ -4,7 +4,7 @@ import axiosInstance from "./axiosInstance";
 const customerApi = {
   // Lấy danh sách khách hàng (có phân trang & tìm kiếm theo Name)
   // Customer/GetPagedListCustomer?Name=a&PageNumber=1&PageSize=10
-  getCustomerList: async (pageNumber = 1, pageSize = 10, name = "") => {
+  getCustomerList: async (pageNumber = 1, pageSize = 10, name = null, customerGroupId = null, operatorUserId = null) => {
     try {
       const response = await axiosInstance.get(
         `${api}/Customer/GetPagedListCustomer`,
@@ -12,7 +12,9 @@ const customerApi = {
           params: {
             PageNumber: pageNumber,
             PageSize: pageSize,
-            Name: name,
+            Name: name || null,
+            CustomerGroupId: customerGroupId || null,
+            OperatorUserId: operatorUserId || null,
           },
         }
       );
@@ -47,6 +49,7 @@ const customerApi = {
         {
           name: data.name,
           agencyCode: data.agencyCode,
+          customerGroupId: data.customerGroupId,
         }
       );
       return response.data;
@@ -65,6 +68,7 @@ const customerApi = {
           id: id,
           name: data.name,
           agencyCode: data.agencyCode,
+          customerGroupId: data.customerGroupId,
         }
       );
       return response.data;
