@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Plus, Trash, SquarePen, RotateCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Trash, SquarePen, RotateCw, ChevronLeft, ChevronRight, BarChart3 } from "lucide-react";
 import { toast } from "react-toastify";
 import customerGroupApi from "../../api/customerGroupApi";
 import CustomerGroupModal from "./CustomerGroupModal";
+import GroupSpendTrackingModal from "./GroupSpendTrackingModal";
 import DeleteConfirmModal from "../../components/Modal/DeleteConfirmModal";
 
 const CustomerGroupList = () => {
@@ -16,6 +17,7 @@ const CustomerGroupList = () => {
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isSpendModalOpen, setIsSpendModalOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -55,6 +57,11 @@ const CustomerGroupList = () => {
   const handleOpenDelete = (group) => {
     setSelectedGroup(group);
     setIsDeleteModalOpen(true);
+  };
+
+  const handleOpenSpendTracking = (group) => {
+    setSelectedGroup(group);
+    setIsSpendModalOpen(true);
   };
 
   const handleSave = async (data) => {
@@ -144,6 +151,13 @@ const CustomerGroupList = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
                         <button
+                          onClick={() => handleOpenSpendTracking(group)}
+                          className="p-2 text-primary hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Theo dõi chi tiêu nhóm"
+                        >
+                          <BarChart3 className="w-4 h-4" />
+                        </button>
+                        <button
                           onClick={() => handleOpenEdit(group)}
                           className="p-2 text-warning hover:bg-orange-50 rounded-lg transition-colors"
                           title="Sửa"
@@ -195,13 +209,18 @@ const CustomerGroupList = () => {
         </div>
       )}
 
-      {/* Modals */}
       <CustomerGroupModal
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={handleSave}
         saving={saving}
         initialData={selectedGroup}
+      />
+
+      <GroupSpendTrackingModal
+        open={isSpendModalOpen}
+        group={selectedGroup}
+        onClose={() => setIsSpendModalOpen(false)}
       />
 
       <DeleteConfirmModal

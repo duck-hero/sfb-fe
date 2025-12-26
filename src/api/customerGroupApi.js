@@ -82,6 +82,64 @@ const customerGroupApi = {
       throw handleApiError(error);
     }
   },
+
+  // Lấy lưới chi tiêu nhóm
+  getSpendGrid: async (groupId, year, month) => {
+    try {
+      const response = await axiosInstance.get(
+        `${api}/customers/groups/${groupId}/spend-grid`,
+        {
+          params: { year, month },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  // Lấy danh sách thanh toán thủ công cho nhóm
+  getManualPayments: async (groupId, year, month) => {
+    try {
+      const response = await axiosInstance.get(
+        `${api}/CustomerGroup/GetManualPayments`,
+        {
+          params: { CustomerGroupId: groupId, Year: year, Month: month },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  // Tạo thanh toán thủ công cho nhóm
+  createManualPayment: async (data) => {
+    try {
+      const response = await axiosInstance.post(
+        `${api}/CustomerGroup/CreateManualPayment`,
+        data
+      );
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  // Xóa thanh toán thủ công cho nhóm
+  deleteManualPayment: async (id) => {
+    try {
+      const response = await axiosInstance.delete(
+        `${api}/CustomerGroup/DeleteManualPayment`,
+        {
+          params: { Id: id },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 };
 
 export default customerGroupApi;
