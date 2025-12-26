@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import customerApi from "../../api/customerApi";
+import customerGroupApi from "../../api/customerGroupApi";
 import bmSourceApi from "../../api/bmSourceApi";
 import bankAccountApi from "../../api/bankAccountApi";
 import accountApi from "../../api/accountApi";
@@ -39,8 +40,16 @@ export default function EditFinancialTransactionModal({
       const accObj = formData.accountingObject || "";
       setSearchTerm(accObj);
 
-      if (formData.isCustomerPay) {
-        setObjectType("KH");
+      if (formData.paymentSource) {
+        const sourceMap = {
+          1: "KH",
+          2: "NK",
+          3: "NCC",
+          4: "CP",
+          5: "BANK",
+          6: "NV"
+        };
+        setObjectType(sourceMap[formData.paymentSource] || null);
       } else if (["CP AGC", "Mua BM", "Mua TK"].includes(accObj)) {
         setObjectType("CP");
       } else {
@@ -67,6 +76,14 @@ export default function EditFinancialTransactionModal({
           case "KH":
             res = await customerApi.getCustomerList(1, 15, searchTerm);
             setDataList(res.data || []);
+            break;
+          case "NK":
+            res = await customerGroupApi.getPagedList(1, 15);
+            // Filter locally if API doesn't support search - keeping it simple
+            const groups = (res.data || []).filter(g => 
+              g.name?.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setDataList(groups);
             break;
           case "NCC":
             res = await bmSourceApi.getBmSourceList(1, 15, searchTerm);
@@ -104,11 +121,22 @@ export default function EditFinancialTransactionModal({
     setSearchTerm("");
     setShowDropdown(false);
     
-    if (newType === "KH") {
-      onChange("isCustomerPay", true);
-    } else {
-      onChange("isCustomerPay", false);
+    // Payment source mapping: 1:KH, 2:NK, 3:NCC, 4:CP, 5:BANK, 6:NV
+    const sourceMap = {
+      "KH": 1,
+      "NK": 2,
+      "NCC": 3,
+      "CP": 4,
+      "BANK": 5,
+      "NV": 6
+    };
+    
+    const pSource = sourceMap[newType] || null;
+    onChange("paymentSource", pSource);
+    
+    if (newType !== "KH" && newType !== "NK") {
       onChange("customerId", null);
+      onChange("customerGroupId", null);
       if (!newType) {
          // Revert search term to current object name if going to manual
          setSearchTerm(formData.accountingObject || "");
@@ -116,19 +144,28 @@ export default function EditFinancialTransactionModal({
     }
     
     // Only reset accountingObject if we are switching to a searchable type
-    if (newType && newType !== "KH") {
-      onChange("accountingObject", "");
+    if (newType && !["KH", "NK", "CP", "NCC", "BANK", "NV"].includes(objectType)) {
+       // logic improvement: clear if we are entering a Searchable type 
+    }
+    
+    if (newType) {
+       onChange("accountingObject", "");
     }
   };
 
   const handleSelectItem = (item) => {
     let name = "";
     let id = null;
+    let groupId = null;
 
     switch (objectType) {
       case "KH":
-        name = item.customerCode;
+        name = item.fullCustomerCode;
         id = item.id;
+        break;
+      case "NK":
+        name = item.name;
+        groupId = item.id;
         break;
       case "NCC":
         name = item.sourceName;
@@ -145,7 +182,16 @@ export default function EditFinancialTransactionModal({
     }
 
     onChange("accountingObject", name);
-    if (id) onChange("customerId", id);
+    if (objectType === "KH") {
+      onChange("customerId", id);
+      onChange("customerGroupId", null);
+    } else if (objectType === "NK") {
+      onChange("customerGroupId", groupId);
+      onChange("customerId", null);
+    } else {
+      onChange("customerId", null);
+      onChange("customerGroupId", null);
+    }
     setSearchTerm(name);
     setShowDropdown(false);
   };
@@ -169,9 +215,10 @@ export default function EditFinancialTransactionModal({
                 <label className="block text-sm font-bold text-gray-700 mb-2">
                   Loại đối tượng
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   {[
                     { id: "KH", label: "Khách hàng" },
+                    { id: "NK", label: "Nhóm khách" },
                     { id: "NCC", label: "NCC" },
                     { id: "CP", label: "Chi phí" },
                     { id: "BANK", label: "Bank nội bộ" },
@@ -226,6 +273,7 @@ export default function EditFinancialTransactionModal({
                 <div className="relative" ref={dropdownRef}>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     {objectType === "KH" ? "Tìm khách hàng" : 
+                     objectType === "NK" ? "Tìm nhóm khách" : 
                      objectType === "NCC" ? "Tìm NCC" : 
                      objectType === "BANK" ? "Tìm Bank" : "Tìm nhân viên"}
                   </label>
@@ -233,7 +281,7 @@ export default function EditFinancialTransactionModal({
                     <input
                       type="text"
                       className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 outline-none pr-10"
-                      placeholder={`Tìm kiếm ${objectType === "KH" ? "khách" : objectType}...`}
+                      placeholder={`Tìm kiếm ${objectType === "KH" ? "khách" : objectType === "NK" ? "nhóm khách" : objectType}...`}
                       value={searchTerm}
                       onChange={(e) => {
                         setSearchTerm(e.target.value);
@@ -267,6 +315,7 @@ export default function EditFinancialTransactionModal({
                                 <span className="text-[10px] text-gray-400">{item.fullCustomerCode} - {item.name}</span>
                               </div>
                             )}
+                            {objectType === "NK" && <span>{item.name}</span>}
                             {objectType === "NCC" && <span>{item.sourceName}</span>}
                             {objectType === "BANK" && (
                               <div className="flex flex-col">

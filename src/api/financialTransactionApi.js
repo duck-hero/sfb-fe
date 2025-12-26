@@ -52,8 +52,9 @@ const financialTransactionApi = {
       } else {
           // Spread valid fields
           if (data.accountingObject !== undefined) payload.accountingObject = data.accountingObject;
-          if (data.isCustomerPay !== undefined) payload.isCustomerPay = data.isCustomerPay;
           if (data.customerId !== undefined) payload.customerId = data.customerId;
+          if (data.customerGroupId !== undefined) payload.customerGroupId = data.customerGroupId;
+          if (data.paymentSource !== undefined) payload.paymentSource = data.paymentSource;
       }
 
       const response = await axiosInstance.put(
