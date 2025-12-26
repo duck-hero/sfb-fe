@@ -459,23 +459,7 @@ const handleEditSave = async (dataToSend) => {
                   Tên tài khoản
                 </th>
                 <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-900  tracking-wider text-primary-darkest">
-                  <div className="flex items-center justify-center gap-1">
-                    Dư nợ hiện tại
-                    <a 
-                      href="https://acb.duckhero.store/scan-account?token=999999999"
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      title="Quét toàn bộ"
-                    >
-                      <RefreshCcw className="h-4 w-4 text-blue-600 cursor-pointer hover:text-blue-800" />
-                    </a>
-                  </div>
-                </th>
-                <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-900  tracking-wider text-primary-darkest">
-                  Đơn vị tiền tệ
-                </th>
-                <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-900  tracking-wider text-primary-darkest">
-                  Thời gian cập nhật dư nợ
+                  Chi tiêu hiện tại
                 </th>
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-900  tracking-wider text-primary-darkest">
                   BM Gốc
@@ -497,7 +481,7 @@ const handleEditSave = async (dataToSend) => {
             <tbody className="bg-white divide-y divide-gray-200">
               {adsAccounts.length === 0 && (
                 <tr>
-                   <td colSpan="11" className="px-3 py-3 text-center text-gray-500 text-sm">
+                   <td colSpan="9" className="px-3 py-3 text-center text-gray-500 text-sm">
                       Không tìm thấy dữ liệu
                    </td>
                 </tr>
@@ -517,31 +501,14 @@ const handleEditSave = async (dataToSend) => {
                   <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 max-w-[200px] truncate" title={x.adAccountName}>
                     {x.adAccountName}
                   </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-700">
-                    <div className="flex items-center justify-center gap-2 group">
-                       <span className="cursor-default">{x.currentDebt ? Number(x.currentDebt).toLocaleString('vi-VN') : 0}</span>
-                       <a 
-                          href={`https://acb.duckhero.store/scan-account?token=999999999&id=${x.id}`} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          title="Quét dư nợ tài khoản"
-                          className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                       >
-                          <RefreshCcw className="h-4 w-4 text-blue-600 cursor-pointer" />
-                       </a>
-                    </div>
-                  </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-700">
-                    <div className="flex items-center justify-center gap-1 font-medium">
-                      {x.currencyCode}
-                      {x.currencyCode === 'USD' && (
-                         <DollarSign className="h-4 w-4 text-yellow-600" />
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-xs text-blue-600">
-                    <div className="text-center">
-                      {formatDate(x.debtUpdatedAt)}
+                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-700 text-center">
+                    <div className="flex flex-col items-center leading-tight">
+                      <span className="font-medium text-[13px] text-gray-900">
+                        {x.currentSpend ? Number(x.currentSpend).toLocaleString('vi-VN') : 0}
+                      </span>
+                      <span className="italic text-[10px] text-gray-500 -mt-0.5">
+                        {formatDate(x.spendUpdatedAt)}
+                      </span>
                     </div>
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-700">
@@ -607,7 +574,7 @@ const handleEditSave = async (dataToSend) => {
             {/* Footer Pagination */}
             <tfoot className="bg-white">
               <tr>
-                <td colSpan="11" className="px-3 py-2">
+                <td colSpan="9" className="px-3 py-2">
                   <div className="flex justify-end items-center text-xs">
                     {/* Select Page Size */}
                     <div className="flex items-center gap-1.5 mr-4">

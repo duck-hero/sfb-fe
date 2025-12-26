@@ -202,23 +202,22 @@ export default function DetailAdsAccountModal({
                               className="col-span-2"
                             />
 
-                            {/* Dư nợ hiện tại */}
-                            <DetailField
-                              label="Dư nợ hiện tại"
-                              value={formatCurrency(accountData?.currentDebt)}
-                            />
-                            {/* Đơn vị tiền tệ */}
-                            <DetailField
-                              label="Đơn vị tiền tệ"
-                              value={accountData?.currencyCode}
-                            />
-
-                            {/* Thời gian cập nhật dư nợ */}
-                            <DetailField
-                              label="Thời gian cập nhật dư nợ"
-                              value={formatDate(accountData?.debtUpdatedAt)}
-                            //   className="col-span-2"
-                            />
+                            {/* Chi tiêu hiện tại */}
+                            <div className="flex flex-col">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Chi tiêu hiện tại
+                              </label>
+                              <div className="w-full h-10 flex flex-col justify-center bg-gray-50 border border-gray-300 rounded-lg px-3">
+                                <div className="flex flex-col leading-tight">
+                                  <span className="font-medium text-[13px] text-gray-900">
+                                    {formatCurrency(accountData?.currentSpend)}
+                                  </span>
+                                  <span className="italic text-[10px] text-gray-500 -mt-0.5">
+                                    {formatDate(accountData?.spendUpdatedAt)}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
 
                             {/* Tổng thẻ đã add */}
                             <DetailField

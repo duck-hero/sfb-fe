@@ -1,9 +1,19 @@
-import React from 'react';
-
 const formatCurrency = (amount) => {
-    if (amount === null || amount === undefined) return "-";
+    if (amount === null || amount === undefined) return "0";
     return new Intl.NumberFormat('vi-VN', { style: 'decimal', maximumFractionDigits: 0 }).format(amount);
 };
+
+// const formatDate = (dateString) => {
+//     if (!dateString) return "N/A";
+//     const date = new Date(dateString);
+//     return date.toLocaleString('vi-VN', {
+//         day: '2-digit',
+//         month: '2-digit',
+//         year: 'numeric',
+//         hour: '2-digit',
+//         minute: '2-digit'
+//     });
+// };
 
 const AdAccountReconciliationTable = ({ data, loading }) => {
     if (loading) {
@@ -36,6 +46,7 @@ const AdAccountReconciliationTable = ({ data, loading }) => {
     }
 
     const totalBankDebit = data.rows.reduce((sum, r) => sum + (r.bankDebit || 0), 0);
+    const totalCurrentSpend = data.rows.reduce((sum, r) => sum + (r.currentSpend || 0), 0);
     const totalAllocatedSpend = data.rows.reduce((sum, r) => sum + (r.allocatedSpend || 0), 0);
     const totalVariance = data.rows.reduce((sum, r) => sum + (r.variance || 0), 0);
 
@@ -59,7 +70,8 @@ const AdAccountReconciliationTable = ({ data, loading }) => {
                         <tr>
                             <th className="px-3 py-2 text-left text-[10px] font-bold text-gray-600 uppercase tracking-wider border-r border-gray-100">Tên TK</th>
                             <th className="px-3 py-2 text-left text-[10px] font-bold text-gray-600 uppercase tracking-wider border-r border-gray-100">ID TK</th>
-                            <th className="px-3 py-2 text-right text-[10px] font-bold text-gray-600 uppercase tracking-wider border-r border-gray-100">Pay Facebook</th>
+                             <th className="px-3 py-2 text-right text-[10px] font-bold text-gray-600 uppercase tracking-wider border-r border-gray-100">Pay Facebook</th>
+                             <th className="px-3 py-2 text-center text-[10px] font-bold text-gray-600 uppercase tracking-wider border-r border-gray-100">Chi tiêu thực tế</th>
                             <th className="px-3 py-2 text-right text-[10px] font-bold text-gray-600 uppercase tracking-wider border-r border-gray-100">Chi tiêu ghi nhận</th>
                             <th className="px-3 py-2 text-right text-[10px] font-bold text-gray-600 uppercase tracking-wider border-r border-gray-100">Chênh lệch</th>
                             <th className="px-3 py-2 text-center text-[10px] font-bold text-gray-600 uppercase tracking-wider border-r border-gray-100">KH</th>
@@ -77,9 +89,14 @@ const AdAccountReconciliationTable = ({ data, loading }) => {
                                 <td className="px-3 py-2 border-r border-gray-50">
                                     <div className="text-gray-500 font-mono text-[10px]">{row.adAccountIdNumber}</div>
                                 </td>
-                                <td className="px-3 py-2 text-right border-r border-gray-50">
-                                    <div className="font-semibold text-gray-900">{formatCurrency(row.bankDebit)}</div>
-                                </td>
+                                 <td className="px-3 py-2 text-right border-r border-gray-50">
+                                     <div className="font-semibold text-gray-900">{formatCurrency(row.bankDebit)}</div>
+                                 </td>
+                                 <td className="px-3 py-2 text-center border-r border-gray-50">
+                                     <div className="font-semibold text-[11px] text-gray-900">
+                                         {formatCurrency(row.currentSpend)}
+                                     </div>
+                                 </td>
                                 <td className="px-3 py-2 text-right border-r border-gray-50">
                                     <div className="font-semibold text-blue-600">{formatCurrency(row.allocatedSpend)}</div>
                                 </td>
@@ -117,8 +134,12 @@ const AdAccountReconciliationTable = ({ data, loading }) => {
                     </div>
                     <div className="flex gap-6 items-center">
                         <div className="flex flex-col items-end">
-                            <span className="text-[9px] text-gray-400 uppercase font-bold tracking-wider">Thực tế</span>
+                            <span className="text-[9px] text-gray-400 uppercase font-bold tracking-wider">Pay FB</span>
                             <span className="font-bold text-gray-800">{formatCurrency(totalBankDebit)}</span>
+                        </div>
+                        <div className="flex flex-col items-end">
+                            <span className="text-[9px] text-gray-400 uppercase font-bold tracking-wider">Chi tiêu FB</span>
+                            <span className="font-bold text-gray-900">{formatCurrency(totalCurrentSpend)}</span>
                         </div>
                         <div className="flex flex-col items-end">
                             <span className="text-[9px] text-gray-400 uppercase font-bold tracking-wider">Ghi nhận</span>
