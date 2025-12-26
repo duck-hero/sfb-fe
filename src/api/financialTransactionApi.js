@@ -11,7 +11,9 @@ const financialTransactionApi = {
     transactionCode,
     transactionType,
     bankAccountId,
-    bankAccountType
+    bankAccountType,
+    amount,
+    accountingObject
   ) => {
     try {
       const params = {};
@@ -30,6 +32,8 @@ const financialTransactionApi = {
       if (bankAccountType !== null && bankAccountType !== undefined) {
         params.BankAccountType = bankAccountType;
       }
+      if (amount) params.Amount = amount;
+      if (accountingObject) params.AccountingObject = accountingObject;
 
       const response = await axiosInstance.get(
         `${api}/FinancialTransaction/GetFinancialTransactionByCursor`,
