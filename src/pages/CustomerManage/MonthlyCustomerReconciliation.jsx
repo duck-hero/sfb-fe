@@ -11,6 +11,8 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
     const [cursor, setCursor] = useState(null);
     const [hasNextPage, setHasNextPage] = useState(false);
     const [expandedGroups, setExpandedGroups] = useState(new Set());
+    const [groupChildren, setGroupChildren] = useState({});
+    const [loadingGroups, setLoadingGroups] = useState(new Set());
     const [isSpendModalOpen, setIsSpendModalOpen] = useState(false);
     const [selectedCustomer, setSelectedCustomer] = useState(null);
 
@@ -49,7 +51,7 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
                 } else {
                     setData(prev => [...prev, ...newData]);
                 }
-                
+
                 if (res.pageInfo) {
                     setCursor(res.pageInfo.nextCursor);
                     setHasNextPage(res.pageInfo.hasNextPage);
@@ -63,16 +65,41 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
         }
     };
 
-    const toggleGroup = (groupId) => {
+    const toggleGroup = async (groupId) => {
+        const isCurrentlyExpanded = expandedGroups.has(groupId);
+
         setExpandedGroups(prev => {
             const next = new Set(prev);
-            if (next.has(groupId)) {
+            if (isCurrentlyExpanded) {
                 next.delete(groupId);
             } else {
                 next.add(groupId);
             }
             return next;
         });
+
+        // If expanding and data not yet fetched
+        if (!isCurrentlyExpanded && !groupChildren[groupId] && !loadingGroups.has(groupId)) {
+            setLoadingGroups(prev => new Set(prev).add(groupId));
+            try {
+                const res = await customerApi.getGroupSpendSummary(groupId, year, month);
+                if (res.success && res.data) {
+                    setGroupChildren(prev => ({
+                        ...prev,
+                        [groupId]: res.data.customers || []
+                    }));
+                }
+            } catch (error) {
+                console.error(`Failed to fetch group details for ${groupId}`, error);
+                toast.error("Không thể tải chi tiết nhóm");
+            } finally {
+                setLoadingGroups(prev => {
+                    const next = new Set(prev);
+                    next.delete(groupId);
+                    return next;
+                });
+            }
+        }
     };
 
     const handleOpenSpendModal = (customer) => {
@@ -95,7 +122,7 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
 
     const years = Array.from({ length: 5 }, (_, i) => now.getFullYear() - i);
     const months = Array.from({ length: 12 }, (_, i) => i + 1);
-    
+
     // Calculate days in the selected month/year
     const daysInMonth = new Date(year, month, 0).getDate();
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
@@ -173,16 +200,19 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
                             <>
                                 {data.map((item, index) => {
                                     const isGroup = item.isGroup;
-                                    const isExpanded = expandedGroups.has(item.customerGroupId);
-                                    const hasChildren = item.children && item.children.length > 0;
+                                    const groupId = item.customerGroupId;
+                                    const isExpanded = expandedGroups.has(groupId);
+                                    const isLoadingGroup = loadingGroups.has(groupId);
+                                    const children = groupChildren[groupId] || [];
+                                    const hasChildren = children.length > 0;
 
                                     return (
                                         <React.Fragment key={`${item.invoiceId}-${item.customerId}-${item.customerGroupId}-${index}`}>
                                             {/* Parent Row */}
-                                            <tr 
+                                            <tr
                                                 className={`${isGroup ? "bg-gray-50/80 font-bold" : "hover:bg-gray-50"} transition-colors group/row`}
                                             >
-                                                <td 
+                                                <td
                                                     className="px-2 py-1 whitespace-nowrap border-r border-gray-50 relative overflow-hidden cursor-pointer hover:bg-blue-50 transition-colors group/cell"
                                                     onClick={() => {
                                                         if (isGroup) {
@@ -193,12 +223,12 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
                                                     }}
                                                 >
                                                     <div className={`flex items-center gap-1.5 relative z-10 ${!isGroup ? "cursor-pointer" : ""}`}
-                                                         onClick={(e) => {
-                                                             if (!isGroup) {
-                                                                 e.stopPropagation();
-                                                                 handleOpenSpendModal(item);
-                                                             }
-                                                         }}
+                                                        onClick={(e) => {
+                                                            if (!isGroup) {
+                                                                e.stopPropagation();
+                                                                handleOpenSpendModal(item);
+                                                            }
+                                                        }}
                                                     >
                                                         {isGroup && (
                                                             <div className="text-gray-400">
@@ -250,13 +280,22 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
                                                 </td>
                                             </tr>
 
+                                            {/* Loading Child Rows */}
+                                            {isGroup && isExpanded && isLoadingGroup && (
+                                                <tr>
+                                                    <td colSpan="8" className="px-3 py-4 text-center">
+                                                        <Loader2 className="h-4 w-4 animate-spin mx-auto text-blue-500" />
+                                                    </td>
+                                                </tr>
+                                            )}
+
                                             {/* Children Rows */}
-                                            {isGroup && isExpanded && hasChildren && item.children.map((child, cIdx) => (
-                                                <tr 
-                                                    key={`child-${child.invoiceId}-${child.customerId}-${cIdx}`}
+                                            {isGroup && isExpanded && !isLoadingGroup && hasChildren && children.map((child, cIdx) => (
+                                                <tr
+                                                    key={`child-${groupId}-${child.customerId}-${cIdx}`}
                                                     className="hover:bg-blue-50/30 transition-colors group/row bg-white"
                                                 >
-                                                    <td 
+                                                    <td
                                                         className="px-2 py-1 whitespace-nowrap border-r border-gray-50 relative overflow-hidden cursor-pointer hover:bg-blue-50 transition-colors group/cell pl-6"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
@@ -268,12 +307,12 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
                                                                 <div className="text-[11px] font-medium text-blue-600 hover:text-blue-800 hover:underline leading-tight truncate transition-colors">
                                                                     {child.customerName}
                                                                 </div>
-                                                                <div className="text-[9px] text-secondary italic leading-tight truncate">{child.fullCustomerCode}</div>
+                                                                <div className="text-[9px] text-secondary italic leading-tight truncate">{child.customerCode}</div>
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    <td className="px-2 py-1 whitespace-nowrap text-[10px] text-right text-gray-500 italic">
-                                                        {formatNumber(child.openingBalance)}
+                                                    <td className="px-2 py-1 whitespace-nowrap text-[10px] text-right text-gray-400 italic">
+                                                        -
                                                     </td>
                                                     <td className="px-2 py-1 whitespace-nowrap text-[10px] text-right text-gray-500 italic">
                                                         {formatNumber(child.totalSpend)}
@@ -284,19 +323,26 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
                                                     <td className="px-2 py-1 whitespace-nowrap text-[10px] text-right text-gray-700 font-bold border-r border-gray-100">
                                                         {formatNumber(child.totalSpendWithFee)}
                                                     </td>
-                                                    <td className="px-2 py-1 whitespace-nowrap text-[10px] text-right text-green-600 font-bold border-r border-blue-100 bg-blue-50/20">
-                                                        {formatNumber(child.paidInMonth)}
+                                                    <td className="px-2 py-1 whitespace-nowrap text-[10px] text-right text-gray-400 italic border-r border-blue-100 bg-blue-50/20">
+                                                        -
                                                     </td>
-                                                    <td className="px-2 py-1 whitespace-nowrap text-[10px] text-right text-teal-600 font-bold border-r border-blue-100 bg-blue-50/20">
-                                                        {formatNumber(child.paidInMonthManual)}
+                                                    <td className="px-2 py-1 whitespace-nowrap text-[10px] text-right text-gray-400 italic border-r border-blue-100 bg-blue-50/20">
+                                                        -
                                                     </td>
-                                                    <td className="px-2 py-1 whitespace-nowrap text-[10px] text-right font-bold">
-                                                        <span className={child.closingBalance < 0 ? "text-red-400" : "text-blue-600"}>
-                                                            {formatNumber(child.closingBalance)}
-                                                        </span>
+                                                    <td className="px-2 py-1 whitespace-nowrap text-[10px] text-right text-gray-400 italic font-bold">
+                                                        -
                                                     </td>
                                                 </tr>
                                             ))}
+
+                                            {/* Empty Child Rows */}
+                                            {isGroup && isExpanded && !isLoadingGroup && !hasChildren && (
+                                                <tr>
+                                                    <td colSpan="8" className="px-3 py-2 text-center text-[10px] text-gray-400 italic">
+                                                        Không có khách hàng trong nhóm
+                                                    </td>
+                                                </tr>
+                                            )}
                                         </React.Fragment>
                                     );
                                 })}
@@ -311,7 +357,7 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
                 </table>
             </div>
 
-            <SpendTrackingModal 
+            <SpendTrackingModal
                 open={isSpendModalOpen}
                 onClose={() => setIsSpendModalOpen(false)}
                 customer={selectedCustomer}

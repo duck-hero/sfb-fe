@@ -137,7 +137,7 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
               res = await customerGroupApi.getPagedList(1, 15);
               let itemsNK = res.data || [];
               if (searchTerm) {
-                itemsNK = itemsNK.filter(g => 
+                itemsNK = itemsNK.filter(g =>
                   g.name?.toLowerCase().includes(searchTerm.toLowerCase())
                 );
               }
@@ -156,8 +156,8 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
               const itemsNV = res.items || res.data || [];
               let filteredNV = itemsNV;
               if (searchTerm) {
-                filteredNV = itemsNV.filter(u => 
-                  u.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                filteredNV = itemsNV.filter(u =>
+                  u.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                   u.userName?.toLowerCase().includes(searchTerm.toLowerCase())
                 );
               }
@@ -404,7 +404,7 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
               ))}
             </select>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Số tiền
@@ -462,9 +462,9 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
                 {searchTerm && (
                   <button
                     onClick={() => {
-                        setSearchTerm("");
-                        handleFilterChange("accountingObject", "");
-                        setShowDropdown(false);
+                      setSearchTerm("");
+                      handleFilterChange("accountingObject", "");
+                      setShowDropdown(false);
                     }}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
@@ -476,15 +476,15 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
               {/* Dropdown Results */}
               {showDropdown && objectType === "CP" && (
                 <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                    {["CP AGC", "Mua BM", "Mua TK"].map(item => (
-                        <div
-                            key={item}
-                            className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm font-medium"
-                            onClick={() => handleSelectItem(item)}
-                        >
-                            {item}
-                        </div>
-                    ))}
+                  {["CP AGC", "Mua BM", "Mua TK"].map(item => (
+                    <div
+                      key={item}
+                      className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm font-medium"
+                      onClick={() => handleSelectItem(item)}
+                    >
+                      {item}
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -496,28 +496,28 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
                       className="px-4 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-none"
                       onClick={() => handleSelectItem(item)}
                     >
-                        <div className="flex flex-col">
-                            {objectType === "KH" && (
-                                <>
-                                    <span className="text-xs font-bold text-gray-900">{item.customerCode}</span>
-                                    <span className="text-[10px] text-gray-500">{item.fullCustomerCode} - {item.name}</span>
-                                </>
-                            )}
-                            {objectType === "NK" && <span className="text-xs font-bold">{item.name}</span>}
-                            {objectType === "NCC" && <span className="text-xs font-bold">{item.sourceName}</span>}
-                            {objectType === "BANK" && (
-                                <>
-                                    <span className="text-xs font-bold">{item.code}</span>
-                                    <span className="text-[10px] text-gray-500">{item.accountBankNumber} - {item.accountBankHolderName}</span>
-                                </>
-                            )}
-                            {objectType === "NV" && (
-                                <>
-                                    <span className="text-xs font-bold">{item.code}</span>
-                                    <span className="text-[10px] text-gray-500">{item.userName} - {item.fullName}</span>
-                                </>
-                            )}
-                        </div>
+                      <div className="flex flex-col">
+                        {objectType === "KH" && (
+                          <>
+                            <span className="text-xs font-bold text-gray-900">{item.customerCode}</span>
+                            <span className="text-[10px] text-gray-500">{item.fullCustomerCode} - {item.name}</span>
+                          </>
+                        )}
+                        {objectType === "NK" && <span className="text-xs font-bold">{item.name}</span>}
+                        {objectType === "NCC" && <span className="text-xs font-bold">{item.sourceName}</span>}
+                        {objectType === "BANK" && (
+                          <>
+                            <span className="text-xs font-bold">{item.code}</span>
+                            <span className="text-[10px] text-gray-500">{item.accountBankNumber} - {item.accountBankHolderName}</span>
+                          </>
+                        )}
+                        {objectType === "NV" && (
+                          <>
+                            <span className="text-xs font-bold">{item.code}</span>
+                            <span className="text-[10px] text-gray-500">{item.userName} - {item.fullName}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -561,8 +561,8 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
                   Ngày giao dịch
                 </th>
                 <th
-                  className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase"
-                  style={{ width: "80px" }}
+                  className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase border-r border-gray-300"
+                  style={{ width: "100px" }}
                 >
                   Mã GD
                 </th>
@@ -632,11 +632,11 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
                       <td className="px-2 py-2 text-[11px] align-top border-r border-gray-200">
                         <DateCell dateString={item.transactionDate} />
                       </td>
-                      <td className="px-2 py-2 text-[11px] text-gray-900 font-semibold align-middle">
+                      <td className="px-2 py-2 text-[11px] text-gray-900 font-semibold align-top border-r border-gray-200 break-all">
                         {item.transactionCode || "-"}
                       </td>
                       {/* Loại */}
-                      <td className="px-2 py-2 text-center align-middle">
+                      <td className="px-2 py-2 text-center align-top">
                         <span className={`px-2 py-1 inline-flex text-[10px] font-bold rounded ${item.transactionType === 'IN'
                           ? 'bg-green-100 text-green-700'
                           : 'bg-red-100 text-red-700'
@@ -645,14 +645,14 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
                         </span>
                       </td>
                       {/* Số tiền */}
-                      <td className={`px-2 py-2 text-[11px] text-right font-bold align-middle ${item.transactionType === 'IN' ? 'text-green-600' : 'text-red-600'
+                      <td className={`px-2 py-2 text-[11px] text-right font-bold align-top ${item.transactionType === 'IN' ? 'text-green-600' : 'text-red-600'
                         }`}>
                         {item.transactionType === 'IN' ? '+' : '-'}{formatCurrency(item.amount)}
                       </td>
-                      <td className="px-2 py-2 text-[11px] text-right text-gray-700 font-medium align-middle">
+                      <td className="px-2 py-2 text-[11px] text-right text-gray-700 font-medium align-top">
                         {formatCurrency(item.balance)}
                       </td>
-                      <td className="px-2 py-2 align-middle">
+                      <td className="px-2 py-2 align-top">
                         <div
                           className="text-[11px] text-gray-700 truncate cursor-help"
                           title={item.description || "-"}
@@ -660,7 +660,7 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
                           {item.description || "-"}
                         </div>
                       </td>
-                      <td className="px-2 py-2 align-middle">
+                      <td className="px-2 py-2 align-top">
                         <div
                           className="text-[11px] text-gray-700 truncate cursor-help"
                           title={item.accountingObject || "-"}
@@ -671,10 +671,10 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
                       {/* <td className="px-2 py-2 text-[11px] text-gray-700 align-middle">
                         {item.accountingObject || "-"}
                       </td> */}
-                      <td className="px-2 py-2 text-[11px] text-gray-700 font-semibold align-middle">
+                      <td className="px-2 py-2 text-[11px] text-gray-700 font-semibold align-top">
                         {item.accountBankNumber || item.accountBankNumber || "-"}
                       </td>
-                      <td className="px-2 py-2 text-center align-middle">
+                      <td className="px-2 py-2 text-center align-top">
                         <button
                           className="text-blue-600 hover:text-blue-800"
                           onClick={() => handleOpenEditModal(item)}
