@@ -159,6 +159,21 @@ const customerApi = {
       throw handleApiError(error);
     }
   },
+  // Lấy chi tiết chi tiêu của các khách hàng trong nhóm
+  // /api/customers/groups/{customerGroupId}/invoices/spend-summary?year=2025&month=12
+  getGroupSpendSummary: async (customerGroupId, year, month) => {
+    try {
+      const response = await axiosInstance.get(
+        `${api}/customers/groups/${customerGroupId}/invoices/spend-summary`,
+        {
+          params: { year, month },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 };
 
 export default customerApi;

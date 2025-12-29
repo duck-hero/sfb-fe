@@ -102,9 +102,9 @@ const customerGroupApi = {
   getManualPayments: async (groupId, year, month) => {
     try {
       const response = await axiosInstance.get(
-        `${api}/CustomerGroup/GetManualPayments`,
+        `${api}/customers/groups/${groupId}/manual-payments`,
         {
-          params: { CustomerGroupId: groupId, Year: year, Month: month },
+          params: { year, month },
         }
       );
       return response.data;
@@ -117,7 +117,7 @@ const customerGroupApi = {
   createManualPayment: async (data) => {
     try {
       const response = await axiosInstance.post(
-        `${api}/CustomerGroup/CreateManualPayment`,
+        `${api}/customers/groups/manual-payments`,
         data
       );
       return response.data;
@@ -130,10 +130,7 @@ const customerGroupApi = {
   deleteManualPayment: async (id) => {
     try {
       const response = await axiosInstance.delete(
-        `${api}/CustomerGroup/DeleteManualPayment`,
-        {
-          params: { Id: id },
-        }
+        `${api}/customers/groups/manual-payments/${id}`
       );
       return response.data;
     } catch (error) {
