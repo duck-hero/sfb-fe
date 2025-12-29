@@ -103,6 +103,48 @@ createAdsAccount: async (adAccountName, adAccountIdNumber, bmAccountId, bmWorkin
       throw handleApiError(error);
     }
   },
+
+  // Ghi nhận cắn ngưỡng
+  recordThresholdEating: async (data) => {
+    try {
+      const response = await axiosInstance.post(`${api}/AdsAccount/record-threshold-eating`, data);
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  // Lấy lịch sử khách hàng đã thuê tài khoản này
+  getHistoricalCustomers: async (id) => {
+    try {
+      const response = await axiosInstance.get(`${api}/AdsAccount/${id}/historical-customers`);
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  // Lấy thống kê ngưỡng
+  getThresholdStats: async (year, month) => {
+    try {
+      const response = await axiosInstance.get(`${api}/AdsAccount/threshold-stats`, {
+        params: { Year: year, Month: month },
+      });
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  // Cập nhật thống kê ngưỡng
+  updateThresholdStats: async (data) => {
+    try {
+      const response = await axiosInstance.put(`${api}/AdsAccount/threshold-stats`, data);
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 };
 
 export default adsAccountApi;

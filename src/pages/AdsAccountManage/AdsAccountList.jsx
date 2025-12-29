@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { toast } from "react-toastify"; // Giả sử bạn dùng thư viện này
-import { Plus, SquarePen, Trash, RefreshCcw, DollarSign } from "lucide-react"; // Hoặc icon từ thư viện bạn đang dùng
+import { toast } from "react-toastify";
+import { Plus, SquarePen, Trash, RefreshCcw, DollarSign, Zap, Coins } from "lucide-react";
 import DeleteConfirmModal from "../../components/Modal/DeleteConfirmModal";
 
 // Import API
@@ -12,6 +12,7 @@ import CreateAdsAccountModal from "./CreateAdsAccountModal";
 import EditAdsAccountModal from "./EditAdsAccountModal";
 import DetailAdsAccountModal from "./DetailAdsAccountModal";
 import ImportAdsAccountModal from "./ImportAdsAccountModal";
+import RecordThresholdEatingModal from "./RecordThresholdEatingModal";
 import TableSkeleton from "../../components/Loading/TableSkeleton";
 import { getBmWorkingDisplayText, getBmWorkingOptions } from "../../utils/bmConstants";
 
@@ -79,6 +80,10 @@ function AdsAccountList() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
   const [detailData, setDetailData] = useState(null);
+  
+  // Record Threshold Eating Modal
+  const [isThresholdModalOpen, setIsThresholdModalOpen] = useState(false);
+  const [selectedAdAccount, setSelectedAdAccount] = useState(null);
 
   // Bank card details tooltip
   const [showBankCardTooltip, setShowBankCardTooltip] = useState(false);
@@ -315,20 +320,26 @@ const handleEditSave = async (dataToSend) => {
   };
 
   // --- RENDER HELPERS ---
-  const renderLockedStatus = (isLocked) => {
-    if (isLocked) {
-      return (
-        <span className="inline-block px-2 py-0.5 text-xs font-medium text-red-600 border border-red-600 rounded-md bg-white whitespace-nowrap">
-          Đã khóa
-        </span>
-      );
-    } else {
-      return (
-        <span className="inline-block px-2 py-0.5 text-xs font-medium text-green-600 border border-green-600 rounded-md bg-white whitespace-nowrap">
-          Hoạt động
-        </span>
-      );
-    }
+  const renderAccountStatus = (account) => {
+    const { locked, isThresholdEating } = account;
+    return (
+      <div className="flex flex-col items-center gap-1">
+        {locked ? (
+          <span className="inline-block px-2 py-0.5 text-xs font-medium text-red-600 border border-red-600 rounded-md bg-white whitespace-nowrap">
+            Đã khóa
+          </span>
+        ) : (
+          <span className="inline-block px-2 py-0.5 text-xs font-medium text-green-600 border border-green-600 rounded-md bg-white whitespace-nowrap">
+            Hoạt động
+          </span>
+        )}
+        {isThresholdEating && (
+          <span className="inline-block px-2 py-0.5 text-xs font-medium text-orange-600 border border-orange-600 rounded-md bg-white whitespace-nowrap">
+            Đã ăn ngưỡng
+          </span>
+        )}
+      </div>
+    );
   };
 
   const formatDate = (dateString) => {
@@ -522,7 +533,7 @@ const handleEditSave = async (dataToSend) => {
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap">
                     <div className="flex items-center justify-center">
-                      {renderLockedStatus(x.locked)}
+                      {renderAccountStatus(x)}
                     </div>
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
@@ -548,6 +559,16 @@ const handleEditSave = async (dataToSend) => {
                     </div>
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500 flex justify-center items-center gap-1.5">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedAdAccount(x);
+                        setIsThresholdModalOpen(true);
+                      }} 
+                      title="Cắn ngưỡng TK"
+                    >
+                      <Coins className="h-4 w-4 text-primary-dark cursor-pointer hover:text-primary-darkest transition-colors" />
+                    </button>
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
@@ -689,6 +710,13 @@ const handleEditSave = async (dataToSend) => {
           fetchAdsAccounts();
           setIsImportModalOpen(false);
         }}
+      />
+
+      <RecordThresholdEatingModal
+        open={isThresholdModalOpen}
+        onClose={() => setIsThresholdModalOpen(false)}
+        adAccount={selectedAdAccount}
+        onSuccess={() => fetchAdsAccounts()}
       />
 
     </div>

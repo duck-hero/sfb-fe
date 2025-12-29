@@ -80,6 +80,21 @@ const bmSourceApi = {
       throw handleApiError(error);
     }
   },
+
+  // Lấy thống kê hàng tháng
+  getMonthlyStats: async (year, month) => {
+    try {
+      const response = await axiosInstance.get(
+        `${api}/BmSource/monthly-stats`,
+        {
+          params: { Year: year, Month: month },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 };
 
 export default bmSourceApi;
