@@ -320,6 +320,13 @@ const GroupSpendTrackingModal = ({ open, group, onClose }) => {
                                                                 {formatCurrency(data.balancePanel.closingBalance)}
                                                             </span>
                                                         </div>
+
+                                                        <div className="flex flex-col border-l border-gray-300 pl-6">
+                                                            <span className="text-[10px] uppercase text-orange-500 font-bold">Chiết khấu ngưỡng</span>
+                                                            <span className="text-sm font-bold text-orange-600">
+                                                                {formatCurrency(data.balancePanel.thresholdCredit || 0)}
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                 )}
 

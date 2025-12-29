@@ -197,6 +197,14 @@ const InvoiceDetailModal = ({ open, onClose, invoiceData, customer, group, onCon
                                             </span>
                                         </div>
 
+                                        {/* Row: Threshold Credit */}
+                                        <div className="w-full max-w-sm flex justify-between items-center py-1 border-t border-dashed border-gray-200">
+                                            <span className="text-gray-500">Chiết khấu ngưỡng:</span>
+                                            <span className="font-medium text-orange-600">
+                                                {formatCurrency(invoiceData.thresholdCredit || 0)}
+                                            </span>
+                                        </div>
+
                                         {/* Row: Closing Balance = Amount Due + Paid + Opening */}
                                         <div className="w-full max-w-sm flex justify-between items-center py-2 border-t-2 border-gray-800 mt-2">
                                             <span className="text-base font-bold uppercase text-gray-800">
