@@ -54,7 +54,7 @@ export default function EditFinancialTransactionModal({
         setObjectType("CP");
       } else {
         // No radio selected, show manual text input
-        setObjectType(null); 
+        setObjectType(null);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -74,13 +74,13 @@ export default function EditFinancialTransactionModal({
         let res;
         switch (objectType) {
           case "KH":
-            res = await customerApi.getCustomerList(1, 15, searchTerm);
+            res = await customerApi.getCustomerList(1, 15, searchTerm || null, null, null, true);
             setDataList(res.data || []);
             break;
           case "NK":
             res = await customerGroupApi.getPagedList(1, 15);
             // Filter locally if API doesn't support search - keeping it simple
-            const groups = (res.data || []).filter(g => 
+            const groups = (res.data || []).filter(g =>
               g.name?.toLowerCase().includes(searchTerm.toLowerCase())
             );
             setDataList(groups);
@@ -95,8 +95,8 @@ export default function EditFinancialTransactionModal({
             break;
           case "NV":
             res = await accountApi.getUserList(1, 50);
-            const filtered = (res.items || res.data || []).filter(u => 
-              u.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+            const filtered = (res.items || res.data || []).filter(u =>
+              u.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
               u.userName?.toLowerCase().includes(searchTerm.toLowerCase())
             );
             setDataList(filtered.slice(0, 15));
@@ -120,7 +120,7 @@ export default function EditFinancialTransactionModal({
     setObjectType(newType);
     setSearchTerm("");
     setShowDropdown(false);
-    
+
     // Payment source mapping: 1:KH, 2:NK, 3:NCC, 4:CP, 5:BANK, 6:NV
     const sourceMap = {
       "KH": 1,
@@ -130,26 +130,26 @@ export default function EditFinancialTransactionModal({
       "BANK": 5,
       "NV": 6
     };
-    
+
     const pSource = sourceMap[newType] || null;
     onChange("paymentSource", pSource);
-    
+
     if (newType !== "KH" && newType !== "NK") {
       onChange("customerId", null);
       onChange("customerGroupId", null);
       if (!newType) {
-         // Revert search term to current object name if going to manual
-         setSearchTerm(formData.accountingObject || "");
+        // Revert search term to current object name if going to manual
+        setSearchTerm(formData.accountingObject || "");
       }
     }
-    
+
     // Only reset accountingObject if we are switching to a searchable type
     if (newType && !["KH", "NK", "CP", "NCC", "BANK", "NV"].includes(objectType)) {
-       // logic improvement: clear if we are entering a Searchable type 
+      // logic improvement: clear if we are entering a Searchable type 
     }
-    
+
     if (newType) {
-       onChange("accountingObject", "");
+      onChange("accountingObject", "");
     }
   };
 
@@ -195,7 +195,7 @@ export default function EditFinancialTransactionModal({
     setSearchTerm(name);
     setShowDropdown(false);
   };
-  
+
   // Set initial search term if customerId exists and we have the customer loaded? 
   // Or just show placeholder. Ideally we'd need the customer Name if we only have ID.
   // For now, let's assume if we edit, we might want to fetch that specific customer or just let user search again.
@@ -272,10 +272,10 @@ export default function EditFinancialTransactionModal({
                 // Searchable Dropdown for KH, NCC, BANK, NV
                 <div className="relative" ref={dropdownRef}>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {objectType === "KH" ? "Tìm khách hàng" : 
-                     objectType === "NK" ? "Tìm nhóm khách" : 
-                     objectType === "NCC" ? "Tìm NCC" : 
-                     objectType === "BANK" ? "Tìm Bank" : "Tìm nhân viên"}
+                    {objectType === "KH" ? "Tìm khách hàng" :
+                      objectType === "NK" ? "Tìm nhóm khách" :
+                        objectType === "NCC" ? "Tìm NCC" :
+                          objectType === "BANK" ? "Tìm Bank" : "Tìm nhân viên"}
                   </label>
                   <div className="relative">
                     <input
@@ -302,11 +302,10 @@ export default function EditFinancialTransactionModal({
                         dataList.map((item, idx) => (
                           <div
                             key={idx}
-                            className={`px-4 py-2.5 hover:bg-blue-50 cursor-pointer border-b border-gray-50 last:border-0 ${
-                              (objectType === "KH" && formData.customerId === item.id) || 
-                              (objectType !== "KH" && formData.accountingObject === (item.sourceName || item.accountBankNumber || item.fullName || item.userName)) 
+                            className={`px-4 py-2.5 hover:bg-blue-50 cursor-pointer border-b border-gray-50 last:border-0 ${(objectType === "KH" && formData.customerId === item.id) ||
+                              (objectType !== "KH" && formData.accountingObject === (item.sourceName || item.accountBankNumber || item.fullName || item.userName))
                               ? "bg-blue-50 font-bold text-blue-700" : "text-gray-700"
-                            }`}
+                              }`}
                             onClick={() => handleSelectItem(item)}
                           >
                             {objectType === "KH" && (
@@ -324,10 +323,10 @@ export default function EditFinancialTransactionModal({
                               </div>
                             )}
                             {objectType === "NV" && (
-                                <div className="flex flex-col">
-                                    <span className="font-bold">{item.code}</span>
-                                    <span className="text-[10px] text-gray-400">{item.name} - {item.userName}</span>
-                                </div>
+                              <div className="flex flex-col">
+                                <span className="font-bold">{item.code}</span>
+                                <span className="text-[10px] text-gray-400">{item.name} - {item.userName}</span>
+                              </div>
                             )}
                           </div>
                         ))
@@ -337,7 +336,7 @@ export default function EditFinancialTransactionModal({
                     </div>
                   )}
                   {formData.customerId && objectType === "KH" && (
-                      <div className="mt-1 text-[10px] text-green-600 font-medium">Selected ID: {formData.customerId}</div>
+                    <div className="mt-1 text-[10px] text-green-600 font-medium">Selected ID: {formData.customerId}</div>
                   )}
                 </div>
               )}
@@ -354,11 +353,10 @@ export default function EditFinancialTransactionModal({
               <button
                 onClick={onSave}
                 disabled={loading}
-                className={`px-4 py-2 text-sm rounded-md ${
-                  loading
-                    ? 'bg-blue-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                }`}
+                className={`px-4 py-2 text-sm rounded-md ${loading
+                  ? 'bg-blue-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
               >
                 {loading ? 'Đang lưu...' : 'Lưu thay đổi'}
               </button>

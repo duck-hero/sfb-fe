@@ -4,7 +4,7 @@ import axiosInstance from "./axiosInstance";
 const customerApi = {
   // Lấy danh sách khách hàng (có phân trang & tìm kiếm theo Name)
   // Customer/GetPagedListCustomer?Name=a&PageNumber=1&PageSize=10
-  getCustomerList: async (pageNumber = 1, pageSize = 10, name = null, customerGroupId = null, operatorUserId = null) => {
+  getCustomerList: async (pageNumber = 1, pageSize = 10, name = null, customerGroupId = null, operatorUserId = null, onlyCustomerNoGroup = null) => {
     try {
       const response = await axiosInstance.get(
         `${api}/Customer/GetPagedListCustomer`,
@@ -15,6 +15,7 @@ const customerApi = {
             Name: name || null,
             CustomerGroupId: customerGroupId || null,
             OperatorUserId: operatorUserId || null,
+            OnlyCustomerNoGroup: onlyCustomerNoGroup,
           },
         }
       );

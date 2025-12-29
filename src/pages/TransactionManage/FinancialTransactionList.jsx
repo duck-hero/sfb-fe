@@ -44,7 +44,7 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
   const [editLoading, setEditLoading] = useState(false);
 
   const [filters, setFilters] = useState({
-    transactionCode: "",
+    searchTerm: "",
     transactionType: "",
     bankAccountId: "",
     fromEffectiveDate: dayjs().startOf("day").toISOString(),
@@ -130,7 +130,7 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
           let res;
           switch (objectType) {
             case "KH":
-              res = await customerApi.getCustomerList(1, 15, searchTerm || null);
+              res = await customerApi.getCustomerList(1, 15, searchTerm || null, null, null);
               setDataList(res.data || []);
               break;
             case "NK":
@@ -202,7 +202,7 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
         "desc",
         filters.fromEffectiveDate,
         filters.toEffectiveDate,
-        filters.transactionCode || undefined,
+        filters.searchTerm || undefined,
         filters.transactionType || undefined,
         filters.bankAccountId || undefined,
         bankAccountType,
@@ -361,14 +361,14 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Mã GD
+              Tìm kiếm
             </label>
             <input
               type="text"
-              placeholder="Nhập mã GD..."
+              placeholder="Mã GD hoặc nội dung..."
               className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
-              value={filters.transactionCode}
-              onChange={(e) => handleFilterChange("transactionCode", e.target.value)}
+              value={filters.searchTerm}
+              onChange={(e) => handleFilterChange("searchTerm", e.target.value)}
             />
           </div>
 

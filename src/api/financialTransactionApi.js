@@ -8,7 +8,7 @@ const financialTransactionApi = {
     sortOrder,
     fromEffectiveDate,
     toEffectiveDate,
-    transactionCode,
+    searchTerm,
     transactionType,
     bankAccountId,
     bankAccountType,
@@ -25,7 +25,7 @@ const financialTransactionApi = {
       if (fromEffectiveDate) params.FromEffectiveDate = fromEffectiveDate;
       if (toEffectiveDate) params.ToEffectiveDate = toEffectiveDate;
 
-      if (transactionCode) params.TransactionCode = transactionCode;
+      if (searchTerm) params.SearchTerm = searchTerm;
       if (transactionType) params.TransactionType = transactionType;
       if (bankAccountId) params.BankAccountId = bankAccountId;
 
@@ -52,13 +52,13 @@ const financialTransactionApi = {
       // Or if legacy call passes string, handle that too (though we will update usage)
       const payload = { id };
       if (typeof data === 'string') {
-          payload.accountingObject = data;
+        payload.accountingObject = data;
       } else {
-          // Spread valid fields
-          if (data.accountingObject !== undefined) payload.accountingObject = data.accountingObject;
-          if (data.customerId !== undefined) payload.customerId = data.customerId;
-          if (data.customerGroupId !== undefined) payload.customerGroupId = data.customerGroupId;
-          if (data.paymentSource !== undefined) payload.paymentSource = data.paymentSource;
+        // Spread valid fields
+        if (data.accountingObject !== undefined) payload.accountingObject = data.accountingObject;
+        if (data.customerId !== undefined) payload.customerId = data.customerId;
+        if (data.customerGroupId !== undefined) payload.customerGroupId = data.customerGroupId;
+        if (data.paymentSource !== undefined) payload.paymentSource = data.paymentSource;
       }
 
       const response = await axiosInstance.put(
