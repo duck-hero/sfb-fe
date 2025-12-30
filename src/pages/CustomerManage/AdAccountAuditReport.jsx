@@ -11,7 +11,7 @@ const AdAccountAuditReport = () => {
     const [month, setMonth] = useState(dayjs().month() + 1);
     const [reconciliation, setReconciliation] = useState(null);
     const [loading, setLoading] = useState(false);
-    
+
     // Upload state
     const [file, setFile] = useState(null);
     const [uploading, setUploading] = useState(false);
@@ -115,8 +115,8 @@ const AdAccountAuditReport = () => {
                             <label
                                 htmlFor="excel-upload"
                                 className={`flex items-center gap-2 px-3 py-1.5 text-[11px] font-medium rounded-lg border border-dashed transition-all cursor-pointer shadow-sm
-                                    ${file 
-                                        ? "border-blue-500 bg-blue-50 text-blue-700" 
+                                    ${file
+                                        ? "border-blue-500 bg-blue-50 text-blue-700"
                                         : "border-gray-300 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:border-gray-400"
                                     }`}
                             >
@@ -146,8 +146,8 @@ const AdAccountAuditReport = () => {
                 {uploading && (
                     <div className="mt-4">
                         <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                            <div 
-                                className="bg-blue-600 h-full transition-all duration-300 ease-out shadow-[0_0_10px_rgba(37,99,235,0.4)]" 
+                            <div
+                                className="bg-blue-600 h-full transition-all duration-300 ease-out shadow-[0_0_10px_rgba(37,99,235,0.4)]"
                                 style={{ width: `${progress}%` }}
                             ></div>
                         </div>
@@ -173,39 +173,69 @@ const AdAccountAuditReport = () => {
                                     </p>
                                 )}
                             </div>
+                            <button
+                                onClick={() => setImportResult(null)}
+                                className="ml-auto text-gray-400 hover:text-gray-600 p-1"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
                         </div>
 
-                        {/* Not Found Accounts List */}
-                        {importResult.notFoundAccounts && importResult.notFoundAccounts.length > 0 && (
-                            <div className="mt-3 border border-gray-100 rounded-lg overflow-hidden bg-white shadow-sm ring-1 ring-black/5">
-                                <div className="bg-gray-50 px-3 py-2 border-b border-gray-100 flex items-center justify-between">
-                                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                                        {importResult.notFoundAccounts.length} TK chưa có trên hệ thống
-                                    </span>
-                                    <button 
-                                        onClick={() => setImportResult(null)}
-                                        className="text-gray-400 hover:text-gray-600"
-                                    >
-                                        <X className="w-3.5 h-3.5" />
-                                    </button>
-                                </div>
-                                <div className="max-h-48 overflow-y-auto custom-scrollbar p-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1">
-                                    {importResult.notFoundAccounts.map((acc, idx) => (
-                                        <div key={acc.adAccountId || idx} className="p-2 border border-gray-50 rounded-md hover:bg-gray-50 group flex items-start gap-2 h-fit">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0 group-hover:scale-125 transition-transform" />
-                                            <div className="flex flex-col min-w-0">
-                                                <span className="text-[10px] font-medium text-gray-700 truncate" title={acc.adAccountName}>
-                                                    {acc.adAccountName}
-                                                </span>
-                                                <span className="text-[9px] text-gray-400 font-mono">
-                                                    ID: {acc.adAccountId}
-                                                </span>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                            {/* Not Found In System Accounts List */}
+                            {importResult.notFoundInSystem && importResult.notFoundInSystem.length > 0 && (
+                                <div className="border border-orange-100 rounded-lg overflow-hidden bg-white shadow-sm ring-1 ring-black/5">
+                                    <div className="bg-orange-50 px-3 py-1.5 border-b border-orange-100 flex items-center justify-between">
+                                        <span className="text-[10px] font-bold text-orange-700 uppercase tracking-widest flex items-center gap-1.5">
+                                            <AlertCircle className="w-3 h-3" />
+                                            {importResult.notFoundInSystem.length} TK không khớp hệ thống
+                                        </span>
+                                    </div>
+                                    <div className="max-h-48 overflow-y-auto custom-scrollbar p-1.5 space-y-1">
+                                        {importResult.notFoundInSystem.map((acc, idx) => (
+                                            <div key={acc.adAccountId || idx} className="p-2 border border-gray-50 rounded-md hover:bg-gray-50 group flex items-start gap-2 h-fit">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-orange-400 mt-1.5 shrink-0 group-hover:scale-125 transition-transform" />
+                                                <div className="flex flex-col min-w-0">
+                                                    <span className="text-[10px] font-semibold text-gray-700 truncate" title={acc.adAccountName}>
+                                                        {acc.adAccountName}
+                                                    </span>
+                                                    <span className="text-[9px] text-gray-400 font-mono">
+                                                        ID: {acc.adAccountId}
+                                                    </span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
+
+                            {/* Not Found In File Accounts List */}
+                            {importResult.notFoundInFile && importResult.notFoundInFile.length > 0 && (
+                                <div className="border border-blue-100 rounded-lg overflow-hidden bg-white shadow-sm ring-1 ring-black/5">
+                                    <div className="bg-blue-50 px-3 py-1.5 border-b border-blue-100 flex items-center justify-between">
+                                        <span className="text-[10px] font-bold text-blue-700 uppercase tracking-widest flex items-center gap-1.5">
+                                            <AlertCircle className="w-3 h-3" />
+                                            {importResult.notFoundInFile.length} TK hệ thống không có trong file
+                                        </span>
+                                    </div>
+                                    <div className="max-h-48 overflow-y-auto custom-scrollbar p-1.5 space-y-1">
+                                        {importResult.notFoundInFile.map((acc, idx) => (
+                                            <div key={acc.adAccountId || idx} className="p-2 border border-blue-50/50 rounded-md hover:bg-blue-50/50 group flex items-start gap-2 h-fit">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0 group-hover:scale-125 transition-transform" />
+                                                <div className="flex flex-col min-w-0">
+                                                    <span className="text-[10px] font-semibold text-blue-800 truncate" title={acc.adAccountName}>
+                                                        {acc.adAccountName}
+                                                    </span>
+                                                    <span className="text-[9px] text-blue-400 font-mono italic">
+                                                        ID: {acc.adAccountId}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
             </div>
