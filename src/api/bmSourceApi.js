@@ -95,6 +95,21 @@ const bmSourceApi = {
       throw handleApiError(error);
     }
   },
+
+  // Lấy chi tiết đối soát nguồn theo tháng
+  getReconciliation: async (sourceId, year, month) => {
+    try {
+      const response = await axiosInstance.get(
+        `${api}/BmSource/${sourceId}/reconciliation`,
+        {
+          params: { year: year, month: month },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 };
 
 export default bmSourceApi;
