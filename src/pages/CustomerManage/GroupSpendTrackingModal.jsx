@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useState, useMemo } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { X, ChevronLeft, ChevronRight, RotateCw, Eye, BarChart3, Plus, Save, Trash2 } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, RotateCw, Eye, BarChart3, Plus, Save, Trash2, FileSpreadsheet } from "lucide-react";
 import customerGroupApi from "../../api/customerGroupApi";
 import invoiceApi from "../../api/invoiceApi";
 import { toast } from "react-toastify";
@@ -263,6 +263,18 @@ const GroupSpendTrackingModal = ({ open, group, onClose }) => {
                                                     {loadingInvoice ? <RotateCw className="w-3.5 h-3.5 animate-spin" /> : <Eye className="w-3.5 h-3.5" />}
                                                     Chi tiết công nợ
                                                 </button>
+
+                                                {data?.googleSheetId && (
+                                                    <a
+                                                        href={`https://docs.google.com/spreadsheets/d/${data.googleSheetId}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="p-1.5 hover:bg-green-50 text-green-600 rounded-md transition"
+                                                        title="Mở Google Sheet"
+                                                    >
+                                                        <FileSpreadsheet className="w-5 h-5" />
+                                                    </a>
+                                                )}
 
                                                 <button
                                                     onClick={() => fetchGrid(currentDate)}

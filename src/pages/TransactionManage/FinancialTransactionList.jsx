@@ -63,6 +63,7 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
 
   // Amount debounce effect
   useEffect(() => {
+    if (localAmount === filters.amount) return;
     const timer = setTimeout(() => {
       handleFilterChange("amount", localAmount);
     }, 500);
@@ -233,7 +234,10 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
   }, [filters, bankAccountType]);
 
   const handleFilterChange = (field, value) => {
-    setFilters((prev) => ({ ...prev, [field]: value }));
+    setFilters((prev) => {
+      if (prev[field] === value) return prev;
+      return { ...prev, [field]: value };
+    });
   };
 
   const handleDateRangeChange = ({ startDate, endDate }) => {

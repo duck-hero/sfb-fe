@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useState, useRef, useMemo } from "react";
 import { Dialog, Transition, Menu } from "@headlessui/react";
-import { X, ChevronLeft, ChevronRight, Save, RotateCw, Plus, Trash2, ChevronDown, Eye } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Save, RotateCw, Plus, Trash2, ChevronDown, Eye, FileSpreadsheet } from "lucide-react";
 import dailySpendApi from "../../api/dailySpendApi";
 import invoiceApi from "../../api/invoiceApi";
 import customerApi from "../../api/customerApi";
@@ -433,6 +433,18 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
                                                     </Transition>
                                                 </Menu>
                                             </div>
+
+                                            {data?.googleSheetId && (
+                                                <a
+                                                    href={`https://docs.google.com/spreadsheets/d/${data.googleSheetId}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="p-1.5 hover:bg-green-50 text-green-600 rounded-md transition"
+                                                    title="Mở Google Sheet"
+                                                >
+                                                    <FileSpreadsheet className="w-5 h-5" />
+                                                </a>
+                                            )}
 
                                             <button
                                                 onClick={() => fetchGrid(currentDate)}
