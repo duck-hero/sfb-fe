@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
-import { Upload, X, Loader2, AlertCircle, CheckCircle2, FileSpreadsheet } from 'lucide-react';
+import { Upload, X, Loader2, AlertCircle, CheckCircle2, FileSpreadsheet, RefreshCw } from 'lucide-react';
 import { toast } from 'react-toastify';
 import adsAccountApi from '../../api/adsAccountApi';
 import dashboardApi from '../../api/dashboardApi';
@@ -263,6 +263,14 @@ const AdAccountAuditReport = () => {
                                 <option key={y} value={y}>Năm {y}</option>
                             ))}
                         </select>
+                        <button
+                            onClick={fetchReconciliation}
+                            disabled={loading}
+                            title="Tải lại dữ liệu"
+                            className="bg-white border border-gray-200 rounded-lg px-2 py-1 text-gray-600 hover:text-blue-600 hover:border-blue-200 transition-all cursor-pointer shadow-sm disabled:opacity-50"
+                        >
+                            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                        </button>
                     </div>
                 </div>
 
