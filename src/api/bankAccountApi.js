@@ -67,25 +67,61 @@ getBankList: async (
     }
   },
   // Thêm mới tài khoản ngân hàng
-createBankAccount: async (code, accountBankNumber, accountBankHolderName, loginUsername, loginPassword, bankId, bankAccountType) => {
-  try {
-    const response = await axiosInstance.post(`${api}/BankAccount/CreateBankAccount`, {
-      code: code,
-      accountBankNumber: accountBankNumber,
-      accountBankHolderName: accountBankHolderName,
-      loginUsername: loginUsername,
-      loginPassword: loginPassword,
-      bankId: bankId,
-      bankAccountType: bankAccountType
-    });
+  createBankAccount: async (code, accountBankNumber, accountBankHolderName, loginUsername, loginPassword, bankId, bankAccountType) => {
+    try {
+      const response = await axiosInstance.post(`${api}/BankAccount/CreateBankAccount`, {
+        code: code,
+        accountBankNumber: accountBankNumber,
+        accountBankHolderName: accountBankHolderName,
+        loginUsername: loginUsername,
+        loginPassword: loginPassword,
+        bankId: bankId,
+        bankAccountType: bankAccountType
+      });
 
-    return response.data;
-  } catch (error) {
-    throw handleApiError(error);
-  }
-},
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 
+  // Lấy báo cáo thống kê giao dịch theo tài khoản ngân hàng
+  getBankAccountReport: async (bankAccountId, month, year, type = 1) => {
+    try {
+      const response = await axiosInstance.get(`${api}/BankAccountReport/GetReport`, {
+        params: {
+          bankAccountId,
+          month,
+          year,
+          type
+        }
+      });
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 
+  // Tạo báo cáo thống kê giao dịch theo tài khoản ngân hàng
+  generateBankAccountReport: async (bankAccountId, month, year, type = 1, openingBalance = null) => {
+    try {
+      const payload = {
+        bankAccountId,
+        month,
+        year,
+        type
+      };
+      
+      if (openingBalance !== null && openingBalance !== undefined) {
+        payload.openingBalance = openingBalance;
+      }
+
+      const response = await axiosInstance.post(`${api}/BankAccountReport/GenerateReport`, payload);
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 };
 
 export default bankAccountApi;

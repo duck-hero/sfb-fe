@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Megaphone, ArrowLeftRight, BadgeDollarSign } from "lucide-react";
+import { Megaphone, ArrowLeftRight, BadgeDollarSign, FileBarChart2 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
 import TransactionHistoryList from "../TransactionHistoryManage/TransactionHistoryList";
 import FinancialTransactionList from "./FinancialTransactionList";
+import TransactionStatistics from "./TransactionStatistics";
 
 export default function TransactionManage() {
   const [activeTab, setActiveTab] = useState("fbSpend");
@@ -24,6 +25,11 @@ export default function TransactionManage() {
       key: "profit",
       label: "Giao dịch TK lợi nhuận",
       icon: <BadgeDollarSign className="w-4 h-4" />,
+    },
+    {
+      key: "stats",
+      label: "Thống kê giao dịch",
+      icon: <FileBarChart2 className="w-4 h-4" />,
     },
   ].filter(Boolean);
 
@@ -60,6 +66,9 @@ export default function TransactionManage() {
         )}
         {activeTab === "profit" && hasRole("Admin") && (
           <FinancialTransactionList bankAccountType={3} />
+        )}
+        {activeTab === "stats" && (
+          <TransactionStatistics />
         )}
       </div>
     </div>
