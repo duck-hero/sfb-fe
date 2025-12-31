@@ -106,7 +106,9 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
         setSelectedCustomer({
             id: customer.customerId,
             customerId: customer.customerId,
-            name: customer.customerName
+            name: customer.customerName,
+            customerCode: customer.customerCode,
+            fullCustomerCode: customer.fullCustomerCode,
         });
         setIsSpendModalOpen(true);
     };
@@ -237,9 +239,9 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
                                                         )}
                                                         <div className="flex flex-col flex-1 min-w-0">
                                                             <div className={`text-[11px] leading-tight truncate transition-colors ${isGroup ? "font-bold text-gray-900" : "font-medium text-blue-600 hover:text-blue-800 hover:underline"}`}>
-                                                                {item.customerName}
+                                                                {item.fullCustomerCode}
                                                             </div>
-                                                            <div className="text-[9px] text-secondary italic leading-tight truncate">{item.fullCustomerCode}</div>
+                                                            <div className="text-[9px] text-secondary italic leading-tight truncate">{item.customerName}</div>
                                                         </div>
                                                     </div>
                                                     {/* STAMP EFFECT */}

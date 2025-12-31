@@ -358,8 +358,8 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
 
                                             {customer && (
                                                 <div className="flex flex-col border-l pl-4 border-gray-300">
-                                                    <span className="font-bold text-gray-900 text-sm leading-tight">{customer.name}</span>
-                                                    <span className="text-xs text-gray-500 font-mono">{customer.customerCode || "No Code"}</span>
+                                                    <span className="font-bold text-gray-900 text-sm leading-tight">{customer.fullCustomerCode}</span>
+                                                    <span className="text-xs text-gray-500 font-mono">{customer.name}</span>
                                                 </div>
                                             )}
 
