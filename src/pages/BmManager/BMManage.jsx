@@ -2,9 +2,7 @@ import { useState } from "react";
 import BmAccountList from "../BmAccountManage/BmAccountList";
 import BmSourceList from "../BmSourceManage/BmSourceList";
 import AdsAccountList from "../AdsAccountManage/AdsAccountList";
-import MonthlySourceStats from "../BmSourceManage/MonthlySourceStats";
-import ThresholdStats from "../AdsAccountManage/ThresholdStats";
-import { UserCog, Database, Megaphone, BarChart3, BadgeCent } from "lucide-react";
+import { UserCog, Database, Megaphone } from "lucide-react";
 
 export default function BMManage() {
   const [activeTab, setActiveTab] = useState("adsAcc");
@@ -24,16 +22,6 @@ export default function BMManage() {
       key: "source",
       label: "Nguồn BM",
       icon: <Database className="w-4 h-4" />,
-    },
-    {
-      key: "stats",
-      label: "Thống kê nguồn (đầu tổng)",
-      icon: <BarChart3 className="w-4 h-4" />,
-    },
-    {
-      key: "threshold",
-      label: "Ngưỡng",
-      icon: <BadgeCent className="w-4 h-4" />,
     },
   ];
 
@@ -64,8 +52,6 @@ export default function BMManage() {
         {activeTab === "adsAcc" && <AdsAccountList />}
         {activeTab === "account" && <BmAccountList />}
         {activeTab === "source" && <BmSourceList />}
-        {activeTab === "stats" && <MonthlySourceStats />}
-        {activeTab === "threshold" && <ThresholdStats />}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import sfbLogo from "../../assets/sfb-logo.png";
-import { LayoutDashboard, Mountain, Landmark, History, ChevronLeft, ChevronRight, UsersRound, Shield } from "lucide-react";
+import { LayoutDashboard, Mountain, Landmark, History, ChevronLeft, ChevronRight, UsersRound, Shield, BarChart3, BadgeCent } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
 const Sidebar = ({ onToggle, isCollapsed }) => {
@@ -54,6 +54,24 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
         >
           <Mountain size={20} className="flex-shrink-0" />
           {!isCollapsed && <span className="truncate">Quản lý FB</span>}
+        </Link>
+        <Link
+          to="/monthly-source-stats"
+          className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${pathname === "/monthly-source-stats" && active
+            }`}
+          title={isCollapsed ? "Thống kê nguồn tháng" : ""}
+        >
+          <BarChart3 size={20} className="flex-shrink-0" />
+          {!isCollapsed && <span className="truncate">Thống kê đầu tổng</span>}
+        </Link>
+        <Link
+          to="/threshold-stats"
+          className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${pathname === "/threshold-stats" && active
+            }`}
+          title={isCollapsed ? "Thống kê Threshold" : ""}
+        >
+          <BadgeCent size={20} className="flex-shrink-0" />
+          {!isCollapsed && <span className="truncate">Thống kê ngưỡng</span>}
         </Link>
         {/* Chỉ hiển thị nếu có role Admin hoặc Kế Toán */}
         {(hasRole('Admin') || hasRole('Kế Toán')) && (

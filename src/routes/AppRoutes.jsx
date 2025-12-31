@@ -17,6 +17,8 @@ import BMManage from "../pages/BmManager/BMManage";
 import BankManagePage from "../pages/BankManagePage/BankManagePage";
 import TransactionManage from "../pages/TransactionManage/TransactionManage";
 import CustomerManagementPage from "../pages/CustomerManage/CustomerManagementPage";
+import MonthlySourceStats from "../pages/BmSourceManage/MonthlySourceStats";
+import ThresholdStats from "../pages/AdsAccountManage/ThresholdStats";
 import UserList from "../pages/UserManage/UserList";
 import Dashboard from "../pages/Dashboard/Dashboard";
 
@@ -76,6 +78,8 @@ export default function AppRoutes() {
             <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
               <Route path="user-management" element={<UserList />} />
             </Route>
+            <Route path="monthly-source-stats" element={<MonthlySourceStats />} />
+            <Route path="threshold-stats" element={<ThresholdStats />} />
           </Route>
 
           {/* 4. Tuyến đường cài đặt /settings cũng cần được bảo vệ */}
