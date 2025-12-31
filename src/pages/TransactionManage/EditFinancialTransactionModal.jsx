@@ -4,6 +4,7 @@ import customerGroupApi from "../../api/customerGroupApi";
 import bmSourceApi from "../../api/bmSourceApi";
 import bankAccountApi from "../../api/bankAccountApi";
 import accountApi from "../../api/accountApi";
+import { X } from "lucide-react";
 
 export default function EditFinancialTransactionModal({
   open,
@@ -206,8 +207,25 @@ export default function EditFinancialTransactionModal({
     <>
       {open && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Chỉnh sửa giao dịch</h3>
+          <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between mb-4 border-b pb-3">
+              <h3 className="text-lg font-bold text-gray-800">
+                {formData.ids?.length > 1 
+                  ? `Cập nhật nhanh (${formData.ids.length} GD)` 
+                  : "Chỉnh sửa giao dịch"}
+              </h3>
+              <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+
+            {formData.ids?.length > 1 && (
+              <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                <p className="text-sm text-blue-700">
+                  <span className="font-bold">Lưu ý:</span> Các thay đổi bên dưới sẽ được áp dụng cho toàn bộ <span className="font-bold">{formData.ids.length}</span> giao dịch đã chọn.
+                </p>
+              </div>
+            )}
 
             <div className="space-y-4">
               {/* Radio Buttons group */}

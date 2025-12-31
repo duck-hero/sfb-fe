@@ -41,6 +41,7 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
     customerGroupId: null,
     paymentSource: null,
   });
+  const [selectedIds, setSelectedIds] = useState([]);
   const [editLoading, setEditLoading] = useState(false);
 
   const [filters, setFilters] = useState({
@@ -229,6 +230,7 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
   useEffect(() => {
     setNextCursor(null);
     setHasMore(true);
+    setSelectedIds([]); // Clear selection when filters change
     fetchTransactions(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, bankAccountType]);
@@ -261,15 +263,28 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
     setSelectedAccount(null);
   };
 
-  const handleOpenEditModal = (transaction) => {
-    setEditFormData({
-      id: transaction.id,
-      accountingObject: transaction.accountingObject || "",
-      description: transaction.description || "",
-      customerId: transaction.customerId || null,
-      customerGroupId: transaction.customerGroupId || null,
-      paymentSource: transaction.paymentSource || null,
-    });
+  const handleOpenEditModal = (transactionOrIds) => {
+    if (Array.isArray(transactionOrIds)) {
+      setEditFormData({
+        id: 0, // Not used for bulk
+        ids: transactionOrIds,
+        accountingObject: "",
+        description: "",
+        customerId: null,
+        customerGroupId: null,
+        paymentSource: null,
+      });
+    } else {
+      setEditFormData({
+        id: transactionOrIds.id,
+        ids: [transactionOrIds.id],
+        accountingObject: transactionOrIds.accountingObject || "",
+        description: transactionOrIds.description || "",
+        customerId: transactionOrIds.customerId || null,
+        customerGroupId: transactionOrIds.customerGroupId || null,
+        paymentSource: transactionOrIds.paymentSource || null,
+      });
+    }
     setEditModalOpen(true);
   };
 
@@ -284,7 +299,7 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
     setEditLoading(true);
     try {
       await financialTransactionApi.updateFinancialTransaction(
-        editFormData.id,
+        editFormData.ids,
         {
           accountingObject: editFormData.accountingObject,
           paymentSource: editFormData.paymentSource,
@@ -294,6 +309,7 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
       );
       toast.success("Cập nhật giao dịch thành công!");
       setEditModalOpen(false);
+      setSelectedIds([]); // Clear selection after update
 
       // Refresh data
       fetchTransactions(false);
@@ -546,12 +562,56 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
         </div>
       </div>
 
+      {/* Bulk Actions Bar */}
+      {selectedIds.length > 0 && (
+        <div className="flex justify-start mb-2 animate-in slide-in-from-left-2 duration-300">
+          <div className="bg-white px-3 py-1.5 rounded-lg shadow-sm border border-blue-100 flex items-center gap-4 text-[11px]">
+            <span className="font-bold text-gray-700">
+              Đã chọn <span className="text-blue-600">{selectedIds.length}</span> GD
+            </span>
+            <div className="flex items-center gap-2 border-l pl-4 border-gray-100">
+              <button
+                onClick={() => handleOpenEditModal(selectedIds)}
+                className="px-3 py-1 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 transition-all flex items-center gap-1.5 shadow-sm"
+              >
+                <SquarePen size={12} />
+                Cập nhật đồng loạt
+              </button>
+              <button
+                onClick={() => setSelectedIds([])}
+                className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                title="Hủy chọn"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
         <div className="w-full overflow-x-auto">
           <table className="w-full divide-y divide-gray-200 table-fixed min-w-[1000px]">
             <thead className="bg-gray-100">
               <tr>
+                <th
+                  className="px-2 py-2 text-center"
+                  style={{ width: "40px" }}
+                >
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    checked={transactions.length > 0 && selectedIds.length === transactions.length}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedIds(transactions.map(t => t.id));
+                      } else {
+                        setSelectedIds([]);
+                      }
+                    }}
+                  />
+                </th>
                 <th
                   className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase border-r border-gray-300"
                   style={{ width: "80px" }}
@@ -615,7 +675,7 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
               {isLoading && transactions.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={10}
+                    colSpan={11}
                     className="px-4 py-8 text-center text-gray-500 text-sm"
                   >
                     Đang tải...
@@ -624,12 +684,27 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
               ) : transactions.length > 0 ? (
                 transactions.map((item, index) => {
                   const isLast = transactions.length === index + 1;
+                  const isSelected = selectedIds.includes(item.id);
                   return (
                     <tr
                       key={`${item.id}-${index}`}
                       ref={isLast ? lastElementRef : null}
-                      className="hover:bg-blue-50 transition-colors duration-150 group"
+                      className={`transition-colors duration-150 group ${isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
                     >
+                      <td className="px-2 py-2 text-center align-middle border-r border-gray-200">
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                          checked={isSelected}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedIds(prev => [...prev, item.id]);
+                            } else {
+                              setSelectedIds(prev => prev.filter(id => id !== item.id));
+                            }
+                          }}
+                        />
+                      </td>
                       <td className="px-2 py-2 text-[11px] align-top border-r border-gray-200">
                         <DateCell dateString={item.effectiveDate} />
                       </td>
@@ -693,7 +768,7 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
                 !isLoading && (
                   <tr>
                     <td
-                      colSpan={10}
+                      colSpan={11}
                       className="px-4 py-8 text-center text-gray-500 text-sm"
                     >
                       {error || "Không tìm thấy giao dịch nào."}

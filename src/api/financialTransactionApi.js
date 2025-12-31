@@ -46,15 +46,12 @@ const financialTransactionApi = {
     }
   },
 
-  updateFinancialTransaction: async (id, data) => {
+  updateFinancialTransaction: async (ids, data) => {
     try {
-      // data can be an object with { accountingObject, isCustomerPay, customerId }
-      // Or if legacy call passes string, handle that too (though we will update usage)
-      const payload = { id };
+      const payload = { ids: Array.isArray(ids) ? ids : [ids] };
       if (typeof data === 'string') {
         payload.accountingObject = data;
       } else {
-        // Spread valid fields
         if (data.accountingObject !== undefined) payload.accountingObject = data.accountingObject;
         if (data.customerId !== undefined) payload.customerId = data.customerId;
         if (data.customerGroupId !== undefined) payload.customerGroupId = data.customerGroupId;
