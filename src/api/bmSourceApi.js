@@ -66,13 +66,11 @@ const bmSourceApi = {
     }
   },
   // Tạo mới thông tin BmSource
-  createBmSource: async (sourceName) => {
+  createBmSource: async (data) => {
     try {
       const response = await axiosInstance.post(
         `${api}/BmSource/CreateBmSource`,
-        {
-          sourceName: sourceName,
-        }
+        data
       );
 
       return response.data;
@@ -101,6 +99,21 @@ const bmSourceApi = {
     try {
       const response = await axiosInstance.get(
         `${api}/BmSource/${sourceId}/reconciliation`,
+        {
+          params: { year: year, month: month },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  // Lấy tổng hợp công nợ các đầu tổng
+  getReconciliationSummary: async (year, month) => {
+    try {
+      const response = await axiosInstance.get(
+        `${api}/BmSource/reconciliation-summary`,
         {
           params: { year: year, month: month },
         }

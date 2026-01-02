@@ -1,24 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { Loader2, Calendar, FileText, ChevronRight, ChevronDown } from "lucide-react";
+import { Loader2, Calendar, FileText, TrendingUp, CreditCard } from "lucide-react";
 import bmSourceApi from "../../api/bmSourceApi";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
+import SourceDetailModal from "./SourceDetailModal";
 
 const MonthlySourceStats = () => {
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState(null);
-  const [year, setYear] = useState(2025);
-  const [month, setMonth] = useState(12);
-
-  // States for expandable rows
-  const [expandedSources, setExpandedSources] = useState(new Set());
-  const [reconciliationData, setReconciliationData] = useState({});
-  const [loadingReconciliation, setLoadingReconciliation] = useState(new Set());
+  const [data, setData] = useState([]);
+  const [year, setYear] = useState(dayjs().year());
+  const [month, setMonth] = useState(dayjs().month() + 1);
+  
+  // Modal State
+  const [selectedSource, setSelectedSource] = useState(null);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
 
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const response = await bmSourceApi.getMonthlyStats(year, month);
+      const response = await bmSourceApi.getReconciliationSummary(year, month);
       if (response.success) {
         setData(response.data);
       } else {
@@ -32,91 +32,71 @@ const MonthlySourceStats = () => {
     }
   };
 
-  const toggleSource = async (sourceId) => {
-    const isExpanded = expandedSources.has(sourceId);
-    
-    setExpandedSources(prev => {
-      const next = new Set(prev);
-      if (isExpanded) {
-        next.delete(sourceId);
-      } else {
-        next.add(sourceId);
-      }
-      return next;
-    });
-
-    if (!isExpanded && !reconciliationData[sourceId] && !loadingReconciliation.has(sourceId)) {
-      setLoadingReconciliation(prev => new Set(prev).add(sourceId));
-      try {
-        const response = await bmSourceApi.getReconciliation(sourceId, year, month);
-        if (response.success) {
-          setReconciliationData(prev => ({
-            ...prev,
-            [sourceId]: response.data
-          }));
-        }
-      } catch (error) {
-        console.error("Error fetching reconciliation:", error);
-        toast.error("Không thể tải chi tiết đối soát");
-      } finally {
-        setLoadingReconciliation(prev => {
-          const next = new Set(prev);
-          next.delete(sourceId);
-          return next;
-        });
-      }
-    }
-  };
-
   useEffect(() => {
     fetchStats();
-    // Clear expanded states when month/year changes
-    setExpandedSources(new Set());
-    setReconciliationData({});
   }, [year, month]);
 
-  const daysInMonth = new Date(year, month, 0).getDate();
-  const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
+  const handleRowClick = (source) => {
+    setSelectedSource(source);
+    setDetailModalOpen(true);
   };
 
   const formatNumber = (num) => {
     if (num === undefined || num === null) return "-";
-    return num.toLocaleString("vi-VN");
+    return num.toLocaleString("vi-VN", { maximumFractionDigits: 2 });
   };
 
+  const formatCurrency = (amount) => {
+     if (amount === undefined || amount === null) return "-";
+     return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
+  };
+
+  // Calculate totals for footer
+  const totals = data.reduce((acc, curr) => ({
+      openingBalance: acc.openingBalance + (curr.openingBalance || 0),
+      totalAds: acc.totalAds + (curr.totalAds || 0),
+      totalFee: acc.totalFee + (curr.totalFee || 0),
+      totalAdsPlusFee: acc.totalAdsPlusFee + (curr.totalAdsPlusFee || 0),
+      totalThreshold: acc.totalThreshold + (curr.totalThreshold || 0),
+      paid: acc.paid + (curr.paid || 0),
+      currentDebt: acc.currentDebt + (curr.currentDebt || 0)
+  }), {
+      openingBalance: 0,
+      totalAds: 0,
+      totalFee: 0,
+      totalAdsPlusFee: 0,
+      totalThreshold: 0,
+      paid: 0,
+      currentDebt: 0
+  });
+
   return (
-    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 h-full flex flex-col">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold flex items-center gap-2">
-          <FileText className="w-5 h-5 text-primary-darkest" />
-          Thống kê đầu tổng tháng {month}/{year}
+        <h2 className="text-xl font-bold flex items-center gap-2 text-gray-800">
+          <FileText className="w-6 h-6 text-blue-600" />
+          Tổng hợp công nợ đầu tổng tháng {month}/{year}
         </h2>
         
-        <div className="flex items-center gap-4 bg-gray-50 p-2 rounded-lg border border-gray-200">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4 bg-gray-50 p-1.5 rounded-lg border border-gray-200">
+          <div className="flex items-center gap-2 px-2">
             <Calendar className="w-4 h-4 text-gray-500" />
             <select 
               value={month} 
               onChange={(e) => setMonth(parseInt(e.target.value))}
-              className="bg-transparent border-none focus:ring-0 text-sm font-medium cursor-pointer"
+              className="bg-transparent border-none focus:ring-0 text-sm font-semibold text-gray-700 cursor-pointer outline-none"
             >
               {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
                 <option key={m} value={m}>Tháng {m}</option>
               ))}
             </select>
           </div>
-          <div className="h-4 w-px bg-gray-300"></div>
-          <div>
+          <div className="h-5 w-px bg-gray-300"></div>
+          <div className="px-2">
             <select 
               value={year} 
               onChange={(e) => setYear(parseInt(e.target.value))}
-              className="bg-transparent border-none focus:ring-0 text-sm font-medium cursor-pointer"
+              className="bg-transparent border-none focus:ring-0 text-sm font-semibold text-gray-700 cursor-pointer outline-none"
             >
               {Array.from({ length: 3 }, (_, i) => dayjs().year() - i).map(y => (
                 <option key={y} value={y}>Năm {y}</option>
@@ -127,148 +107,90 @@ const MonthlySourceStats = () => {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-primary-darkest" />
+        <div className="flex justify-center items-center h-64 flex-1">
+          <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
         </div>
       ) : (
-        <div className="overflow-x-auto border rounded-xl scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+        <div className="overflow-x-auto border rounded-xl shadow-sm flex-1 scrollbar-thin scrollbar-thumb-gray-200">
           <table className="w-full text-sm text-left border-collapse">
-            <thead className="bg-gray-50 sticky top-0 z-10 border-b">
+            <thead className="bg-[#f8f9fa] text-gray-700 sticky top-0 z-20">
               <tr>
-                <th className="px-4 py-3 font-semibold text-gray-700 bg-gray-50 sticky left-0 z-20 border-r whitespace-nowrap min-w-[250px]">
-                  Tên Nguồn BM
-                </th>
-                <th className="px-4 py-3 font-semibold text-gray-700 text-right bg-blue-50 border-r whitespace-nowrap min-w-[120px]">
-                  Tổng chi tiêu
-                </th>
-                {daysArray.map(day => (
-                  <th key={day} className="px-3 py-3 font-semibold text-gray-700 text-center min-w-[100px] border-r">
-                    {day}
-                  </th>
-                ))}
+                <th className="px-6 py-4 font-bold text-gray-600 border-b border-r min-w-[200px]">Nguồn BM</th>
+                <th className="px-4 py-4 font-bold text-gray-600 border-b border-r text-right min-w-[140px]">Dư đầu kỳ</th>
+                <th className="px-4 py-4 font-bold text-gray-600 border-b border-r text-right min-w-[140px]">Tổng Ads</th>
+                <th className="px-4 py-4 font-bold text-gray-600 border-b border-r text-right min-w-[120px]">Tổng Phí</th>
+                <th className="px-4 py-4 font-bold text-blue-700 border-b border-r text-right bg-blue-50/50 min-w-[150px]">Tổng (Ads + phí)</th>
+                <th className="px-4 py-4 font-bold text-orange-600 border-b border-r text-right min-w-[140px]">Ngưỡng</th>
+                <th className="px-4 py-4 font-bold text-green-600 border-b border-r text-right min-w-[140px]">Đã thanh toán</th>
+                <th className="px-4 py-4 font-bold text-red-600 border-b text-right min-w-[150px]">Công nợ phải trả</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 bg-white">
-              {data && data.sources.length > 0 ? (
-                data.sources.map((source) => {
-                  const isExpanded = expandedSources.has(source.sourceId);
-                  const isLoading = loadingReconciliation.has(source.sourceId);
-                  const reconData = reconciliationData[source.sourceId];
-
-                  return (
-                    <React.Fragment key={source.sourceId}>
-                      <tr 
-                        className={`hover:bg-gray-50 transition-colors cursor-pointer ${isExpanded ? 'bg-blue-50/20' : ''}`}
-                        onClick={() => toggleSource(source.sourceId)}
-                      >
-                        <td className="px-4 py-3 font-medium text-gray-900 sticky left-0 bg-inherit z-10 border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
-                          <div className="flex items-center gap-2">
-                            {isExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
-                            {source.sourceName}
-                            {isLoading && <Loader2 className="w-3 h-3 animate-spin text-primary-darkest" />}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-right font-bold text-blue-700 bg-blue-50 border-r">
-                          {formatNumber(source.totalSpend)}
-                        </td>
-                        {daysArray.map(day => {
-                          const dailyVal = source.dailyStats[day.toString()];
-                          return (
-                            <td key={day} className={`px-3 py-3 text-center border-r ${dailyVal > 0 ? 'text-gray-900' : 'text-gray-300'}`}>
-                              {dailyVal ? formatNumber(dailyVal) : "-"}
-                            </td>
-                          );
-                        })}
-                      </tr>
-
-                      {/* Display Reconciliation Details */}
-                      {isExpanded && reconData && reconData.bmDetails && reconData.bmDetails.map((bm) => (
-                        <React.Fragment key={`bm-${bm.bmId}`}>
-                          <tr className="bg-gray-50/50">
-                            <td className="px-4 py-2 pl-10 font-medium text-gray-700 sticky left-0 bg-gray-50 z-10 border-r border-b first-letter:uppercase">
-                              <div className="flex items-center gap-2">
-                                <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-                                {bm.bmName}
-                              </div>
-                            </td>
-                            <td className="px-4 py-2 text-right font-semibold text-blue-600 bg-blue-50/30 border-r border-b">
-                              {formatNumber(bm.totalSpend)}
-                            </td>
-                            {daysArray.map(day => (
-                              <td key={`bm-day-${day}`} className="px-3 py-2 text-center border-r border-b text-gray-400">
-                                -
-                              </td>
-                            ))}
-                          </tr>
-                          
-                          {/* Ad Account Details */}
-                          {bm.adAccountDetails && bm.adAccountDetails.map((acc) => (
-                            <tr key={`acc-${acc.adAccountId}`} className="bg-white">
-                              <td className="px-4 py-1.5 pl-16 text-xs text-gray-500 sticky left-0 bg-white z-10 border-r border-b">
-                                <div className="flex flex-col">
-                                  <span className="font-semibold text-gray-700">{acc.adAccountName}</span>
-                                  <span className="text-[10px]">{acc.adAccountIdNumber}</span>
-                                </div>
-                              </td>
-                              <td className="px-4 py-1.5 text-right text-xs font-medium text-gray-600 bg-gray-50/20 border-r border-b">
-                                {formatNumber(acc.totalSpend)}
-                              </td>
-                              {daysArray.map(day => (
-                                <td key={`acc-day-${day}`} className="px-3 py-1.5 text-center border-r border-b text-gray-300">
-                                  -
-                                </td>
-                              ))}
-                            </tr>
-                          ))}
-                        </React.Fragment>
-                      ))}
-
-                      {/* Loading state for individual source if needed but already covered by the icon */}
-                      {isExpanded && isLoading && (
-                        <tr>
-                          <td colSpan={daysInMonth + 2} className="px-4 py-4 text-center">
-                            <div className="flex justify-center items-center gap-2 text-gray-400 text-xs">
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                              Đang tải dữ liệu chi tiết...
+            <tbody className="divide-y divide-gray-100 bg-white">
+              {data && data.length > 0 ? (
+                data.map((item) => (
+                  <tr 
+                    key={item.sourceId} 
+                    onClick={() => handleRowClick(item)}
+                    className="hover:bg-blue-50/50 transition-all cursor-pointer group"
+                  >
+                    <td className="px-6 py-4 font-bold text-gray-800 border-r border-gray-100 group-hover:text-blue-600 transition-colors">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
+                                {item.sourceName.charAt(0).toUpperCase()}
                             </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })
+                            {item.sourceName}
+                        </div>
+                    </td>
+                    <td className="px-4 py-4 text-right text-gray-700 border-r border-gray-100 font-medium">{formatNumber(item.openingBalance)}</td>
+                    <td className="px-4 py-4 text-right text-gray-700 border-r border-gray-100 font-medium">{formatNumber(item.totalAds)}</td>
+                    <td className="px-4 py-4 text-right text-gray-500 border-r border-gray-100">{formatNumber(item.totalFee)}</td>
+                    <td className="px-4 py-4 text-right font-bold text-blue-700 bg-blue-50/30 border-r border-blue-100">{formatNumber(item.totalAdsPlusFee)}</td>
+                    <td className="px-4 py-4 text-right text-orange-600 border-r border-gray-100 font-medium">{formatNumber(item.totalThreshold)}</td>
+                    <td className="px-4 py-4 text-right text-green-600 border-r border-gray-100 font-medium">{formatNumber(item.paid)}</td>
+                    <td className={`px-4 py-4 text-right font-bold ${item.currentDebt > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                        {formatNumber(item.currentDebt)}
+                    </td>
+                  </tr>
+                ))
               ) : (
                 <tr>
-                  <td colSpan={daysInMonth + 2} className="px-4 py-10 text-center text-gray-500 bg-gray-50 italic">
-                    Không có dữ liệu cho tháng này
+                  <td colSpan={8} className="px-6 py-12 text-center text-gray-400 bg-gray-50 italic">
+                    <div className="flex flex-col items-center gap-2">
+                        <FileText className="w-8 h-8 text-gray-300" />
+                        Không có dữ liệu công nợ cho tháng này
+                    </div>
                   </td>
                 </tr>
               )}
             </tbody>
-            {data && data.sources.length > 0 && (
-              <tfoot className="bg-gray-100 font-bold border-t-2">
-                <tr>
-                  <td className="px-4 py-3 sticky left-0 bg-gray-100 z-10 border-r uppercase tracking-wider">
-                    Tổng kết tháng
-                  </td>
-                  <td className="px-4 py-3 text-right text-primary-darkest border-r">
-                    {formatNumber(data.grandTotalSpend)}
-                  </td>
-                  {daysArray.map(day => {
-                    const dayTotal = data.sources.reduce((sum, source) => {
-                      return sum + (source.dailyStats[day.toString()] || 0);
-                    }, 0);
-                    return (
-                      <td key={day} className="px-3 py-3 text-center border-r text-gray-800">
-                        {dayTotal > 0 ? formatNumber(dayTotal) : "-"}
-                      </td>
-                    );
-                  })}
-                </tr>
-              </tfoot>
+            {/* Footer Totals */}
+            {data && data.length > 0 && (
+                <tfoot className="bg-gray-100 font-bold border-t-2 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] sticky bottom-0 z-20">
+                    <tr>
+                        <td className="px-6 py-4 uppercase text-gray-600" colSpan={1}>Tổng cộng</td>
+                        <td className="px-4 py-4 text-right text-gray-800 border-r border-gray-200">{formatNumber(totals.openingBalance)}</td>
+                        <td className="px-4 py-4 text-right text-gray-800 border-r border-gray-200">{formatNumber(totals.totalAds)}</td>
+                        <td className="px-4 py-4 text-right text-gray-800 border-r border-gray-200">{formatNumber(totals.totalFee)}</td>
+                        <td className="px-4 py-4 text-right text-blue-800 bg-blue-100/50 border-r border-blue-200">{formatNumber(totals.totalAdsPlusFee)}</td>
+                        <td className="px-4 py-4 text-right text-orange-700 border-r border-gray-200">{formatNumber(totals.totalThreshold)}</td>
+                        <td className="px-4 py-4 text-right text-green-700 border-r border-gray-200">{formatNumber(totals.paid)}</td>
+                        <td className="px-4 py-4 text-right text-red-700">{formatNumber(totals.currentDebt)}</td>
+                    </tr>
+                </tfoot>
             )}
           </table>
         </div>
+      )}
+
+      {/* Detail Modal */}
+      {selectedSource && (
+          <SourceDetailModal 
+            open={detailModalOpen}
+            onClose={() => setDetailModalOpen(false)}
+            source={selectedSource}
+            year={year}
+            month={month}
+          />
       )}
     </div>
   );

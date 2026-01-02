@@ -43,6 +43,7 @@ function BmSourceList() {
   const [formData, setFormData] = useState({
     id: 0,
     sourceName: "",
+    sourceFeePercent: 0,
   });
   const [saving, setSaving] = useState(false);
 
@@ -108,8 +109,9 @@ function BmSourceList() {
       if (requestRef.current !== reqId) return; // bỏ response cũ
       const bmSource = res?.data;
       setFormData({
-        id: bmSource?.id ?? 0, // SỬA: Thay đổi bmSource?.name thành bmSource?.sourceName
+        id: bmSource?.id ?? 0,
         sourceName: bmSource?.sourceName ?? "",
+        sourceFeePercent: (bmSource?.sourceFeePercent || 0) * 100,
       });
     } catch (err) {
       toast.error(typeof err === "string" ? err : "Load chi tiết ngân hàng thất bại");
@@ -126,7 +128,8 @@ function BmSourceList() {
     try {
       await bmSourceApi.updateBmSource({
         id: formData.id,
-        sourceName: formData.sourceName, // <--- Đã đúng
+        sourceName: formData.sourceName,
+        sourceFeePercent: Number(formData.sourceFeePercent) / 100,
       });
       toast.success("Cập nhật ngân hàng thành công");
       setIsEditModalOpen(false);
@@ -147,14 +150,17 @@ function BmSourceList() {
 
   // ------------------------- CREATE BANK -------------------------
   const openCreateModal = () => {
-    setFormData({ sourceName: "", bmSourceCode: "" });
+    setFormData({ sourceName: "", sourceFeePercent: 0 });
     setIsCreateModalOpen(true);
   };
 
   const handleCreateSave = async () => {
     setSaving(true);
     try {
-      await bmSourceApi.createBmSource(formData.sourceName);
+      await bmSourceApi.createBmSource({
+        sourceName: formData.sourceName,
+        sourceFeePercent: Number(formData.sourceFeePercent) / 100
+      });
       toast.success("Thêm Bm thành công");
       setIsCreateModalOpen(false);
       fetchBmSources(pageNumber, pageSize, debouncedSearchCode.trim());
@@ -239,6 +245,12 @@ function BmSourceList() {
                 >
                   Tên Nguồn
                 </th>
+                <th
+                  scope="col"
+                  className="px-3 py-2 text-left text-xs font-medium text-gray-900  tracking-wider w-1/6 text-primary-darkest"
+                >
+                  Phí (%)
+                </th>
 
                 <th
                   scope="col"
@@ -263,6 +275,9 @@ function BmSourceList() {
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
                     {bmSource.sourceName}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {(bmSource.sourceFeePercent * 100).toFixed(1)}%
                   </td>
                   <td className="w-1/12 px-3 py-2 whitespace-nowrap text-xs text-gray-500">
                     <button

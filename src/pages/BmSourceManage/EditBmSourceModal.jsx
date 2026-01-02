@@ -95,6 +95,19 @@ export default function EditBmSourceModal({
                           className="w-full h-12 border border-gray-300 rounded-xl px-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                         />
                       </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Phí (%)
+                        </label>
+                        <input
+                          type="number"
+                          name="sourceFeePercent"
+                          value={formData.sourceFeePercent}
+                          onChange={onChange}
+                          disabled={saving}
+                          className="w-full h-12 border border-gray-300 rounded-xl px-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                        />
+                      </div>
                     </div>
 
                     {/* Buttons */}
