@@ -172,8 +172,8 @@ const CustomerDetailView = ({ id }) => {
       <div className="p-4 border-b border-gray-100 bg-gray-50/30">
         <div className="flex justify-between items-start mb-4">
             <div>
-                <h2 className="text-lg font-bold text-gray-800">{data?.name}</h2>
-                <p className="text-xs text-secondary italic">{data?.fullCustomerCode}</p>
+                <h2 className="text-lg font-bold text-gray-800">{data?.fullCustomerCode}</h2>
+                <p className="text-xs text-secondary italic">{data?.name}</p>
             </div>
             <button
                 onClick={handleOpenAddRental}
@@ -183,15 +183,10 @@ const CustomerDetailView = ({ id }) => {
                 Thuê Tài Khoản
             </button>
         </div>
-
-        <div className="grid grid-cols-2 gap-3">
-            <DetailField label="Mã KH" value={data?.customerCode} />
-            <DetailField label="Agency Code" value={data?.agencyCode} />
-        </div>
       </div>
 
       {/* Tabs */}
-      <div className="px-4 py-2 border-b border-gray-100 flex items-center justify-between bg-white">
+      <div className="px-2 py-2 border-b border-gray-100 flex items-center justify-between bg-white">
         <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
             <button
                 onClick={() => setActiveTab("ACTIVE")}
@@ -214,29 +209,34 @@ const CustomerDetailView = ({ id }) => {
             <table className="min-w-full divide-y divide-gray-100">
                 <thead className="bg-gray-50/50 sticky top-0 z-10">
                     <tr>
-                <th className="px-4 py-2 text-left text-[10px] font-bold text-gray-500 uppercase">Tài khoản</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold text-gray-500 uppercase">Thanh toán</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold text-gray-500 uppercase">Trạng thái</th>
-                <th className="px-4 py-2 text-right text-[10px] font-bold text-gray-500 uppercase">Hành động</th>
+                <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-500 uppercase">Tài khoản</th>
+                <th className="px-1 py-2 text-left text-[10px] font-bold text-gray-500 uppercase min-w-[100px]">Thanh toán</th>
+                <th className="px-1 py-2 text-left text-[10px] font-bold text-gray-500 uppercase">Trạng thái</th>
+                <th className="px-2 py-2 text-right text-[10px] font-bold text-gray-500 uppercase">Hành động</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                     {displayAccounts.map((acc) => (
                         <tr key={acc.customerAdsAccountId} className="hover:bg-gray-50/80 transition-colors">
-                            <td className="px-4 py-3">
+                            <td className="px-2 py-2">
                                 <div className="flex flex-col">
-                                    <span className="text-[11px] font-bold text-gray-800 truncate max-w-[150px]" title={acc.adAccountName}>
-                                        {acc.adAccountName}
+                                    <span className="text-[11px] font-bold text-gray-800 truncate max-w-[120px]" title={acc.adAccountIdNumber}>
+                                        {acc.adAccountIdNumber}
                                     </span>
-                                    <span className="text-[10px] text-gray-400 font-mono">{acc.adAccountIdNumber}</span>
+                                    <span className="text-[10px] text-gray-400 font-mono truncate max-w-[120px]" title={acc.adAccountName}>{acc.adAccountName}</span>
                                 </div>
                             </td>
-                            <td className="px-4 py-3">
+                            <td className="px-1 py-2">
                                 <div className="flex flex-col gap-1">
                                     {acc.paymentMode === 1 ? (
                                         <span className="px-2 py-0.5 rounded bg-purple-50 text-purple-600 border border-purple-100 flex items-center w-fit gap-1 text-[10px] font-bold">
                                             <span className="w-1 h-1 rounded-full bg-purple-400"></span>
                                             Thẻ khách
+                                        </span>
+                                    ) : acc.paymentMode === 3 ? (
+                                        <span className="px-2 py-0.5 rounded bg-teal-50 text-teal-600 border border-teal-100 flex items-center w-fit gap-1 text-[10px] font-bold">
+                                            <span className="w-1 h-1 rounded-full bg-teal-400"></span>
+                                            Thẻ đầu tổng
                                         </span>
                                     ) : (
                                         <span className="px-2 py-0.5 rounded bg-orange-50 text-orange-600 border border-orange-100 flex items-center w-fit gap-1 text-[10px] font-bold">
@@ -249,16 +249,17 @@ const CustomerDetailView = ({ id }) => {
                                     </span>
                                 </div>
                             </td>
-                            <td className="px-4 py-3">
+                            <td className="px-1 py-2">
                                 <div className="flex flex-col gap-1">
                                     {acc.statusAdsAccount ? 
                                         <span className="w-fit px-1.5 py-0.5 text-[8px] font-black bg-red-100 text-red-700 rounded-full border border-red-200">LOCKED</span> : 
                                         <span className="w-fit px-1.5 py-0.5 text-[8px] font-black bg-green-100 text-green-700 rounded-full border border-green-200">LIVE</span>
                                     }
                                     <span className="text-[9px] text-gray-400">{formatDate(acc.rentalDate)}</span>
+                                    <span className="text-[9px] text-gray-400">{formatDate(acc.endAt)}</span>
                                 </div>
                             </td>
-                            <td className="px-4 py-3 text-right">
+                            <td className="px-1 py-2 text-right">
                                 <select
                                     value={acc.status || 'ACTIVE'}
                                     onChange={(e) => handleStatusChange(acc.customerAdsAccountId, e.target.value)}
@@ -285,7 +286,7 @@ const CustomerDetailView = ({ id }) => {
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
                 <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                    <h3 className="text-sm font-bold text-gray-700">Thêm tài khoản thuê</h3>
+                    <h3 className="text-sm font-bold text-gray-700">Tạo phiên thuê</h3>
                     <button onClick={() => setIsAddRentalOpen(false)} className="text-gray-400 hover:text-gray-600">
                         <Plus className="w-5 h-5 rotate-45" />
                     </button>
@@ -298,13 +299,13 @@ const CustomerDetailView = ({ id }) => {
                         <input 
                             type="text" 
                             className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                            placeholder="Số tài khoản..."
+                            placeholder="Tìm ID tài khoản..."
                             value={searchAccount}
                             onChange={(e) => setSearchAccount(e.target.value)}
                         />
                     </div>
 
-                    <div className="max-h-48 overflow-y-auto border border-gray-100 rounded-lg divide-y divide-gray-50">
+                    <div className="max-h-48 overflow-y-auto border border-blue-500 rounded-lg divide-y divide-gray-50">
                         {loadingAccounts ? (
                             <div className="p-4 flex justify-center"><RotateCw className="w-5 h-5 animate-spin text-blue-500" /></div>
                         ) : availableAccounts.filter(a => a.adAccountIdNumber?.includes(searchAccount)).map(acc => (
@@ -321,7 +322,7 @@ const CustomerDetailView = ({ id }) => {
 
                     <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase">Ngày bắt đầu</label>
+                            <label className="text-[10px] font-bold text-gray-500 uppercase">Ngày bắt đầu thuê</label>
                             <input 
                                 type="date" 
                                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs" 
@@ -350,6 +351,7 @@ const CustomerDetailView = ({ id }) => {
                         >
                             <option value={2}>Thẻ HDG</option>
                             <option value={1}>Thẻ khách</option>
+                            <option value={3}>Thẻ đầu tổng</option>
                         </select>
                     </div>
                 </div>

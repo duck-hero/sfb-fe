@@ -358,7 +358,7 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
 
                                             {customer && (
                                                 <div className="flex flex-col border-l pl-4 border-gray-300">
-                                                    <span className="font-bold text-gray-900 text-sm leading-tight">{customer.fullCustomerCode}</span>
+                                                    <span className="font-bold text-gray-900 text-sm leading-tight">{customer.fullCustomerCode}{data?.customerGroupId ? ' ( ' + data?.customerGroupName + ' )' : ''}</span>
                                                     <span className="text-xs text-gray-500 font-mono">{customer.name}</span>
                                                 </div>
                                             )}
@@ -394,44 +394,46 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
                                                     Lưu
                                                 </button>
 
-                                                <Menu as="div" className="relative h-8">
-                                                    <Menu.Button
-                                                        disabled={loading}
-                                                        className={`h-full px-1.5 rounded-r-md border-l transition-all disabled:opacity-50
-                                ${isDirty
-                                                                ? 'bg-blue-600 text-white border-blue-500 hover:bg-blue-700'
-                                                                : 'bg-gray-100 text-gray-400 border-gray-200 hover:bg-gray-200'}`}
-                                                    >
-                                                        <ChevronDown className="w-4 h-4" />
-                                                    </Menu.Button>
+                                                {!data?.customerGroupId && (
+                                                    <Menu as="div" className="relative h-8">
+                                                        <Menu.Button
+                                                            disabled={loading}
+                                                            className={`h-full px-1.5 rounded-r-md border-l transition-all disabled:opacity-50
+                                    ${isDirty
+                                                                    ? 'bg-blue-600 text-white border-blue-500 hover:bg-blue-700'
+                                                                    : 'bg-gray-100 text-gray-400 border-gray-200 hover:bg-gray-200'}`}
+                                                        >
+                                                            <ChevronDown className="w-4 h-4" />
+                                                        </Menu.Button>
 
-                                                    <Transition
-                                                        as={Fragment}
-                                                        enter="transition ease-out duration-100"
-                                                        enterFrom="transform opacity-0 scale-95"
-                                                        enterTo="transform opacity-100 scale-100"
-                                                        leave="transition ease-in duration-75"
-                                                        leaveFrom="transform opacity-100 scale-100"
-                                                        leaveTo="transform opacity-0 scale-95"
-                                                    >
-                                                        <Menu.Items className="absolute right-0 mt-1 w-40 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-[70]">
-                                                            <div className="py-1">
-                                                                <Menu.Item>
-                                                                    {({ active }) => (
-                                                                        <button
-                                                                            onClick={handleViewInvoice}
-                                                                            className={`${active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                                                                                } flex w-full items-center px-4 py-2 text-xs font-medium gap-2`}
-                                                                        >
-                                                                            <Eye className="w-3.5 h-3.5 text-blue-500" />
-                                                                            Chi tiết công nợ
-                                                                        </button>
-                                                                    )}
-                                                                </Menu.Item>
-                                                            </div>
-                                                        </Menu.Items>
-                                                    </Transition>
-                                                </Menu>
+                                                        <Transition
+                                                            as={Fragment}
+                                                            enter="transition ease-out duration-100"
+                                                            enterFrom="transform opacity-0 scale-95"
+                                                            enterTo="transform opacity-100 scale-100"
+                                                            leave="transition ease-in duration-75"
+                                                            leaveFrom="transform opacity-100 scale-100"
+                                                            leaveTo="transform opacity-0 scale-95"
+                                                        >
+                                                            <Menu.Items className="absolute right-0 mt-1 w-40 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-[70]">
+                                                                <div className="py-1">
+                                                                    <Menu.Item>
+                                                                        {({ active }) => (
+                                                                            <button
+                                                                                onClick={handleViewInvoice}
+                                                                                className={`${active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                                                                                    } flex w-full items-center px-4 py-2 text-xs font-medium gap-2`}
+                                                                            >
+                                                                                <Eye className="w-3.5 h-3.5 text-blue-500" />
+                                                                                Chi tiết công nợ
+                                                                            </button>
+                                                                        )}
+                                                                    </Menu.Item>
+                                                                </div>
+                                                            </Menu.Items>
+                                                        </Transition>
+                                                    </Menu>
+                                                )}
                                             </div>
 
                                             {data?.googleSheetId && (
@@ -817,6 +819,11 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
                                                                     {row.paymentMode === 2 && (
                                                                         <span className="text-[9px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded border border-orange-200 font-medium whitespace-nowrap">
                                                                             Thẻ HDG
+                                                                        </span>
+                                                                    )}
+                                                                    {row.paymentMode === 3 && (
+                                                                        <span className="text-[9px] bg-teal-100 text-teal-700 px-1.5 py-0.5 rounded border border-teal-200 font-medium whitespace-nowrap">
+                                                                            Thẻ đầu tổng
                                                                         </span>
                                                                     )}
 

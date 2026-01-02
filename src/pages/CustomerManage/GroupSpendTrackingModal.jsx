@@ -638,6 +638,9 @@ const GroupSpendTrackingModal = ({ open, group, onClose }) => {
                                                                                 {row.paymentMode === 2 && (
                                                                                     <span className="text-[8px] bg-orange-100 text-orange-700 px-1 py-0.5 rounded font-bold uppercase">Thẻ HDG</span>
                                                                                 )}
+                                                                                {row.paymentMode === 3 && (
+                                                                                    <span className="text-[8px] bg-teal-100 text-teal-700 px-1 py-0.5 rounded font-bold uppercase">Thẻ đầu tổng</span>
+                                                                                )}
                                                                                 <span className="text-[9px] bg-blue-50 text-blue-700 px-1 py-0.5 rounded font-bold border border-blue-100">{(row.feePercent * 100).toFixed(1)}%</span>
                                                                             </div>
                                                                         </div>
