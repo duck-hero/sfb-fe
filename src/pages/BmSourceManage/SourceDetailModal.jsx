@@ -110,31 +110,49 @@ const SourceDetailModal = ({ open, onClose, source, year, month }) => {
                                     ) : data ? (
                                         <div className="flex flex-col gap-6">
                                             {/* Summary Cards */}
-                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                                <div className="bg-white p-4 rounded-xl shadow-sm border border-blue-100">
-                                                    <div className="text-xs text-gray-500 uppercase font-bold mb-2 tracking-wider">Chi tiêu thẻ nguồn</div>
-                                                    <div className="text-xl font-black text-blue-600 truncate" title={formatNumber(data.sourceCardSpent)}>
+                                            <div className="grid grid-cols-2 lg:grid-cols-7 gap-2">
+                                                <div className="bg-white p-2 rounded-lg shadow-sm border border-blue-100">
+                                                    <div className="text-[10px] text-gray-500 uppercase font-bold mb-1">Tổng Ads thẻ nguồn</div>
+                                                    <div className="text-sm font-black text-blue-600 truncate" title={formatNumber(data.sourceCardSpent)}>
                                                         {formatNumber(data.sourceCardSpent)}
                                                     </div>
                                                 </div>
-                                                <div className="bg-white p-4 rounded-xl shadow-sm border border-purple-100">
-                                                    <div className="text-xs text-gray-500 uppercase font-bold mb-2 tracking-wider">Chi tiêu thẻ khác</div>
-                                                    <div className="text-xl font-black text-purple-600 truncate" title={formatNumber(data.notSourceCardSpent)}>
+                                                <div className="bg-white p-2 rounded-lg shadow-sm border border-purple-100">
+                                                    <div className="text-[10px] text-gray-500 uppercase font-bold mb-1">Tổng ads thẻ HDG/KHÁCH</div>
+                                                    <div className="text-sm font-black text-purple-600 truncate" title={formatNumber(data.notSourceCardSpent)}>
                                                         {formatNumber(data.notSourceCardSpent)}
                                                     </div>
                                                 </div>
-                                                <div className="bg-white p-4 rounded-xl shadow-sm border border-orange-100">
-                                                    <div className="text-xs text-gray-500 uppercase font-bold mb-2 tracking-wider">
-                                                        Phí ngoại tệ ({(data.sourceFeePercent * 100).toFixed(1)}%)
+                                                <div className="bg-white p-2 rounded-lg shadow-sm border border-gray-200">
+                                                    <div className="text-[10px] text-gray-500 uppercase font-bold mb-1">Tổng ads</div>
+                                                    <div className="text-sm font-black text-gray-700 truncate" title={formatNumber(data.totalSpend)}>
+                                                        {formatNumber(data.totalSpend)}
                                                     </div>
-                                                    <div className="text-xl font-black text-orange-600 truncate" title={formatNumber(data.sourceFeeAmount)}>
+                                                </div>
+                                                <div className="bg-white p-2 rounded-lg shadow-sm border border-orange-100">
+                                                    <div className="text-[10px] text-gray-500 uppercase font-bold mb-1">
+                                                        Phí ({(data.sourceFeePercent * 100).toFixed(1)}%)
+                                                    </div>
+                                                    <div className="text-sm font-black text-orange-600 truncate" title={formatNumber(data.sourceFeeAmount)}>
                                                         {formatNumber(data.sourceFeeAmount)}
                                                     </div>
                                                 </div>
-                                                <div className="bg-white p-4 rounded-xl shadow-sm border border-green-100 bg-green-50/10">
-                                                    <div className="text-xs text-gray-500 uppercase font-bold mb-2 tracking-wider">Phải thanh toán</div>
-                                                    <div className="text-xl font-black text-green-600 truncate" title={formatNumber(data.amountDue)}>
-                                                        {formatNumber(data.amountDue)}
+                                                <div className="bg-white p-2 rounded-lg shadow-sm border border-cyan-100">
+                                                    <div className="text-[10px] text-gray-500 uppercase font-bold mb-1">Ngưỡng</div>
+                                                    <div className="text-sm font-black text-cyan-600 truncate" title={formatNumber(data.totalThresholdCut)}>
+                                                        {formatNumber(data.totalThresholdCut)}
+                                                    </div>
+                                                </div>
+                                                <div className="bg-white p-2 rounded-lg shadow-sm border border-green-100">
+                                                    <div className="text-[10px] text-gray-500 uppercase font-bold mb-1">Đã thanh toán</div>
+                                                    <div className="text-sm font-black text-green-600 truncate" title={formatNumber(data.totalPaid)}>
+                                                        {formatNumber(data.totalPaid)}
+                                                    </div>
+                                                </div>
+                                                <div className="bg-white p-2 rounded-lg shadow-sm border border-red-100 bg-red-50/10">
+                                                    <div className="text-[10px] text-gray-500 uppercase font-bold mb-1">Dư nợ</div>
+                                                    <div className="text-sm font-black text-red-600 truncate" title={formatNumber(data.balance)}>
+                                                        {formatNumber(data.balance)}
                                                     </div>
                                                 </div>
                                             </div>
@@ -179,19 +197,19 @@ const SourceDetailModal = ({ open, onClose, source, year, month }) => {
                                                                     text: "text-blue-900",
                                                                     indicator: "bg-blue-600"
                                                                 };
-                                                                
+
                                                                 return (
                                                                     <React.Fragment key={bm.bmId}>
                                                                         {/* BM HEADER ROW */}
-                                                                        <tr 
-                                                                            onClick={() => toggleBm(bm.bmId)} 
+                                                                        <tr
+                                                                            onClick={() => toggleBm(bm.bmId)}
                                                                             className={`${theme.bmBg} cursor-pointer transition-colors border-b ${theme.bmBorder}`}
                                                                         >
                                                                             <td className={`px-4 py-3 font-bold sticky left-0 z-20 bg-inherit border-r ${theme.bmBorder} ${theme.text} w-[300px] min-w-[300px] max-w-[300px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]`}>
                                                                                 <div className="flex items-center gap-2">
-                                                                                     {isBmExpanded ? <ChevronDown className="w-4 h-4 opacity-70" /> : <ChevronRight className="w-4 h-4 opacity-70" />}
-                                                                                     <span className={`w-2 h-2 rounded-full ${theme.indicator}`}></span>
-                                                                                     <span className="truncate" title={bm.bmName}>{bm.bmName}</span>
+                                                                                    {isBmExpanded ? <ChevronDown className="w-4 h-4 opacity-70" /> : <ChevronRight className="w-4 h-4 opacity-70" />}
+                                                                                    <span className={`w-2 h-2 rounded-full ${theme.indicator}`}></span>
+                                                                                    <span className="truncate" title={bm.bmName}>{bm.bmName}</span>
                                                                                 </div>
                                                                             </td>
                                                                             <td className={`px-4 py-3 text-right font-bold sticky left-[300px] z-20 bg-inherit border-r ${theme.bmBorder} ${theme.text} w-[150px] min-w-[150px] max-w-[150px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]`}>
@@ -202,26 +220,26 @@ const SourceDetailModal = ({ open, onClose, source, year, month }) => {
 
                                                                         {/* BM CONTENT */}
                                                                         {isBmExpanded && bm.cardGroups && bm.cardGroups.map((group, gIdx) => (
-                                                                             <React.Fragment key={`g-${bm.bmId}-${gIdx}`}>
-                                                                                 {/* GROUP HEADER */}
-                                                                                 {(group.totalSpend > 0 || group.adAccountDetails?.length > 0) && (
-                                                                                     <tr className={`${theme.groupBg} border-b ${theme.groupBorder}`}>
-                                                                                          <td className={`px-4 py-2 pl-12 font-semibold text-gray-600 sticky left-0 z-20 bg-inherit border-r uppercase text-[11px] ${theme.groupBorder} w-[300px] min-w-[300px] max-w-[300px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]`}>
-                                                                                              {group.groupName === 'THE_NGUON' ? 'Thẻ nguồn' : 'Thẻ khác'}
-                                                                                          </td>
-                                                                                          <td className={`px-4 py-2 text-right font-semibold text-gray-600 sticky left-[300px] z-20 bg-inherit border-r ${theme.groupBorder} w-[150px] min-w-[150px] max-w-[150px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]`}>
-                                                                                              {formatNumber(group.totalSpend)}
-                                                                                          </td>
-                                                                                          {daysArray.map(day => <td key={day} className={`border-r ${theme.groupBorder} bg-opacity-30`}></td>)}
-                                                                                     </tr>
-                                                                                 )}
+                                                                            <React.Fragment key={`g-${bm.bmId}-${gIdx}`}>
+                                                                                {/* GROUP HEADER */}
+                                                                                {(group.totalSpend > 0 || group.adAccountDetails?.length > 0) && (
+                                                                                    <tr className={`${theme.groupBg} border-b ${theme.groupBorder}`}>
+                                                                                        <td className={`px-4 py-2 pl-12 font-semibold text-gray-600 sticky left-0 z-20 bg-inherit border-r uppercase text-[11px] ${theme.groupBorder} w-[300px] min-w-[300px] max-w-[300px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]`}>
+                                                                                            {group.groupName === 'THE_NGUON' ? 'Thẻ nguồn' : 'Thẻ khác'}
+                                                                                        </td>
+                                                                                        <td className={`px-4 py-2 text-right font-semibold text-gray-600 sticky left-[300px] z-20 bg-inherit border-r ${theme.groupBorder} w-[150px] min-w-[150px] max-w-[150px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]`}>
+                                                                                            {formatNumber(group.totalSpend)}
+                                                                                        </td>
+                                                                                        {daysArray.map(day => <td key={day} className={`border-r ${theme.groupBorder} bg-opacity-30`}></td>)}
+                                                                                    </tr>
+                                                                                )}
 
-                                                                                 {/* ACCOUNTS */}
-                                                                                 {group.adAccountDetails && group.adAccountDetails.map(acc => {
-                                                                                     const dailySpendMap = {};
-                                                                                     acc.dailySpends?.forEach(ds => dailySpendMap[new Date(ds.date).getDate()] = ds.spend);
+                                                                                {/* ACCOUNTS */}
+                                                                                {group.adAccountDetails && group.adAccountDetails.map(acc => {
+                                                                                    const dailySpendMap = {};
+                                                                                    acc.dailySpends?.forEach(ds => dailySpendMap[new Date(ds.date).getDate()] = ds.spend);
 
-                                                                                     return (
+                                                                                    return (
                                                                                         <tr key={acc.adAccountId} className={`${theme.accBg} transition-colors group border-b ${theme.accBorder}`}>
                                                                                             <td className={`px-4 py-2 pl-16 sticky left-0 z-20 bg-inherit border-r ${theme.accBorder} group-hover:brightness-95 w-[300px] min-w-[300px] max-w-[300px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]`}>
                                                                                                 <div className="flex flex-col">
@@ -232,18 +250,18 @@ const SourceDetailModal = ({ open, onClose, source, year, month }) => {
                                                                                             <td className={`px-4 py-2 text-right font-bold text-gray-800 sticky left-[300px] z-20 bg-inherit border-r ${theme.accBorder} w-[150px] min-w-[150px] max-w-[150px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]`}>
                                                                                                 {formatNumber(acc.totalSpend)}
                                                                                             </td>
-                                                                                             {daysArray.map(day => {
-                                                                                                 const val = dailySpendMap[day];
-                                                                                                 return (
-                                                                                                     <td key={day} className={`px-2 py-2 text-center border-r ${theme.accBorder} ${val > 0 ? 'text-gray-900 font-medium' : 'text-gray-300'}`}>
-                                                                                                         {val ? formatNumber(val) : '-'}
-                                                                                                     </td>
-                                                                                                 );
-                                                                                             })}
+                                                                                            {daysArray.map(day => {
+                                                                                                const val = dailySpendMap[day];
+                                                                                                return (
+                                                                                                    <td key={day} className={`px-2 py-2 text-center border-r ${theme.accBorder} ${val > 0 ? 'text-gray-900 font-medium' : 'text-gray-300'}`}>
+                                                                                                        {val ? formatNumber(val) : '-'}
+                                                                                                    </td>
+                                                                                                );
+                                                                                            })}
                                                                                         </tr>
-                                                                                     );
-                                                                                 })}
-                                                                             </React.Fragment>
+                                                                                    );
+                                                                                })}
+                                                                            </React.Fragment>
                                                                         ))}
                                                                     </React.Fragment>
                                                                 );
