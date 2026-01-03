@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Loader2, Calendar, FileText, TrendingUp, CreditCard } from "lucide-react";
+import { Loader2, Calendar, FileText, TrendingUp, CreditCard, RefreshCw } from "lucide-react";
 import bmSourceApi from "../../api/bmSourceApi";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
@@ -78,30 +78,41 @@ const MonthlySourceStats = () => {
           Tổng hợp công nợ đầu tổng tháng {month}/{year}
         </h2>
         
-        <div className="flex items-center gap-4 bg-gray-50 p-1.5 rounded-lg border border-gray-200">
-          <div className="flex items-center gap-2 px-2">
-            <Calendar className="w-4 h-4 text-gray-500" />
-            <select 
-              value={month} 
-              onChange={(e) => setMonth(parseInt(e.target.value))}
-              className="bg-transparent border-none focus:ring-0 text-sm font-semibold text-gray-700 cursor-pointer outline-none"
-            >
-              {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
-                <option key={m} value={m}>Tháng {m}</option>
-              ))}
-            </select>
-          </div>
-          <div className="h-5 w-px bg-gray-300"></div>
-          <div className="px-2">
-            <select 
-              value={year} 
-              onChange={(e) => setYear(parseInt(e.target.value))}
-              className="bg-transparent border-none focus:ring-0 text-sm font-semibold text-gray-700 cursor-pointer outline-none"
-            >
-              {Array.from({ length: 3 }, (_, i) => dayjs().year() - i).map(y => (
-                <option key={y} value={y}>Năm {y}</option>
-              ))}
-            </select>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={fetchStats}
+            disabled={loading}
+            className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-blue-600 transition-colors border border-transparent hover:border-gray-200"
+            title="Làm mới dữ liệu"
+          >
+            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+
+          <div className="flex items-center gap-4 bg-gray-50 p-1.5 rounded-lg border border-gray-200">
+            <div className="flex items-center gap-2 px-2">
+              <Calendar className="w-4 h-4 text-gray-500" />
+              <select 
+                value={month} 
+                onChange={(e) => setMonth(parseInt(e.target.value))}
+                className="bg-transparent border-none focus:ring-0 text-sm font-semibold text-gray-700 cursor-pointer outline-none"
+              >
+                {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
+                  <option key={m} value={m}>Tháng {m}</option>
+                ))}
+              </select>
+            </div>
+            <div className="h-5 w-px bg-gray-300"></div>
+            <div className="px-2">
+              <select 
+                value={year} 
+                onChange={(e) => setYear(parseInt(e.target.value))}
+                className="bg-transparent border-none focus:ring-0 text-sm font-semibold text-gray-700 cursor-pointer outline-none"
+              >
+                {Array.from({ length: 3 }, (_, i) => dayjs().year() - i).map(y => (
+                  <option key={y} value={y}>Năm {y}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
       </div>

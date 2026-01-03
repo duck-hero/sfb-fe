@@ -150,7 +150,7 @@ const SourceDetailModal = ({ open, onClose, source, year, month }) => {
                                                     </div>
                                                 </div>
                                                 <div className="bg-white p-2 rounded-lg shadow-sm border border-red-100 bg-red-50/10">
-                                                    <div className="text-[10px] text-gray-500 uppercase font-bold mb-1">Dư nợ</div>
+                                                    <div className="text-[10px] text-gray-500 uppercase font-bold mb-1">Dư nợ (Phí + Ads thẻ nguồn)</div>
                                                     <div className="text-sm font-black text-red-600 truncate" title={formatNumber(data.balance)}>
                                                         {formatNumber(data.balance)}
                                                     </div>
