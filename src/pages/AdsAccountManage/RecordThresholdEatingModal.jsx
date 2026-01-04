@@ -9,7 +9,7 @@ const RecordThresholdEatingModal = ({ open, onClose, adAccount, onSuccess, exist
   const [fetchingData, setFetchingData] = useState(false);
   const [users, setUsers] = useState([]);
   const [historicalCustomers, setHistoricalCustomers] = useState([]);
-  
+
   const [formData, setFormData] = useState({
     adAccountId: 0,
     totalAmount: 0,
@@ -124,7 +124,7 @@ const RecordThresholdEatingModal = ({ open, onClose, adAccount, onSuccess, exist
         // Create mode (POST)
         response = await adsAccountApi.recordThresholdEating(formData);
       }
-      
+
       if (response.success) {
         toast.success(formData.id > 0 ? "Cập nhật thành công" : "Ghi nhận cắn ngưỡng thành công");
         onSuccess();
@@ -155,7 +155,7 @@ const RecordThresholdEatingModal = ({ open, onClose, adAccount, onSuccess, exist
             </div>
             <div>
               <h2 className="text-lg font-bold leading-none">
-                {formData.id > 0 ? "Chỉnh sửa cắn ngưỡng" : "Ghi nhận cắn ngưỡng"}
+                {formData.id > 0 ? "Chỉnh sửa ngưỡng" : "Ghi nhận ngưỡng"}
               </h2>
               <p className="text-xs text-white/70 mt-1">
                 TK: {adAccount?.adAccountName || existingRecord?.adAccountName} ({adAccount?.adAccountIdNumber || existingRecord?.adAccountIdNumber})
@@ -179,12 +179,12 @@ const RecordThresholdEatingModal = ({ open, onClose, adAccount, onSuccess, exist
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                   <DollarSign className="w-4 h-4 text-green-600" />
-                  Tổng tiền ngưỡng ăn được
+                  Tổng tiền ngưỡng được
                 </label>
                 <input
                   type="number"
                   name="totalAmount"
-                  value={formData.totalAmount}
+                  value={formData.totalAmount || ""}
                   onChange={handleChange}
                   placeholder="0"
                   className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent outline-none transition-all font-bold text-lg text-primary-darkest"
@@ -210,106 +210,110 @@ const RecordThresholdEatingModal = ({ open, onClose, adAccount, onSuccess, exist
               </div>
             </div>
 
-            {/* Shares Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-gray-700">Chia cho Đầu tổng (Source)</label>
-                <input
-                  type="number"
-                  name="sourceAmount"
-                  value={formData.sourceAmount}
-                  onChange={handleChange}
-                  placeholder="0"
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent outline-none transition-all"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-gray-700">Thưởng cho nhân viên</label>
-                <input
-                  type="number"
-                  name="operatorAmount"
-                  value={formData.operatorAmount}
-                  onChange={handleChange}
-                  placeholder="0"
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent outline-none transition-all"
-                />
-              </div>
-            </div>
-
-            {/* Customers Section */}
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                  <Users className="w-4 h-4 text-purple-600" />
-                  Chia cho khách hàng
-                </label>
-                <button
-                  type="button"
-                  onClick={handleAddCustomerShare}
-                  className="text-xs font-bold text-primary-dark hover:text-primary-darkest flex items-center gap-1 transition-colors px-2 py-1 bg-primary-100 rounded-lg"
-                >
-                  <Plus className="w-3 h-3" /> Thêm khách hàng
-                </button>
-              </div>
-
-              {formData.customerShares.length === 0 ? (
-                <div className="p-8 border-2 border-dashed border-gray-100 rounded-2xl text-center">
-                  <p className="text-sm text-gray-400 italic">Chưa có khách hàng được chọn</p>
+            {formData.id > 0 && (
+              <>
+                {/* Shares Section */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-semibold text-gray-700">Chia cho Đầu tổng (Source)</label>
+                    <input
+                      type="number"
+                      name="sourceAmount"
+                      value={formData.sourceAmount || ""}
+                      onChange={handleChange}
+                      placeholder="0"
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent outline-none transition-all"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-semibold text-gray-700">Thưởng cho nhân viên</label>
+                    <input
+                      type="number"
+                      name="operatorAmount"
+                      value={formData.operatorAmount || ""}
+                      onChange={handleChange}
+                      placeholder="0"
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent outline-none transition-all"
+                    />
+                  </div>
                 </div>
-              ) : (
-                <div className="space-y-2">
-                  {formData.customerShares.map((share, index) => (
-                    <div key={index} className="flex gap-2 items-end bg-gray-50 p-3 rounded-xl border border-gray-100 group">
-                      <div className="flex-1 space-y-1">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Khách hàng</label>
-                        <select
-                          value={share.customerId}
-                          onChange={(e) => handleCustomerShareChange(index, "customerId", e.target.value)}
-                          className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary-dark"
-                        >
-                          <option value="">-- Chọn khách --</option>
-                          {historicalCustomers.map(c => (
-                            <option key={c.customerId} value={c.customerId}>{c.fullCustomerCode || c.customerName}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="w-32 space-y-1">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Số tiền</label>
-                        <input
-                          type="number"
-                          value={share.amount}
-                          onChange={(e) => handleCustomerShareChange(index, "amount", e.target.value)}
-                          placeholder="Amount"
-                          className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary-dark"
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveCustomerShare(index)}
-                        className="p-2 text-gray-400 hover:text-error transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+
+                {/* Customers Section */}
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      <Users className="w-4 h-4 text-purple-600" />
+                      Chia cho khách hàng
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleAddCustomerShare}
+                      className="text-xs font-bold text-primary-dark hover:text-primary-darkest flex items-center gap-1 transition-colors px-2 py-1 bg-primary-100 rounded-lg"
+                    >
+                      <Plus className="w-3 h-3" /> Thêm khách hàng
+                    </button>
+                  </div>
+
+                  {formData.customerShares.length === 0 ? (
+                    <div className="p-8 border-2 border-dashed border-gray-100 rounded-2xl text-center">
+                      <p className="text-sm text-gray-400 italic">Chưa có khách hàng được chọn</p>
                     </div>
-                  ))}
+                  ) : (
+                    <div className="space-y-2">
+                      {formData.customerShares.map((share, index) => (
+                        <div key={index} className="flex gap-2 items-end bg-gray-50 p-3 rounded-xl border border-gray-100 group">
+                          <div className="flex-1 space-y-1">
+                            <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Khách hàng</label>
+                            <select
+                              value={share.customerId}
+                              onChange={(e) => handleCustomerShareChange(index, "customerId", e.target.value)}
+                              className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary-dark"
+                            >
+                              <option value="">-- Chọn khách --</option>
+                              {historicalCustomers.map(c => (
+                                <option key={c.customerId} value={c.customerId}>{c.fullCustomerCode || c.customerName}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="w-32 space-y-1">
+                            <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Số tiền</label>
+                            <input
+                              type="number"
+                              value={share.amount || ""}
+                              onChange={(e) => handleCustomerShareChange(index, "amount", e.target.value)}
+                              placeholder="Amount"
+                              className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary-dark"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveCustomerShare(index)}
+                            className="p-2 text-gray-400 hover:text-error transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* Summary / Result */}
-            <div className="bg-primary-50 p-4 rounded-2xl border border-primary-100 flex justify-between items-center mt-4">
-              <div>
-                <p className="text-xs font-bold text-primary-dark uppercase tracking-wider">AGC sẽ nhận</p>
-                <p className="text-2xl font-black text-primary-darkest">
-                  {agcShare.toLocaleString("vi-VN")} <span className="text-sm font-normal">đ</span>
-                </p>
-              </div>
-              <div className="text-right">
-                <p className={`text-xs font-medium px-2 py-1 rounded-full ${agcShare < 0 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
-                  {agcShare < 0 ? 'Vượt quá tổng thu' : 'Hợp lệ'}
-                </p>
-              </div>
-            </div>
+                {/* Summary / Result */}
+                <div className="bg-primary-50 p-4 rounded-2xl border border-primary-100 flex justify-between items-center mt-4">
+                  <div>
+                    <p className="text-xs font-bold text-primary-dark uppercase tracking-wider">AGC sẽ nhận</p>
+                    <p className="text-2xl font-black text-primary-darkest">
+                      {agcShare.toLocaleString("vi-VN")} <span className="text-sm font-normal">đ</span>
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-xs font-medium px-2 py-1 rounded-full ${agcShare < 0 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
+                      {agcShare < 0 ? 'Vượt quá tổng thu' : 'Hợp lệ'}
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
 
