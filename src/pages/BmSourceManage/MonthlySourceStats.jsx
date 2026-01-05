@@ -58,6 +58,7 @@ const MonthlySourceStats = () => {
       totalFee: acc.totalFee + (curr.totalFee || 0),
       totalAdsPlusFee: acc.totalAdsPlusFee + (curr.totalAdsPlusFee || 0),
       totalThreshold: acc.totalThreshold + (curr.totalThreshold || 0),
+      manualDiscount: acc.manualDiscount + (curr.manualDiscount || 0),
       paid: acc.paid + (curr.paid || 0),
       currentDebt: acc.currentDebt + (curr.currentDebt || 0)
   }), {
@@ -66,6 +67,7 @@ const MonthlySourceStats = () => {
       totalFee: 0,
       totalAdsPlusFee: 0,
       totalThreshold: 0,
+      manualDiscount: 0,
       paid: 0,
       currentDebt: 0
   });
@@ -127,13 +129,38 @@ const MonthlySourceStats = () => {
             <thead className="bg-[#f8f9fa] text-gray-700 sticky top-0 z-20">
               <tr>
                 <th className="px-6 py-4 font-bold text-gray-600 border-b border-r min-w-[200px]">Nguồn BM</th>
-                <th className="px-4 py-4 font-bold text-gray-600 border-b border-r text-right min-w-[140px]">Dư đầu kỳ</th>
-                <th className="px-4 py-4 font-bold text-gray-600 border-b border-r text-right min-w-[140px]">Tổng Ads</th>
-                <th className="px-4 py-4 font-bold text-gray-600 border-b border-r text-right min-w-[120px]">Tổng Phí</th>
-                <th className="px-4 py-4 font-bold text-blue-700 border-b border-r text-right bg-blue-50/50 min-w-[150px]">Tổng (Ads + phí)</th>
-                <th className="px-4 py-4 font-bold text-orange-600 border-b border-r text-right min-w-[140px]">Ngưỡng</th>
-                <th className="px-4 py-4 font-bold text-green-600 border-b border-r text-right min-w-[140px]">Đã thanh toán</th>
-                <th className="px-4 py-4 font-bold text-red-600 border-b text-right min-w-[150px]">Công nợ phải trả</th>
+                <th className="px-4 py-4 font-bold text-gray-600 border-b border-r text-right min-w-[140px]">
+                  <div>Dư đầu kỳ</div>
+                  <div className="text-[10px] font-normal text-gray-400">(Nợ tháng trước)</div>
+                </th>
+                <th className="px-4 py-4 font-bold text-gray-600 border-b border-r text-right min-w-[140px]">
+                  <div>Tổng Ads</div>
+                  <div className="text-[10px] font-normal text-gray-400">(Tổng chi tiêu)</div>
+                </th>
+                <th className="px-4 py-4 font-bold text-gray-600 border-b border-r text-right min-w-[120px]">
+                  <div>Tổng Phí</div>
+                  <div className="text-[10px] font-normal text-gray-400">(Ads x % phí)</div>
+                </th>
+                <th className="px-4 py-4 font-bold text-blue-700 border-b border-r text-right bg-blue-50/50 min-w-[150px]">
+                  <div>Tổng (Ads + phí)</div>
+                  <div className="text-[10px] font-normal text-blue-400">(Ads + Phí)</div>
+                </th>
+                <th className="px-4 py-4 font-bold text-orange-600 border-b border-r text-right min-w-[140px]">
+                  <div>Ngưỡng</div>
+                  <div className="text-[10px] font-normal text-orange-400">(Ngưỡng)</div>
+                </th>
+                <th className="px-4 py-4 font-bold text-purple-600 border-b border-r text-right min-w-[130px]">
+                  <div>Chiết khấu</div>
+                  <div className="text-[10px] font-normal text-purple-400">(Giảm trừ)</div>
+                </th>
+                <th className="px-4 py-4 font-bold text-green-600 border-b border-r text-right min-w-[140px]">
+                  <div>Đã thanh toán</div>
+                  <div className="text-[10px] font-normal text-green-400">(Tổng đã chuyển cho nguồn)</div>
+                </th>
+                <th className="px-4 py-4 font-bold text-red-600 border-b text-right min-w-[150px]">
+                  <div>Công nợ</div>
+                  <div className="text-[10px] font-normal text-red-400">(Dư + Phí + Ads Thẻ Nguồn + Ngưỡng - Chiết khấu - Đã TT)</div>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white">
@@ -157,6 +184,7 @@ const MonthlySourceStats = () => {
                     <td className="px-4 py-4 text-right text-gray-500 border-r border-gray-100">{formatNumber(item.totalFee)}</td>
                     <td className="px-4 py-4 text-right font-bold text-blue-700 bg-blue-50/30 border-r border-blue-100">{formatNumber(item.totalAdsPlusFee)}</td>
                     <td className="px-4 py-4 text-right text-orange-600 border-r border-gray-100 font-medium">{formatNumber(item.totalThreshold)}</td>
+                    <td className="px-4 py-4 text-right text-purple-600 border-r border-gray-100 font-medium">{formatNumber(item.manualDiscount)}</td>
                     <td className="px-4 py-4 text-right text-green-600 border-r border-gray-100 font-medium">{formatNumber(item.paid)}</td>
                     <td className={`px-4 py-4 text-right font-bold ${item.currentDebt > 0 ? 'text-red-600' : 'text-green-600'}`}>
                         {formatNumber(item.currentDebt)}
@@ -165,7 +193,7 @@ const MonthlySourceStats = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-gray-400 bg-gray-50 italic">
+                  <td colSpan={9} className="px-6 py-12 text-center text-gray-400 bg-gray-50 italic">
                     <div className="flex flex-col items-center gap-2">
                         <FileText className="w-8 h-8 text-gray-300" />
                         Không có dữ liệu công nợ cho tháng này
@@ -184,6 +212,7 @@ const MonthlySourceStats = () => {
                         <td className="px-4 py-4 text-right text-gray-800 border-r border-gray-200">{formatNumber(totals.totalFee)}</td>
                         <td className="px-4 py-4 text-right text-blue-800 bg-blue-100/50 border-r border-blue-200">{formatNumber(totals.totalAdsPlusFee)}</td>
                         <td className="px-4 py-4 text-right text-orange-700 border-r border-gray-200">{formatNumber(totals.totalThreshold)}</td>
+                        <td className="px-4 py-4 text-right text-purple-700 border-r border-gray-200">{formatNumber(totals.manualDiscount)}</td>
                         <td className="px-4 py-4 text-right text-green-700 border-r border-gray-200">{formatNumber(totals.paid)}</td>
                         <td className="px-4 py-4 text-right text-red-700">{formatNumber(totals.currentDebt)}</td>
                     </tr>

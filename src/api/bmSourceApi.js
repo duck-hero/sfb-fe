@@ -123,6 +123,18 @@ const bmSourceApi = {
       throw handleApiError(error);
     }
   },
+  // Cập nhật chiết khấu thủ công
+  updateDiscount: async (data) => {
+    try {
+      const response = await axiosInstance.put(
+        `${api}/BmSource/reconciliation/discount`,
+        data
+      );
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 };
 
 export default bmSourceApi;
