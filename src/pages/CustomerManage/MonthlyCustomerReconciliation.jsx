@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import customerApi from "../../api/customerApi";
-import { Loader2, ChevronRight, ChevronDown } from "lucide-react";
+import { Loader2, ChevronRight, ChevronDown, RotateCw } from "lucide-react";
 import { toast } from "react-toastify";
 import SpendTrackingModal from "./SpendTrackingModal";
 
@@ -132,8 +132,16 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
     return (
         <div className="bg-white rounded-lg p-0 mb-4">
             <div className="flex justify-between items-center mb-3 px-1">
-                <h2 className="text-xs font-bold text-primary-darkest uppercase">Đối soát công nợ tháng</h2>
+                <h2 className="text-xs font-bold text-primary-darkest uppercase">Đối soát công nợ Khách hàng</h2>
                 <div className="flex gap-2">
+                    <button
+                        onClick={() => fetchData(null, true)}
+                        disabled={loading || loadingMore}
+                        className={`p-1.5 rounded-md border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 transition-colors ${loading || loadingMore ? "opacity-50 cursor-not-allowed" : ""}`}
+                        title="Tải lại dữ liệu"
+                    >
+                        <RotateCw className={`w-3.5 h-3.5 ${loading || loadingMore ? "animate-spin" : ""}`} />
+                    </button>
                     <select
                         value={day}
                         onChange={(e) => setDay(e.target.value)}
@@ -173,12 +181,12 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
                     <thead className="bg-gray-50 sticky top-0 z-10">
                         <tr>
                             <th rowSpan="2" className="px-2 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-wider border-b border-r border-gray-100">Khách hàng</th>
-                            <th rowSpan="2" className="px-2 py-1.5 text-right text-[10px] font-semibold text-gray-600 uppercase tracking-wider border-b border-r border-gray-100">Số dư đầu kì</th>
+                            <th rowSpan="2" className={`px-2 py-1.5 text-right text-[10px] font-semibold uppercase tracking-wider border-b border-r border-gray-100 ${day !== "" ? "text-gray-300 pointer-events-none" : "text-gray-600"}`}>Số dư đầu kì</th>
                             <th rowSpan="2" className="px-2 py-1.5 text-right text-[10px] font-semibold text-gray-600 uppercase tracking-wider border-b border-r border-gray-100">Tổng ADS</th>
                             <th rowSpan="2" className="px-2 py-1.5 text-right text-[10px] font-semibold text-gray-600 uppercase tracking-wider border-b border-r border-gray-100">Tổng phí</th>
                             <th rowSpan="2" className="px-2 py-1.5 text-right text-[10px] font-semibold text-gray-600 uppercase tracking-wider border-b border-r border-gray-100">Tổng ADS + Phí</th>
                             <th colSpan="2" className="px-2 py-1 text-center text-[10px] font-bold text-blue-700 uppercase tracking-wider border-b border-r border-gray-200 bg-blue-100">Khách Bank</th>
-                            <th rowSpan="2" className="px-2 py-1.5 text-right text-[10px] font-semibold text-gray-600 uppercase tracking-wider border-b">Công nợ</th>
+                            <th rowSpan="2" className={`px-2 py-1.5 text-right text-[10px] font-semibold uppercase tracking-wider border-b ${day !== "" ? "text-gray-300 pointer-events-none" : "text-gray-600"}`}>Công nợ</th>
                         </tr>
                         <tr>
                             <th className="px-2 py-1 text-right text-[9px] font-bold text-blue-600 uppercase tracking-wider border-b border-r border-gray-200 bg-blue-50">Tự động</th>
@@ -257,7 +265,7 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
                                                         )}
                                                     </div>
                                                 </td>
-                                                <td className="px-2 py-1 whitespace-nowrap text-[11px] text-right text-gray-900">
+                                                <td className={`px-2 py-1 whitespace-nowrap text-[11px] text-right ${day !== "" ? "text-gray-300" : "text-gray-900"}`}>
                                                     {formatNumber(item.openingBalance)}
                                                 </td>
                                                 <td className="px-2 py-1 whitespace-nowrap text-[11px] text-right text-gray-600 font-semibold">
@@ -275,8 +283,8 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
                                                 <td className="px-2 py-1 whitespace-nowrap text-[11px] text-right text-teal-700 font-black border-r border-blue-200 bg-blue-50/40">
                                                     {formatNumber(item.paidInMonthManual)}
                                                 </td>
-                                                <td className="px-2 py-1 whitespace-nowrap text-[11px] text-right font-black">
-                                                    <span className={item.closingBalance < 0 ? "text-red-500" : "text-blue-700"}>
+                                                <td className={`px-2 py-1 whitespace-nowrap text-[11px] text-right font-black ${day !== "" ? "text-gray-300" : ""}`}>
+                                                    <span className={day !== "" ? "" : (item.closingBalance < 0 ? "text-red-500" : "text-blue-700")}>
                                                         {formatNumber(item.closingBalance)}
                                                     </span>
                                                 </td>
