@@ -9,7 +9,7 @@ getTransactionHistoryList: async (
   sortOrder,
   fromEffectiveDate,
   toEffectiveDate,
-  fbTransactionCode,
+  searchTerm,
   transactionType,
   fbAccountId,
   isFbTransaction,
@@ -17,7 +17,8 @@ getTransactionHistoryList: async (
   bankAccountId,
   adAccountId, // New param
   bankCardId, // New param
-  bankAccountType // New param (per tab)
+  bankAccountType, // New param (per tab)
+  accountingObject // New param
 ) => {
   try {
     const params = {};
@@ -35,8 +36,8 @@ getTransactionHistoryList: async (
     if (fromEffectiveDate) params.FromEffectiveDate = fromEffectiveDate;
     if (toEffectiveDate) params.ToEffectiveDate = toEffectiveDate;
 
-    // FB filters
-    if (fbTransactionCode) params.FbTransactionCode = fbTransactionCode;
+    // Search term
+    if (searchTerm) params.SearchTerm = searchTerm;
     if (transactionType) params.TransactionType = transactionType;
     if (fbAccountId) params.FbAccountId = fbAccountId;
 
@@ -58,6 +59,9 @@ getTransactionHistoryList: async (
       params.BankAccountType = bankAccountType;
     }
 
+    // Accounting Object
+    if (accountingObject) params.AccountingObject = accountingObject;
+
     const response = await axiosInstance.get(
       `${api}/TransactionHistory/GetTransactionHistoriesByCursor`,
       { params }
@@ -74,7 +78,7 @@ getTransactionHistoryList: async (
     sortOrder,
     fromEffectiveDate,
     toEffectiveDate,
-    fbTransactionCode,
+    searchTerm,
     transactionType,
     fbAccountId,
     isFbTransaction,
@@ -82,7 +86,8 @@ getTransactionHistoryList: async (
     bankAccountId,
     adAccountId,
     bankCardId,
-    bankAccountType
+    bankAccountType,
+    accountingObject
   ) => {
     try {
       const params = {};
@@ -94,8 +99,8 @@ getTransactionHistoryList: async (
       if (fromEffectiveDate) params.FromEffectiveDate = fromEffectiveDate;
       if (toEffectiveDate) params.ToEffectiveDate = toEffectiveDate;
 
-      // FB filters
-      if (fbTransactionCode) params.FbTransactionCode = fbTransactionCode;
+      // Search term
+      if (searchTerm) params.SearchTerm = searchTerm;
       if (transactionType) params.TransactionType = transactionType;
       if (fbAccountId) params.FbAccountId = fbAccountId;
 
@@ -117,6 +122,9 @@ getTransactionHistoryList: async (
         params.BankAccountType = bankAccountType;
       }
 
+      // Accounting Object
+      if (accountingObject) params.AccountingObject = accountingObject;
+
       const response = await axiosInstance.get(
         `${api}/TransactionHistory/GetTransactionHistoryCount`,
         { params }
@@ -133,7 +141,7 @@ getTransactionHistoryList: async (
     sortOrder,
     fromEffectiveDate,
     toEffectiveDate,
-    fbTransactionCode,
+    searchTerm,
     transactionType,
     fbAccountId,
     isFbTransaction,
@@ -141,7 +149,8 @@ getTransactionHistoryList: async (
     bankAccountId,
     adAccountId,
     bankCardId,
-    bankAccountType
+    bankAccountType,
+    accountingObject
   ) => {
     try {
       const data = {};
@@ -153,8 +162,8 @@ getTransactionHistoryList: async (
       if (fromEffectiveDate) data.FromEffectiveDate = fromEffectiveDate;
       if (toEffectiveDate) data.ToEffectiveDate = toEffectiveDate;
 
-      // FB filters
-      if (fbTransactionCode) data.FbTransactionCode = fbTransactionCode;
+      // Search term
+      if (searchTerm) data.SearchTerm = searchTerm;
       if (transactionType) data.TransactionType = transactionType;
       if (fbAccountId) data.FbAccountId = fbAccountId;
 
@@ -175,6 +184,9 @@ getTransactionHistoryList: async (
       if (bankAccountType !== undefined && bankAccountType !== null) {
         data.BankAccountType = bankAccountType;
       }
+
+      // Accounting Object
+      if (accountingObject) data.AccountingObject = accountingObject;
 
       const response = await axiosInstance.post(
         `${api}/TransactionHistory/SyncAddCard`,
@@ -205,7 +217,7 @@ getTransactionHistoryList: async (
     sortOrder,
     fromEffectiveDate,
     toEffectiveDate,
-    fbTransactionCode,
+    searchTerm,
     transactionType,
     fbAccountId,
     isFbTransaction,
@@ -213,7 +225,8 @@ getTransactionHistoryList: async (
     bankAccountId,
     adAccountId,
     bankCardId,
-    bankAccountType
+    bankAccountType,
+    accountingObject
   ) => {
     try {
       const params = {};
@@ -225,8 +238,8 @@ getTransactionHistoryList: async (
       if (fromEffectiveDate) params.FromEffectiveDate = fromEffectiveDate;
       if (toEffectiveDate) params.ToEffectiveDate = toEffectiveDate;
 
-      // FB filters
-      if (fbTransactionCode) params.FbTransactionCode = fbTransactionCode;
+      // Search term
+      if (searchTerm) params.SearchTerm = searchTerm;
       if (transactionType) params.TransactionType = transactionType;
       if (fbAccountId) params.FbAccountId = fbAccountId;
 
@@ -247,6 +260,9 @@ getTransactionHistoryList: async (
       if (bankAccountType !== undefined && bankAccountType !== null) {
         params.BankAccountType = bankAccountType;
       }
+
+      // Accounting Object
+      if (accountingObject) params.AccountingObject = accountingObject;
 
       const response = await axiosInstance.get(
         `${api}/TransactionHistory/ExportExcel`,

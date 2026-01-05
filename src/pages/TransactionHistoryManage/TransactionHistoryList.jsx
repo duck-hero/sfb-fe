@@ -13,6 +13,10 @@ import bmAccountApi from "../../api/bmAccountApi";
 import accountApi from "../../api/accountApi";
 import adsAccountApi from "../../api/adsAccountApi";
 import bankCardApi from "../../api/bankCardApi";
+import customerApi from "../../api/customerApi";
+import customerGroupApi from "../../api/customerGroupApi";
+import bmSourceApi from "../../api/bmSourceApi";
+import { X, Search } from "lucide-react";
 
 import CreateAdsAccountModal from "../AdsAccountManage/CreateAdsAccountModal"; // Adjust path if needed
 import CreateBankCardModal from "../BankCardManage/CreateBankCardModal"; // Adjust path if needed
@@ -240,8 +244,7 @@ const TransactionHistoryList = () => {
 
   // Filter State
   const [filters, setFilters] = useState({
-    searchQuery: "", // fbTransactionCode hoặc nội dung chung
-    fbTransactionCode: "",
+    searchTerm: "",
     fbAccountId: "",
     transactionType: "", // "IN", "OUT", ""
     isFbTransaction: "all", // "all", "true", "false"
@@ -252,7 +255,99 @@ const TransactionHistoryList = () => {
     fromEffectiveDate: dayjs().startOf("day").toISOString(),
     toEffectiveDate: dayjs().endOf("day").toISOString(),
     sortOrder: "desc",
+    accountingObject: "",
   });
+
+  // Structured search logic states
+  const [objectType, setObjectType] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [dataList, setDataList] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Search effect for filter dropdown
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (!objectType) {
+        setDataList([]);
+        return;
+      }
+
+      const fetchData = async () => {
+        try {
+          let res;
+          switch (objectType) {
+            case "KH":
+              res = await customerApi.getCustomerList(1, 15, searchTerm || null, null, null);
+              setDataList(res.data || []);
+              break;
+            case "NK":
+              res = await customerGroupApi.getPagedList(1, 15);
+              let itemsNK = res.data || [];
+              if (searchTerm) {
+                itemsNK = itemsNK.filter(g =>
+                  g.name?.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+              }
+              setDataList(itemsNK);
+              break;
+            case "NCC":
+              res = await bmSourceApi.getBmSourceList(1, 15, searchTerm || null);
+              setDataList(res.data || []);
+              break;
+            case "BANK":
+              res = await bankAccountApi.getBankList(1, 15, searchTerm || null);
+              setDataList(res.data || []);
+              break;
+            case "NV":
+              res = await accountApi.getUserList(1, 50);
+              const itemsNV = res.items || res.data || [];
+              let filteredNV = itemsNV;
+              if (searchTerm) {
+                filteredNV = itemsNV.filter(u =>
+                  u.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  u.userName?.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+              }
+              setDataList(filteredNV.slice(0, 15));
+              break;
+          }
+        } catch (error) {
+          console.error("Search failed:", error);
+        }
+      };
+
+      fetchData();
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, objectType]);
+
+  const handleSelectItem = (item) => {
+    let name = "";
+    switch (objectType) {
+      case "KH": name = item.fullCustomerCode; break;
+      case "NK": name = item.name; break;
+      case "NCC": name = item.sourceName; break;
+      case "BANK": name = item.code; break;
+      case "NV": name = item.code; break;
+      case "CP": name = item; break;
+    }
+    setSearchTerm(name);
+    handleFilterChange("accountingObject", name);
+    setShowDropdown(false);
+  };
 
   // Modal states
   const [scanModalOpen, setScanModalOpen] = useState(false);
@@ -467,14 +562,16 @@ const TransactionHistoryList = () => {
         filters.sortOrder,
         filters.fromEffectiveDate,
         filters.toEffectiveDate,
-        filters.fbTransactionCode || undefined, // Gửi undefined nếu chuỗi rỗng
+        filters.searchTerm || undefined, // Gửi undefined nếu chuỗi rỗng
         filters.transactionType || undefined,
         filters.fbAccountId || undefined,
         getBooleanValue(filters.isFbTransaction),
         getBooleanValue(filters.isAmountMismatched),
         filters.bankAccountId || undefined,
         filters.adAccountId || undefined, // Pass AdAccount ID
-        filters.bankCardId || undefined // Pass BankCard ID
+        filters.bankCardId || undefined, // Pass BankCard ID
+        undefined, // bankAccountType - not passed from here as it's separate? actually TransactionHistoryList likely uses dynamic bankAccountType or just fits all.
+        filters.accountingObject || undefined
       );
 
       if (res && res.success) {
@@ -511,14 +608,16 @@ const TransactionHistoryList = () => {
         filters.sortOrder,
         filters.fromEffectiveDate,
         filters.toEffectiveDate,
-        filters.fbTransactionCode || undefined,
+        filters.searchTerm || undefined,
         filters.transactionType || undefined,
         filters.fbAccountId || undefined,
         getBooleanValue(filters.isFbTransaction),
         getBooleanValue(filters.isAmountMismatched),
         filters.bankAccountId || undefined,
         filters.adAccountId || undefined,
-        filters.bankCardId || undefined
+        filters.bankCardId || undefined,
+        undefined,
+        filters.accountingObject || undefined
       );
 
       if (res && res.success && res.data) {
@@ -601,14 +700,16 @@ const TransactionHistoryList = () => {
         filters.sortOrder,
         filters.fromEffectiveDate,
         filters.toEffectiveDate,
-        filters.fbTransactionCode || undefined,
+        filters.searchTerm || undefined,
         filters.transactionType || undefined,
         filters.fbAccountId || undefined,
         getBooleanValue(filters.isFbTransaction),
         getBooleanValue(filters.isAmountMismatched),
         filters.bankAccountId || undefined,
         filters.adAccountId || undefined,
-        filters.bankCardId || undefined
+        filters.bankCardId || undefined,
+        undefined,
+        filters.accountingObject || undefined
       );
 
       toast.success("Đồng bộ thành công!");
@@ -635,14 +736,16 @@ const TransactionHistoryList = () => {
         filters.sortOrder,
         filters.fromEffectiveDate,
         filters.toEffectiveDate,
-        filters.fbTransactionCode || undefined,
+        filters.searchTerm || undefined,
         filters.transactionType || undefined,
         filters.fbAccountId || undefined,
         getBooleanValue(filters.isFbTransaction),
         getBooleanValue(filters.isAmountMismatched),
         filters.bankAccountId || undefined,
         filters.adAccountId || undefined,
-        filters.bankCardId || undefined
+        filters.bankCardId || undefined,
+        undefined,
+        filters.accountingObject || undefined
       );
 
       // Create download link
@@ -1143,16 +1246,26 @@ const TransactionHistoryList = () => {
       {/* --- FILTER & SEARCH SECTION (Nhóm chung) --- */}
       <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Search FB Trans Code */}
+          {/* Search Term */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Mã GD Facebook</label>
-            <input
-              type="text"
-              placeholder="Nhập mã GD..."
-              className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
-              value={filters.fbTransactionCode}
-              onChange={(e) => handleFilterChange("fbTransactionCode", e.target.value)}
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tìm kiếm</label>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Mã GD FB hoặc nội dung..."
+                className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 pr-10"
+                value={filters.searchTerm}
+                onChange={(e) => handleFilterChange("searchTerm", e.target.value)}
+              />
+              {filters.searchTerm && (
+                <button
+                  onClick={() => handleFilterChange("searchTerm", "")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
           </div>
           {/* Search FB Account ID (Autocomplete) */}
           <div className="relative">
@@ -1316,6 +1429,128 @@ const TransactionHistoryList = () => {
               ))}
             </select>
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Loại hạch toán
+            </label>
+            <select
+              className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+              value={objectType || ""}
+              onChange={(e) => {
+                const type = e.target.value || null;
+                setObjectType(type);
+                setSearchTerm("");
+                if (!type) handleFilterChange("accountingObject", "");
+              }}
+            >
+              <option value="">Tất cả</option>
+              <option value="KH">Khách hàng</option>
+              <option value="NK">Nhóm khách</option>
+              <option value="NCC">NCC</option>
+              <option value="CP">Chi phí</option>
+              <option value="BANK">Bank nội bộ</option>
+              <option value="NV">Nhân viên</option>
+            </select>
+          </div>
+
+          {objectType && (
+            <div className="relative" ref={dropdownRef}>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Tìm {objectType}
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 outline-none pr-10"
+                  placeholder={`Tìm kiếm...`}
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setShowDropdown(true);
+                  }}
+                  onFocus={() => setShowDropdown(true)}
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => {
+                      setSearchTerm("");
+                      handleFilterChange("accountingObject", "");
+                      setShowDropdown(false);
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+
+              {/* Dropdown Results */}
+              {showDropdown && objectType === "CP" && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {["CP AGC", "Mua BM", "Mua TK"].map(item => (
+                    <div
+                      key={item}
+                      className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm font-medium"
+                      onClick={() => handleSelectItem(item)}
+                    >
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {showDropdown && objectType !== "CP" && dataList.length > 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {dataList.map((item, idx) => (
+                    <div
+                      key={item.id || idx}
+                      className="px-4 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-none"
+                      onClick={() => handleSelectItem(item)}
+                    >
+                      <div className="flex flex-col">
+                        {objectType === "KH" && (
+                          <>
+                            <span className="text-xs font-bold text-gray-900">{item.customerCode}</span>
+                            <span className="text-[10px] text-gray-500">{item.fullCustomerCode} - {item.name}</span>
+                          </>
+                        )}
+                        {objectType === "NK" && <span className="text-xs font-bold">{item.name}</span>}
+                        {objectType === "NCC" && <span className="text-xs font-bold">{item.sourceName}</span>}
+                        {objectType === "BANK" && (
+                          <>
+                            <span className="text-xs font-bold">{item.code}</span>
+                            <span className="text-[10px] text-gray-500">{item.accountBankNumber} - {item.accountBankHolderName}</span>
+                          </>
+                        )}
+                        {objectType === "NV" && (
+                          <>
+                            <span className="text-xs font-bold">{item.code}</span>
+                            <span className="text-[10px] text-gray-500">{item.userName} - {item.fullName}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {!objectType && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Đối tượng hạch toán
+              </label>
+              <input
+                type="text"
+                placeholder="Nhập thủ công..."
+                className="w-full border-gray-300 rounded-md shadow-sm border px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                value={filters.accountingObject}
+                onChange={(e) => handleFilterChange("accountingObject", e.target.value)}
+              />
+            </div>
+          )}
           {/* Transaction Type */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Loại giao dịch</label>
