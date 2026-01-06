@@ -324,14 +324,14 @@ function BankCardList() {
 
   // 2. Hiển thị trạng thái theo style badge (có viền)
   const renderStatus = (status) => {
-    if (status === "Active") {
+    if (status === "ACTIVE") {
       return (
         <span className="inline-block px-2 py-0.5 text-xs font-medium text-green-600 border border-green-600 rounded-md bg-white whitespace-nowrap">
           Hoạt động
         </span>
       );
     } else {
-      // Giả sử các trạng thái khác (Inactive, Blocked...) là Danger
+      // Giả sử các trạng thái khác (INACTIVE, BLOCKED...) là Danger
       return (
         <span className="inline-block px-2 py-0.5 text-xs font-medium text-red-600 border border-red-600 rounded-md bg-white whitespace-nowrap">
           Khóa

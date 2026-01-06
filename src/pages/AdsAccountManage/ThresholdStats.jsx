@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Loader2, Calendar, FileText, SquarePen, Users, User, ArrowUpRight, ArrowDownRight, BadgeCent, RefreshCw } from "lucide-react";
+import { Loader2, Calendar, FileText, SquarePen, Users, User, ArrowUpRight, ArrowDownRight, BadgeCent, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import adsAccountApi from "../../api/adsAccountApi";
 import { toast } from "react-toastify";
 import RecordThresholdEatingModal from "./RecordThresholdEatingModal";
@@ -32,6 +32,24 @@ const ThresholdStats = () => {
     }
   };
 
+  const handlePrevMonth = () => {
+    if (month === 1) {
+      setMonth(12);
+      setYear(prev => prev - 1);
+    } else {
+      setMonth(prev => prev - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (month === 12) {
+      setMonth(1);
+      setYear(prev => prev + 1);
+    } else {
+      setMonth(prev => prev + 1);
+    }
+  };
+
   useEffect(() => {
     fetchStats();
   }, [year, month]);
@@ -61,31 +79,25 @@ const ThresholdStats = () => {
             <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
           </button>
           
-          <div className="flex items-center gap-4 bg-gray-50 p-2 rounded-lg border border-gray-200">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-gray-500" />
-              <select 
-                value={month} 
-                onChange={(e) => setMonth(parseInt(e.target.value))}
-                className="bg-transparent border-none focus:ring-0 text-sm font-medium cursor-pointer"
-              >
-                {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
-                  <option key={m} value={m}>Tháng {m}</option>
-                ))}
-              </select>
+          <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+            <button
+              onClick={handlePrevMonth}
+              className="p-1.5 hover:bg-white rounded-md transition-all shadow-sm"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <div className="flex items-center gap-2 px-3">
+              <Calendar size={16} className="text-gray-500" />
+              <span className="font-semibold text-sm">
+                Tháng {month}/{year}
+              </span>
             </div>
-            <div className="h-4 w-px bg-gray-300"></div>
-            <div>
-              <select 
-                value={year} 
-                onChange={(e) => setYear(parseInt(e.target.value))}
-                className="bg-transparent border-none focus:ring-0 text-sm font-medium cursor-pointer"
-              >
-                {years.map(y => (
-                  <option key={y} value={y}>Năm {y}</option>
-                ))}
-              </select>
-            </div>
+            <button
+              onClick={handleNextMonth}
+              className="p-1.5 hover:bg-white rounded-md transition-all shadow-sm"
+            >
+              <ChevronRight size={18} />
+            </button>
           </div>
         </div>
       </div>

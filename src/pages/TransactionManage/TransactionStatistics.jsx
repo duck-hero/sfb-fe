@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import dayjs from "dayjs";
-import { Loader2, TrendingUp, TrendingDown, RefreshCw, ChevronDown, ChevronUp, GripVertical } from "lucide-react";
+import { Loader2, TrendingUp, TrendingDown, RefreshCw, ChevronDown, ChevronUp, GripVertical, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import bankAccountApi from "../../api/bankAccountApi";
 import { toast } from "react-toastify";
 
@@ -21,8 +21,23 @@ const TransactionStatistics = () => {
     const dragItem = useRef();
     const dragOverItem = useRef();
 
-    const years = Array.from({ length: 5 }, (_, i) => dayjs().year() - i);
-    const months = Array.from({ length: 12 }, (_, i) => i + 1);
+    const handlePrevMonth = () => {
+        if (month === 1) {
+            setMonth(12);
+            setYear(prev => prev - 1);
+        } else {
+            setMonth(prev => prev - 1);
+        }
+    };
+
+    const handleNextMonth = () => {
+        if (month === 12) {
+            setMonth(1);
+            setYear(prev => prev + 1);
+        } else {
+            setMonth(prev => prev + 1);
+        }
+    };
 
     // Fetch list of bank accounts
     const fetchBankAccounts = async () => {
@@ -163,25 +178,25 @@ const TransactionStatistics = () => {
                 <div className="flex items-center gap-3">
                     <h2 className="text-lg font-bold text-gray-800">Thống kê giao dịch</h2>
                     <div className="h-6 w-px bg-gray-200 mx-2"></div>
-                    <div className="flex gap-2">
-                        <select
-                            value={month}
-                            onChange={(e) => setMonth(Number(e.target.value))}
-                            className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                    <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+                        <button
+                            onClick={handlePrevMonth}
+                            className="p-1.5 hover:bg-white rounded-md transition-all shadow-sm"
                         >
-                            {months.map(m => (
-                                <option key={m} value={m}>Tháng {m}</option>
-                            ))}
-                        </select>
-                        <select
-                            value={year}
-                            onChange={(e) => setYear(Number(e.target.value))}
-                            className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                            <ChevronLeft size={18} />
+                        </button>
+                        <div className="flex items-center gap-2 px-3">
+                            <Calendar size={16} className="text-gray-500" />
+                            <span className="font-semibold text-sm">
+                                Tháng {month}/{year}
+                            </span>
+                        </div>
+                        <button
+                            onClick={handleNextMonth}
+                            className="p-1.5 hover:bg-white rounded-md transition-all shadow-sm"
                         >
-                            {years.map(y => (
-                                <option key={y} value={y}>Năm {y}</option>
-                            ))}
-                        </select>
+                            <ChevronRight size={18} />
+                        </button>
                     </div>
                 </div>
                 

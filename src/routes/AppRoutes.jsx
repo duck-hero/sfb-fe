@@ -21,6 +21,7 @@ import MonthlySourceStats from "../pages/BmSourceManage/MonthlySourceStats";
 import ThresholdStats from "../pages/AdsAccountManage/ThresholdStats";
 import UserList from "../pages/UserManage/UserList";
 import Dashboard from "../pages/Dashboard/Dashboard";
+import StatisticsPage from "../pages/Statistics/StatisticsPage";
 
 // 1. Import ProtectedRoute
 
@@ -80,6 +81,7 @@ export default function AppRoutes() {
             </Route>
             <Route path="monthly-source-stats" element={<MonthlySourceStats />} />
             <Route path="threshold-stats" element={<ThresholdStats />} />
+            <Route path="statistics" element={<StatisticsPage />} />
           </Route>
 
           {/* 4. Tuyến đường cài đặt /settings cũng cần được bảo vệ */}

@@ -10,7 +10,7 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
   const active = "bg-blue-100 font-semibold";
 
   return (
-    <div className={`h-screen bg-white shadow-md fixed left-0 top-0 transition-all duration-300 ease-in-out ${isCollapsed ? 'w-20 p-3' : 'w-64 p-5'
+    <div className={`h-screen bg-white shadow-md fixed left-0 top-0 transition-all duration-300 ease-in-out z-[40] ${isCollapsed ? 'w-20 p-3' : 'w-64 p-5'
       }`}>
       {/* Toggle Button - căn giữa chiều cao sidebar */}
       <button
@@ -108,6 +108,15 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
             {!isCollapsed && <span className="truncate">Phân quyền</span>}
           </Link>
         )}
+        <Link
+          to="/statistics"
+          className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${pathname === "/statistics" && active
+            }`}
+          title={isCollapsed ? "Thống kê" : ""}
+        >
+          <BarChart3 size={20} className="flex-shrink-0" />
+          {!isCollapsed && <span className="truncate">Thống kê</span>}
+        </Link>
       </nav>
     </div>
   );

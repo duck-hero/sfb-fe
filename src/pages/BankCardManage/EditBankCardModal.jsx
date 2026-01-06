@@ -83,10 +83,10 @@ const handleCardNumberFocus = () => {
 };
 
 
-  const isCardActive = formData.status === 'Active';
+  const isCardActive = formData.status === 'ACTIVE';
 
   const handleStatusChange = (isActive) => {
-    onChange({ target: { name: "status", value: isActive ? 'Active' : 'Inactive' } });
+    onChange({ target: { name: "status", value: isActive ? 'ACTIVE' : 'INACTIVE' } });
   };
 
   // Handle Save

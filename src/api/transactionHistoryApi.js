@@ -278,6 +278,19 @@ getTransactionHistoryList: async (
     }
   },
 
+  // Lấy thống kê thanh toán thẻ
+  getBankCardPaymentStats: async (year, month, transactionType = "OUT") => {
+    try {
+      const params = { year, month, transactionType };
+      const response = await axiosInstance.get(
+        `${api}/TransactionHistory/GetBankCardPaymentStats`,
+        { params }
+      );
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 };
 
 export default transactionHistoryApi;

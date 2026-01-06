@@ -260,7 +260,7 @@ export default function DetailAdsAccountModal({
                             accountData.linkedBankCards.map((card, index) => (
                               <div
                                 key={card.bankCardId || index}
-                                className={`group flex items-center justify-between p-2 bg-white border border-gray-200 rounded shadow-sm hover:shadow-md transition-all ${card.cardStatus === 'Active' ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-red-500'
+                                className={`group flex items-center justify-between p-2 bg-white border border-gray-200 rounded shadow-sm hover:shadow-md transition-all ${card.cardStatus === 'ACTIVE' ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-red-500'
                                   }`}
                               >
                                 {/* Left: Card Info */}
@@ -270,7 +270,7 @@ export default function DetailAdsAccountModal({
                                     <p className="text-sm font-mono font-semibold text-gray-900 truncate">
                                       {card.cardNumber ? card.cardNumber.replace(/(\d{4})(?=\d)/g, '$1 ') : `**** **** **** ${card.cardLastDigits}`}
                                     </p>
-                                    {card.cardStatus === 'Active' ? (
+                                    {card.cardStatus === 'ACTIVE' ? (
                                       <span className="text-[10px]" title="Thẻ hoạt động">✅</span>
                                     ) : (
                                       <span className="text-[10px]" title="Thẻ không hoạt động">❌</span>
