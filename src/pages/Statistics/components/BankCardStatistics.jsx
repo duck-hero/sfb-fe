@@ -156,10 +156,13 @@ export default function BankCardStatistics() {
           <table className="min-w-full text-xs text-left border-collapse">
             <thead>
               <tr className="bg-gray-50 uppercase text-gray-500 font-semibold border-b border-gray-200">
-                <th className="px-4 py-3 sticky left-0 z-30 bg-gray-50 border-r border-gray-200 min-w-[200px] w-[200px]">
-                  Thẻ / Ngày
+                <th className="px-4 py-3 sticky left-0 z-30 bg-gray-50 border-r border-gray-200 min-w-[160px] w-[160px]">
+                  Thông tin thẻ
                 </th>
-                <th className="px-4 py-3 sticky left-[200px] z-30 bg-gray-50 border-r border-gray-200 text-right min-w-[120px] w-[120px]">
+                <th className="px-2 py-3 sticky left-[160px] z-30 bg-gray-50 border-r border-gray-200 text-center min-w-[80px] w-[80px]">
+                  Trạng thái
+                </th>
+                <th className="px-4 py-3 sticky left-[240px] z-30 bg-gray-50 border-r border-gray-200 text-right min-w-[110px] w-[110px]">
                   Tổng cộng
                 </th>
                 {days.map((d) => (
@@ -175,7 +178,7 @@ export default function BankCardStatistics() {
             <tbody>
               {data.map((card) => (
                 <tr key={card.bankCardId} className="hover:bg-gray-50 border-b border-gray-100">
-                  <td className="px-4 py-3 sticky left-0 z-20 bg-white border-r border-gray-200 shadow-[1px_0_0_rgb(229,231,235)]">
+                  <td className="px-4 py-3 sticky left-0 z-20 bg-white border-r border-gray-100 shadow-[1px_0_0_rgb(229,231,235)] min-w-[160px]">
                     <div className="font-semibold text-gray-800 truncate">
                       {card.bankName} - {card.cardLastDigits}
                     </div>
@@ -183,7 +186,18 @@ export default function BankCardStatistics() {
                       {card.cardHolderName}
                     </div>
                   </td>
-                  <td className="px-4 py-3 sticky left-[200px] z-20 bg-white border-r border-gray-200 font-bold text-blue-600 text-right shadow-[1px_0_0_rgb(229,231,235)]">
+                  <td className="px-2 py-3 sticky left-[160px] z-20 bg-white border-r border-gray-100 shadow-[1px_0_0_rgb(229,231,235)] min-w-[80px] text-center">
+                    {card.status === 'ACTIVE' ? (
+                      <span className="px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 text-[9px] font-bold border border-green-200">
+                        Hoạt động
+                      </span>
+                    ) : (
+                      <span className="px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 text-[9px] font-bold border border-red-200">
+                        Khóa
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 sticky left-[240px] z-20 bg-white border-r border-gray-200 font-bold text-blue-600 text-right shadow-[1px_0_0_rgb(229,231,235)] min-w-[110px]">
                     {formatCurrency(card.totalAmount)}
                   </td>
                   {days.map((d) => {
@@ -212,10 +226,10 @@ export default function BankCardStatistics() {
             {/* Footer with Totals */}
             <tfoot className="bg-gray-50 font-bold text-gray-800">
               <tr className="border-t-2 border-gray-300">
-                <td className="px-4 py-3 sticky left-0 z-20 bg-gray-50 border-r border-gray-200">
+                <td className="px-4 py-3 sticky left-0 z-20 bg-gray-50 border-r border-gray-200" colSpan={2}>
                   TỔNG CỘNG
                 </td>
-                <td className="px-4 py-3 sticky left-[200px] z-20 bg-gray-50 border-r border-gray-200 text-right text-red-600">
+                <td className="px-4 py-3 sticky left-[240px] z-20 bg-gray-50 border-r border-gray-200 text-right text-red-600">
                   {formatCurrency(grandTotal)}
                 </td>
                 {columnTotals.map((total, idx) => (

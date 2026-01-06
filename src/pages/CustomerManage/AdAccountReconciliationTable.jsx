@@ -71,7 +71,7 @@ const AdAccountReconciliationTable = ({ data, loading }) => {
                             <th className="px-3 py-2 text-left text-[10px] font-bold text-gray-600 uppercase tracking-wider border-r border-gray-100">Tên TK</th>
                             <th className="px-3 py-2 text-left text-[10px] font-bold text-gray-600 uppercase tracking-wider border-r border-gray-100">ID TK</th>
                              <th className="px-3 py-2 text-right text-[10px] font-bold text-gray-600 uppercase tracking-wider border-r border-gray-100">Pay Facebook</th>
-                             <th className="px-3 py-2 text-center text-[10px] font-bold text-gray-600 uppercase tracking-wider border-r border-gray-100">Chi tiêu thực tế</th>
+                             <th className="px-3 py-2 text-center text-[10px] font-bold text-gray-600 uppercase tracking-wider border-r border-gray-100">Chi tiêu thực tế (File upload)</th>
                             <th className="px-3 py-2 text-right text-[10px] font-bold text-gray-600 uppercase tracking-wider border-r border-gray-100">Chi tiêu ghi nhận</th>
                             <th className="px-3 py-2 text-right text-[10px] font-bold text-gray-600 uppercase tracking-wider border-r border-gray-100">Chênh lệch</th>
                             <th className="px-3 py-2 text-center text-[10px] font-bold text-gray-600 uppercase tracking-wider border-r border-gray-100">KH</th>
