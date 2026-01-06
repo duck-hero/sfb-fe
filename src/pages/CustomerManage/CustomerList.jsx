@@ -10,7 +10,6 @@ import EditCustomerModal from "./EditCustomerModal";
 import DeleteConfirmModal from "../../components/Modal/DeleteConfirmModal";
 import DetailCustomerModal from "./DetailCustomerModal";
 import SpendTrackingModal from "./SpendTrackingModal";
-import TableSkeleton from "../../components/Loading/TableSkeleton";
 import CustomerDetailView from "./CustomerDetailView";
 
 function CustomerList() {

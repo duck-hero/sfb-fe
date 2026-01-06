@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
-import { Upload, X, Loader2, AlertCircle, CheckCircle2, FileSpreadsheet, RefreshCw } from 'lucide-react';
+import { Upload, X, Loader2, AlertCircle, CheckCircle2, FileSpreadsheet, RefreshCw, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { toast } from 'react-toastify';
 import adsAccountApi from '../../api/adsAccountApi';
 import dashboardApi from '../../api/dashboardApi';
@@ -18,8 +18,23 @@ const AdAccountAuditReport = () => {
     const [progress, setProgress] = useState(0);
     const [importResult, setImportResult] = useState(null);
 
-    const years = Array.from({ length: 5 }, (_, i) => dayjs().year() - i);
-    const months = Array.from({ length: 12 }, (_, i) => i + 1);
+    const handlePrevMonth = () => {
+        if (month === 1) {
+            setMonth(12);
+            setYear(prev => prev - 1);
+        } else {
+            setMonth(prev => prev - 1);
+        }
+    };
+
+    const handleNextMonth = () => {
+        if (month === 12) {
+            setMonth(1);
+            setYear(prev => prev + 1);
+        } else {
+            setMonth(prev => prev + 1);
+        }
+    };
 
     const fetchReconciliation = async () => {
         setLoading(true);
@@ -244,25 +259,27 @@ const AdAccountAuditReport = () => {
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
                 <div className="flex items-center justify-between mb-4 px-1">
                     <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest">Dữ liệu đối soát tài khoản</h2>
-                    <div className="flex gap-2">
-                        <select
-                            value={month}
-                            onChange={(e) => setMonth(Number(e.target.value))}
-                            className="bg-white border border-gray-200 rounded-lg px-2 py-1 text-[11px] font-medium text-gray-700 outline-none focus:ring-1 focus:ring-blue-500 transition-all cursor-pointer shadow-sm"
-                        >
-                            {months.map(m => (
-                                <option key={m} value={m}>Tháng {m}</option>
-                            ))}
-                        </select>
-                        <select
-                            value={year}
-                            onChange={(e) => setYear(Number(e.target.value))}
-                            className="bg-white border border-gray-200 rounded-lg px-2 py-1 text-[11px] font-medium text-gray-700 outline-none focus:ring-1 focus:ring-blue-500 transition-all cursor-pointer shadow-sm"
-                        >
-                            {years.map(y => (
-                                <option key={y} value={y}>Năm {y}</option>
-                            ))}
-                        </select>
+                    <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+                            <button
+                                onClick={handlePrevMonth}
+                                className="p-1.5 hover:bg-white rounded-md transition-all shadow-sm"
+                            >
+                                <ChevronLeft size={16} />
+                            </button>
+                            <div className="flex items-center gap-2 px-3">
+                                <Calendar size={14} className="text-gray-500" />
+                                <span className="font-semibold text-[11px]">
+                                    Tháng {month}/{year}
+                                </span>
+                            </div>
+                            <button
+                                onClick={handleNextMonth}
+                                className="p-1.5 hover:bg-white rounded-md transition-all shadow-sm"
+                            >
+                                <ChevronRight size={16} />
+                            </button>
+                        </div>
                         <button
                             onClick={fetchReconciliation}
                             disabled={loading}

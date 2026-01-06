@@ -26,11 +26,6 @@ export default function TransactionManage() {
       label: "Giao dịch TK lợi nhuận",
       icon: <BadgeDollarSign className="w-4 h-4" />,
     },
-    {
-      key: "stats",
-      label: "Thống kê giao dịch",
-      icon: <FileBarChart2 className="w-4 h-4" />,
-    },
   ].filter(Boolean);
 
   return (
@@ -66,9 +61,6 @@ export default function TransactionManage() {
         )}
         {activeTab === "profit" && hasRole("Admin") && (
           <FinancialTransactionList bankAccountType={3} />
-        )}
-        {activeTab === "stats" && (
-          <TransactionStatistics />
         )}
       </div>
     </div>

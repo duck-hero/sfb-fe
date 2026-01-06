@@ -24,16 +24,6 @@ export default function CustomerManagementPage() {
       label: "Tổng hợp công nợ",
       icon: <FileSpreadsheet className="w-4 h-4" />,
     },
-    {
-      key: "audit",
-      label: "BC đối soát",
-      icon: <BarChart3 className="w-4 h-4" />,
-    },
-    {
-      key: "profit",
-      label: "Lợi Nhuận Phí",
-      icon: <PieChart className="w-4 h-4" />,
-    },
   ];
 
   return (
@@ -65,20 +55,6 @@ export default function CustomerManagementPage() {
         {activeTab === "group" && <CustomerGroupList />}
         {activeTab === "reconciliation" && (
           <MonthlyCustomerReconciliation />
-        )}
-        {activeTab === "audit" && <AdAccountAuditReport />}
-        {activeTab === "profit" && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-10 text-center">
-            <div className="flex flex-col items-center gap-3">
-               <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center">
-                  {activeTab === "audit" ? <BarChart3 className="w-8 h-8 text-gray-300" /> : <PieChart className="w-8 h-8 text-gray-300" />}
-               </div>
-               <h3 className="text-lg font-medium text-gray-900">Tính năng đang phát triển</h3>
-               <p className="text-gray-500 max-w-sm mx-auto">
-                 Chúng tôi đang nỗ lực hoàn thiện chức năng "{tabs.find(t => t.key === activeTab)?.label}". Vui lòng quay lại sau.
-               </p>
-            </div>
-          </div>
         )}
       </div>
     </div>

@@ -18,10 +18,12 @@ import BankManagePage from "../pages/BankManagePage/BankManagePage";
 import TransactionManage from "../pages/TransactionManage/TransactionManage";
 import CustomerManagementPage from "../pages/CustomerManage/CustomerManagementPage";
 import MonthlySourceStats from "../pages/BmSourceManage/MonthlySourceStats";
-import ThresholdStats from "../pages/AdsAccountManage/ThresholdStats";
 import UserList from "../pages/UserManage/UserList";
 import Dashboard from "../pages/Dashboard/Dashboard";
-import StatisticsPage from "../pages/Statistics/StatisticsPage";
+import BankCardStatistics from "../pages/Statistics/components/BankCardStatistics";
+import TransactionStatistics from "../pages/TransactionManage/TransactionStatistics";
+import AdAccountAuditReport from "../pages/CustomerManage/AdAccountAuditReport";
+import ThresholdStats from "../pages/AdsAccountManage/ThresholdStats";
 
 // 1. Import ProtectedRoute
 
@@ -79,9 +81,13 @@ export default function AppRoutes() {
             <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
               <Route path="user-management" element={<UserList />} />
             </Route>
-            <Route path="monthly-source-stats" element={<MonthlySourceStats />} />
-            <Route path="threshold-stats" element={<ThresholdStats />} />
-            <Route path="statistics" element={<StatisticsPage />} />
+            <Route path="statistics">
+              <Route path="bank-cards" element={<BankCardStatistics />} />
+              <Route path="threshold" element={<ThresholdStats />} />
+              <Route path="source-debt" element={<MonthlySourceStats />} />
+              <Route path="transactions" element={<TransactionStatistics />} />
+              <Route path="audit-report" element={<AdAccountAuditReport />} />
+            </Route>
           </Route>
 
           {/* 4. Tuyến đường cài đặt /settings cũng cần được bảo vệ */}

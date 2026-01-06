@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import customerApi from "../../api/customerApi";
-import { Loader2, ChevronRight, ChevronDown, RotateCw } from "lucide-react";
+import { Loader2, ChevronRight, ChevronDown, RotateCw, ChevronLeft, Calendar } from "lucide-react";
 import { toast } from "react-toastify";
 import SpendTrackingModal from "./SpendTrackingModal";
 
@@ -21,6 +21,24 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
     const [year, setYear] = useState(now.getFullYear());
     const [month, setMonth] = useState(now.getMonth() + 1);
     const [day, setDay] = useState(""); // "" means all days
+
+    const handlePrevMonth = () => {
+        if (month === 1) {
+            setMonth(12);
+            setYear(prev => prev - 1);
+        } else {
+            setMonth(prev => prev - 1);
+        }
+    };
+
+    const handleNextMonth = () => {
+        if (month === 12) {
+            setMonth(1);
+            setYear(prev => prev + 1);
+        } else {
+            setMonth(prev => prev + 1);
+        }
+    };
 
     const observer = useRef();
     const lastElementRef = useCallback(node => {
@@ -122,22 +140,19 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
         return new Intl.NumberFormat('vi-VN').format(num);
     };
 
-    const years = Array.from({ length: 5 }, (_, i) => now.getFullYear() - i);
-    const months = Array.from({ length: 12 }, (_, i) => i + 1);
-
     // Calculate days in the selected month/year
     const daysInMonth = new Date(year, month, 0).getDate();
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
     return (
-        <div className="bg-white rounded-lg p-0 mb-4">
+        <div className="bg-white rounded-lg p-4 mb-4 border border-gray-100 shadow-sm">
             <div className="flex justify-between items-center mb-3 px-1">
                 <h2 className="text-xs font-bold text-primary-darkest uppercase">Đối soát công nợ Khách hàng</h2>
                 <div className="flex gap-2">
                     <button
                         onClick={() => fetchData(null, true)}
                         disabled={loading || loadingMore}
-                        className={`p-1.5 rounded-md border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 transition-colors ${loading || loadingMore ? "opacity-50 cursor-not-allowed" : ""}`}
+                        className={`px-2 py-1 rounded-lg border border-gray-200 bg-white text-gray-600 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm ${loading || loadingMore ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                         title="Tải lại dữ liệu"
                     >
                         <RotateCw className={`w-3.5 h-3.5 ${loading || loadingMore ? "animate-spin" : ""}`} />
@@ -145,34 +160,34 @@ const MonthlyCustomerReconciliation = ({ onCustomerClick }) => {
                     <select
                         value={day}
                         onChange={(e) => setDay(e.target.value)}
-                        className="border border-gray-300 rounded px-1.5 py-0.5 text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="bg-white border border-gray-200 rounded-lg px-2 py-1 text-[11px] font-medium text-gray-700 outline-none focus:ring-1 focus:ring-blue-500 transition-all cursor-pointer shadow-sm"
                     >
                         <option value="">Tất cả ngày</option>
                         {days.map(d => (
                             <option key={d} value={d}>Ngày {d}</option>
                         ))}
                     </select>
-                    <select
-                        value={month}
-                        onChange={(e) => {
-                            setMonth(Number(e.target.value));
-                            // Optional: validation for day if switching to month with fewer days
-                        }}
-                        className="border border-gray-300 rounded px-1.5 py-0.5 text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    >
-                        {months.map(m => (
-                            <option key={m} value={m}>Tháng {m}</option>
-                        ))}
-                    </select>
-                    <select
-                        value={year}
-                        onChange={(e) => setYear(Number(e.target.value))}
-                        className="border border-gray-300 rounded px-1.5 py-0.5 text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    >
-                        {years.map(y => (
-                            <option key={y} value={y}>Năm {y}</option>
-                        ))}
-                    </select>
+
+                    <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+                        <button
+                            onClick={handlePrevMonth}
+                            className="p-1.5 hover:bg-white rounded-md transition-all shadow-sm"
+                        >
+                            <ChevronLeft size={16} />
+                        </button>
+                        <div className="flex items-center gap-2 px-3">
+                            <Calendar size={14} className="text-gray-500" />
+                            <span className="font-semibold text-[11px]">
+                                Tháng {month}/{year}
+                            </span>
+                        </div>
+                        <button
+                            onClick={handleNextMonth}
+                            className="p-1.5 hover:bg-white rounded-md transition-all shadow-sm"
+                        >
+                            <ChevronRight size={16} />
+                        </button>
+                    </div>
                 </div>
             </div>
 
