@@ -1,6 +1,5 @@
 import { useState } from "react";
 import BmAccountList from "../BmAccountManage/BmAccountList";
-import BmSourceList from "../BmSourceManage/BmSourceList";
 import AdsAccountList from "../AdsAccountManage/AdsAccountList";
 import { UserCog, Database, Megaphone } from "lucide-react";
 
@@ -17,11 +16,6 @@ export default function BMManage() {
       key: "account",
       label: "BM Gốc",
       icon: <UserCog className="w-4 h-4" />,
-    },
-    {
-      key: "source",
-      label: "Nguồn BM",
-      icon: <Database className="w-4 h-4" />,
     },
   ];
 
@@ -51,7 +45,6 @@ export default function BMManage() {
       <div>
         {activeTab === "adsAcc" && <AdsAccountList />}
         {activeTab === "account" && <BmAccountList />}
-        {activeTab === "source" && <BmSourceList />}
       </div>
     </div>
   );

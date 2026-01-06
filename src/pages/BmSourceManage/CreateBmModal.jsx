@@ -42,14 +42,14 @@ export default function CreateBmModal({
 
                 {/* Title */}
                 <Dialog.Title className="text-2xl font-semibold text-center mb-5">
-                  Thêm nguồn BM
+                  Thêm đầu tổng
                 </Dialog.Title>
 
                 {/* Input fields */}
                 <div className="flex flex-col gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      Tên BM
+                      Tên đầu tổng
                     </label>
                     <input
                       type="text"

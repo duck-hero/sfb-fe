@@ -11,7 +11,7 @@ import Verify2FA from "../pages/Login/Verify2FA";
 // import BankAccountList from "../pages/BankAccountManage/BankAccountList";
 // import BankCardList from "../pages/BankCardManage/BankCardList";
 import ProtectedRoute from "../context/ProtectedRoute";
-// import BmSourceList from "../pages/BmSourceManage/BmSourceList";
+import BmSourceList from "../pages/BmSourceManage/BmSourceList";
 // import BmAccountList from "../pages/BmAccountManage/BmAccountList";
 import BMManage from "../pages/BmManager/BMManage";
 import BankManagePage from "../pages/BankManagePage/BankManagePage";
@@ -70,6 +70,7 @@ export default function AppRoutes() {
             />
             <Route path="bank-card-management" element={<BankCardList />} /> */}
             <Route path="bm-management" element={<BMManage />} />
+            <Route path="bm-source-management" element={<BmSourceList />} />
             {/* Chỉ Admin và Kế Toán mới xem được lịch sử giao dịch */}
             <Route element={<ProtectedRoute allowedRoles={['Admin', 'Kế Toán', 'Kế Toán Tiền']} />}>
               <Route path="transaction-history" element={<TransactionManage />} />
@@ -82,11 +83,8 @@ export default function AppRoutes() {
               <Route path="user-management" element={<UserList />} />
             </Route>
             <Route path="statistics">
-              <Route path="bank-cards" element={<BankCardStatistics />} />
               <Route path="threshold" element={<ThresholdStats />} />
               <Route path="source-debt" element={<MonthlySourceStats />} />
-              <Route path="transactions" element={<TransactionStatistics />} />
-              <Route path="audit-report" element={<AdAccountAuditReport />} />
             </Route>
           </Route>
 

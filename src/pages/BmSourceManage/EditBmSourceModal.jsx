@@ -73,7 +73,7 @@ export default function EditBmSourceModal({
               <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-8 text-left shadow-xl transition-all">
                 {/* Title */}
                 <Dialog.Title className="text-2xl font-semibold text-center mb-5">
-                  Chỉnh nguồn BM
+                  Chỉnh sửa đầu tổng
                 </Dialog.Title>
 
                 {/* --- Logic hiển thị Skeleton hoặc Form --- */}
@@ -84,7 +84,7 @@ export default function EditBmSourceModal({
                     <div className="flex flex-col gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-1">
-                          Tên BM
+                          Tên đầu tổng
                         </label>
                         <input
                           type="text"

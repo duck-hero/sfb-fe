@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { FileUser , Database, CreditCard, Landmark } from "lucide-react";
+import { FileUser , Database, CreditCard, Landmark, BadgeCent, History } from "lucide-react";
 import BankCardList from "../BankCardManage/BankCardList";
 import BankAccountList from "../BankAccountManage/BankAccountList";
 import BankList from "../BankManage/BankList";
+import BankCardStatistics from "../Statistics/components/BankCardStatistics";
+import TransactionStatistics from "../TransactionManage/TransactionStatistics";
 
 export default function BankManagePage() {
   const [activeTab, setActiveTab] = useState("cards");
@@ -22,6 +24,16 @@ export default function BankManagePage() {
       key: "bank",
       label: "Ngân hàng",
       icon: <Landmark className="w-4 h-4" />,
+    },
+    {
+      key: "card-stats",
+      label: "Thống kê thẻ",
+      icon: <BadgeCent className="w-4 h-4" />,
+    },
+    {
+      key: "trans-stats",
+      label: "TK giao dịch",
+      icon: <History className="w-4 h-4" />,
     },
   ];
 
@@ -52,6 +64,8 @@ export default function BankManagePage() {
         {activeTab === "cards" && <BankCardList />}
         {activeTab === "account" && <BankAccountList />}
         {activeTab === "bank" && <BankList />}
+        {activeTab === "card-stats" && <BankCardStatistics />}
+        {activeTab === "trans-stats" && <TransactionStatistics />}
       </div>
     </div>
   );

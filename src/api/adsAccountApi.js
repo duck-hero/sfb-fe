@@ -7,9 +7,9 @@ getAdsAccountList: async (pageNumber = 1, pageSize = 10, adAccountIdNumber, lock
   try {
     const params = { PageNumber: pageNumber, PageSize: pageSize };
     if (adAccountIdNumber) params.AdAccountIdNumber = adAccountIdNumber;
-    if (locked) params.Locked = locked; // filter Status
-    if (bmAccountId) params.BmAccountId = bmAccountId; // filter BmAccountId
-    if (bmWorking) params.BmWorking = bmWorking; // filter BmWorking
+    if (locked !== null && locked !== undefined) params.Locked = locked; 
+    if (bmAccountId) params.BmAccountId = bmAccountId; 
+    if (bmWorking !== null && bmWorking !== undefined) params.BmWorking = bmWorking; 
 
 
     const response = await axiosInstance.get(

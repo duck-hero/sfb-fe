@@ -195,7 +195,7 @@ function BmSourceList() {
   // ------------------------- RENDER -------------------------
   return (
     <div className="px-4">
-      <h1 className="text-lg font-bold mb-3">Danh sách BM</h1>
+      <h1 className="text-lg font-bold mb-3">Danh sách Đầu tổng</h1>
 
       {/* --- SEARCH BAR SECTION --- */}
       <div className="pb-4 border-b border-gray-200">
@@ -216,7 +216,7 @@ function BmSourceList() {
             <div className="flex items-center px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100 hover:shadow-md">
               <input
                 type="text"
-                placeholder="Tên BM..."
+                placeholder="Tên Đầu tổng..."
                 value={searchCode}
                 onChange={(e) => setSearchCode(e.target.value)}
                 className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-sm focus:outline-none"
@@ -243,7 +243,7 @@ function BmSourceList() {
                   scope="col"
                   className="px-3 py-2 text-left text-xs font-medium text-gray-900  tracking-wider w-1/4 text-primary-darkest"
                 >
-                  Tên Nguồn
+                  Đầu tổng
                 </th>
                 <th
                   scope="col"

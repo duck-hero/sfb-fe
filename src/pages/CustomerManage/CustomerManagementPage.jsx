@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Users, FileSpreadsheet, BarChart3, PieChart } from "lucide-react";
+import { Users, FileSpreadsheet, FileBox } from "lucide-react";
 import CustomerList from "./CustomerList";
 import MonthlyCustomerReconciliation from "./MonthlyCustomerReconciliation";
 import CustomerGroupList from "./CustomerGroupList";
@@ -23,6 +23,11 @@ export default function CustomerManagementPage() {
       key: "reconciliation",
       label: "Tổng hợp công nợ",
       icon: <FileSpreadsheet className="w-4 h-4" />,
+    },
+    {
+      key: "audit",
+      label: "BC đối soát",
+      icon: <FileBox className="w-4 h-4" />,
     },
   ];
 
@@ -56,6 +61,7 @@ export default function CustomerManagementPage() {
         {activeTab === "reconciliation" && (
           <MonthlyCustomerReconciliation />
         )}
+        {activeTab === "audit" && <AdAccountAuditReport />}
       </div>
     </div>
   );
