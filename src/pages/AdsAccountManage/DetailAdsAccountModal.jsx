@@ -3,7 +3,9 @@ import { Dialog, Transition } from "@headlessui/react";
 import { toast } from "react-toastify";
 import AddCardApi from "../../api/AddCardApi";
 import customerAdsAccountApi from "../../api/customerAdsAccountApi";
+import customerApi from "../../api/customerApi";
 import { getBmWorkingDisplayText } from "../../utils/bmConstants";
+import { Plus, Search, RotateCw } from "lucide-react";
 
 // Component hiển thị trường thông tin
 const DetailField = ({ label, value, className = "" }) => (
@@ -67,24 +69,24 @@ export default function DetailAdsAccountModal({
   const [renterList, setRenterList] = useState([]);
   const [loadingRenter, setLoadingRenter] = useState(false);
 
-  useEffect(() => {
-    const fetchRenters = async () => {
-      if (accountData?.id && open) {
-        setLoadingRenter(true);
-        try {
-          const res = await customerAdsAccountApi.getByAdAccountId(accountData.id);
-          if (res && res.success) {
-            setRenterList(res.data || []);
-          }
-        } catch (error) {
-          console.error("Failed to fetch renters", error);
-        } finally {
-          setLoadingRenter(false);
-        }
-      }
-    };
+  // Add Rental State
+  const [isAddRentalOpen, setIsAddRentalOpen] = useState(false);
+  const [availableCustomers, setAvailableCustomers] = useState([]);
+  const [loadingCustomers, setLoadingCustomers] = useState(false);
+  const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+  const [adding, setAdding] = useState(false);
+  const [searchCustomer, setSearchCustomer] = useState("");
 
-    fetchRenters();
+  // New Rental Fields
+  const getTodayString = () => new Date().toISOString().split('T')[0];
+  const [startAt, setStartAt] = useState(getTodayString());
+  const [feePercent, setFeePercent] = useState("");
+  const [paymentMode, setPaymentMode] = useState(2); // Default 2: AgencyPays
+
+  useEffect(() => {
+    if (open) {
+      fetchRenters();
+    }
   }, [accountData?.id, open]);
 
   const handleUpdateStatus = async (addCardId, newStatus) => {
@@ -101,6 +103,67 @@ export default function DetailAdsAccountModal({
       toast.error(typeof err === "string" ? err : "Cập nhật thất bại");
     } finally {
       setUpdatingId(null);
+    }
+  };
+
+  const fetchRenters = async () => {
+    if (accountData?.id) {
+      setLoadingRenter(true);
+      try {
+        const res = await customerAdsAccountApi.getByAdAccountId(accountData.id);
+        if (res && res.success) {
+          setRenterList(res.data || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch renters", error);
+      } finally {
+        setLoadingRenter(false);
+      }
+    }
+  };
+
+  const handleOpenAddRental = async () => {
+    setIsAddRentalOpen(true);
+    setSelectedCustomerId(null);
+    setSearchCustomer("");
+    setStartAt(getTodayString());
+    setFeePercent("");
+    setPaymentMode(2);
+
+    setLoadingCustomers(true);
+    try {
+      const res = await customerApi.getCustomerList(1, 100);
+      setAvailableCustomers(res.data || []);
+    } catch (error) {
+      toast.error("Không tải được danh sách khách hàng");
+    } finally {
+      setLoadingCustomers(false);
+    }
+  };
+
+  const handleAddRental = async () => {
+    if (!selectedCustomerId || !accountData?.id) {
+      toast.error("Vui lòng chọn khách hàng");
+      return;
+    }
+    setAdding(true);
+    try {
+      const fee = feePercent ? parseFloat(feePercent) / 100 : 0;
+      await customerAdsAccountApi.createCustomerAdsAccount({
+        adAccountId: accountData.id,
+        customerId: selectedCustomerId,
+        startAt: new Date(startAt).toISOString(),
+        feePercent: fee,
+        paymentMode: parseInt(paymentMode)
+      });
+      toast.success("Thêm tài khoản thuê thành công");
+      setIsAddRentalOpen(false);
+      fetchRenters();
+      if (refreshData) refreshData();
+    } catch (error) {
+      toast.error(typeof error === 'string' ? error : "Thêm thất bại");
+    } finally {
+      setAdding(false);
     }
   };
 
@@ -342,9 +405,18 @@ export default function DetailAdsAccountModal({
 
                       {/* RIGHT COLUMN (3rd): Renters List */}
                       <div className="border-l pl-6">
-                        <h3 className="text-base font-semibold text-gray-800 mb-3">
-                          Khách thuê ({renterList.length || 0})
-                        </h3>
+                        <div className="flex justify-between items-center mb-3">
+                          <h3 className="text-base font-semibold text-gray-800">
+                            Khách thuê ({renterList.length || 0})
+                          </h3>
+                          <button
+                            onClick={handleOpenAddRental}
+                            className="flex items-center px-3 py-1.5 rounded-lg font-bold text-xs transition bg-primary-dark text-white hover:bg-primary-darkest shadow-sm"
+                          >
+                            <Plus className="h-3.5 w-3.5 mr-1" />
+                            Thuê
+                          </button>
+                        </div>
                         <div className="max-h-[500px] overflow-y-auto pr-2 space-y-3">
                           {loadingRenter ? (
                             <div className="space-y-3">
@@ -414,6 +486,131 @@ export default function DetailAdsAccountModal({
           </div>
         </div>
       </Dialog>
+
+      {/* Internal Modal for Adding Rental */}
+      <Transition appear show={isAddRentalOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-[60]" onClose={() => setIsAddRentalOpen(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+                  <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                    <h3 className="text-sm font-bold text-gray-700">Tạo phiên thuê</h3>
+                    <button onClick={() => setIsAddRentalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                      <Plus className="w-5 h-5 rotate-45" />
+                    </button>
+                  </div>
+
+                  <div className="p-4 space-y-4">
+                    {/* Filter Customers */}
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="text"
+                        className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                        placeholder="Tìm tên hoặc mã khách..."
+                        value={searchCustomer}
+                        onChange={(e) => setSearchCustomer(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="max-h-48 overflow-y-auto border border-blue-500 rounded-lg divide-y divide-gray-50">
+                      {loadingCustomers ? (
+                        <div className="p-4 flex justify-center"><RotateCw className="w-5 h-5 animate-spin text-blue-500" /></div>
+                      ) : availableCustomers.filter(c => 
+                          c.name?.toLowerCase().includes(searchCustomer.toLowerCase()) || 
+                          c.fullCustomerCode?.toLowerCase().includes(searchCustomer.toLowerCase())
+                        ).length > 0 ? (
+                        availableCustomers.filter(c => 
+                          c.name?.toLowerCase().includes(searchCustomer.toLowerCase()) || 
+                          c.fullCustomerCode?.toLowerCase().includes(searchCustomer.toLowerCase())
+                        ).map(customer => (
+                          <div
+                            key={customer.id}
+                            onClick={() => setSelectedCustomerId(customer.id)}
+                            className={`p-3 cursor-pointer transition-colors ${selectedCustomerId === customer.id ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
+                          >
+                            <div className="text-xs font-bold text-gray-800">{customer.fullCustomerCode || "N/A"}</div>
+                            <div className="text-[10px] text-gray-400 truncate">{customer.name}</div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-4 text-center text-xs text-gray-400">Không tìm thấy khách hàng</div>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-500 uppercase">Ngày bắt đầu thuê</label>
+                        <input
+                          type="date"
+                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs"
+                          value={startAt}
+                          onChange={(e) => setStartAt(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-500 uppercase">Phí (%)</label>
+                        <input
+                          type="number"
+                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs"
+                          placeholder="0"
+                          value={feePercent}
+                          onChange={(e) => setFeePercent(e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-500 uppercase">Mode thanh toán</label>
+                      <select
+                        className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs"
+                        value={paymentMode}
+                        onChange={(e) => setPaymentMode(e.target.value)}
+                      >
+                        <option value={2}>Thẻ HDG</option>
+                        <option value={1}>Thẻ khách</option>
+                        <option value={3}>Thẻ đầu tổng</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-gray-50 border-t border-gray-100 flex gap-3">
+                    <button onClick={() => setIsAddRentalOpen(false)} className="flex-1 py-2 rounded-lg text-xs font-bold text-gray-500 hover:bg-gray-200 transition-colors">Hủy</button>
+                    <button
+                      onClick={handleAddRental}
+                      disabled={adding || !selectedCustomerId}
+                      className="flex-1 py-2 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                    >
+                      {adding ? "Đang xử lý..." : "Xác nhận"}
+                    </button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
     </Transition >
   );
 }
