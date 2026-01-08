@@ -28,36 +28,36 @@ const CellPopover = ({ isOpen, onClose, data, position }) => {
   };
 
   return (
-    <div 
+    <div
       className="fixed z-[100] animate-in fade-in zoom-in-95 duration-150"
-      style={{ 
-        top: position.y + 10, 
-        left: Math.min(position.x - 70, window.innerWidth - 220) 
+      style={{
+        top: position.y + 10,
+        left: Math.min(position.x - 70, window.innerWidth - 220)
       }}
       ref={popoverRef}
     >
       <div className="bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] border border-gray-100 w-[200px] overflow-hidden">
         <div className="bg-gray-50 border-b border-gray-100 px-3 py-2 flex justify-between items-center">
-            <span className="text-[10px] font-black text-gray-500 uppercase">Chi tiết phí</span>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-                <X size={12} />
-            </button>
+          <span className="text-[10px] font-black text-gray-500 uppercase">Chi tiết phí</span>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <X size={12} />
+          </button>
         </div>
         <div className="p-3 space-y-2">
           <div className="flex justify-between items-center">
-            <span className="text-[10px] text-gray-400 font-bold uppercase">Spend</span>
+            <span className="text-[10px] text-gray-400 font-bold uppercase">Chi tiêu</span>
             <span className="text-xs font-bold text-gray-900">{formatCurrency(data.spend)}</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-[10px] text-gray-400 font-bold uppercase">Fee</span>
+            <span className="text-[10px] text-gray-400 font-bold uppercase">Phí</span>
             <span className="text-xs font-bold text-purple-600">{formatCurrency(data.fee)}</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-[10px] text-gray-400 font-bold uppercase">Comm.</span>
+            <span className="text-[10px] text-gray-400 font-bold uppercase">Phí CTV</span>
             <span className="text-xs font-bold text-orange-600">{formatCurrency(data.commission)}</span>
           </div>
           <div className="pt-2 mt-2 border-t border-gray-50 flex justify-between items-center">
-            <span className="text-[10px] text-green-600 font-black uppercase">Profit</span>
+            <span className="text-[10px] text-green-600 font-black uppercase">Lợi nhuận</span>
             <span className="text-sm font-black text-green-700">{formatCurrency(data.profit)}</span>
           </div>
         </div>
@@ -140,7 +140,7 @@ const FeeProfitMatrix = () => {
       {/* Header & Filters */}
       <div className="flex items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
         <div>
-          <h1 className="text-xl font-bold text-gray-800">Ma trận Lợi nhuận phí</h1>
+          <h1 className="text-xl font-bold text-gray-800">Lợi nhuận phí</h1>
           <p className="text-sm text-gray-500">Thống kê lợi nhuận phí chi tiết theo ngày</p>
         </div>
 
@@ -191,7 +191,7 @@ const FeeProfitMatrix = () => {
                 <tr className="bg-gray-50/80 backdrop-blur-sm">
                   <th className="sticky left-0 z-40 min-w-[180px] px-2 py-2 text-left text-[10px] font-bold text-gray-500 uppercase border-b border-r border-gray-100 bg-gray-50/90">CODE KHÁCH</th>
                   <th className="sticky left-[180px] z-40 w-[100px] px-2 py-2 text-right text-[10px] font-bold text-blue-600 uppercase border-b border-r border-gray-100 bg-gray-50/90 shadow-[2px_0_5_px_rgba(0,0,0,0.05)]">Tổng LN</th>
-                  
+
                   {Array.from({ length: (data.daysInMonth || 0) }, (_, i) => i + 1).map(day => (
                     <th key={day} className="min-w-[70px] px-1 py-2 text-center text-[10px] font-semibold text-gray-600 border-b border-r border-gray-100">
                       {day}
@@ -206,19 +206,19 @@ const FeeProfitMatrix = () => {
                     <td className={`sticky left-[180px] z-20 px-2 py-1.5 text-xs font-black border-r border-gray-50 bg-white group-hover:bg-blue-50 shadow-[2px_0_5px_rgba(0,0,0,0.02)] text-right ${row.rowTotalProfit >= 0 ? 'text-green-600' : 'text-red-500'}`}>
                       {formatCurrency(row.rowTotalProfit)}
                     </td>
-                    
+
                     {Array.from({ length: (data.daysInMonth || 0) }, (_, i) => i + 1).map(day => {
-                        const cell = row.cells ? row.cells[day.toString()] : null;
-                        const profit = cell?.profit || 0;
-                        return (
-                          <td 
-                            key={day} 
-                            onClick={(e) => handleCellClick(e, cell)}
-                            className={`px-1 py-1.5 text-[11px] text-right font-mono border-r border-gray-50 transition-all ${cell ? 'cursor-pointer hover:bg-blue-100/50 hover:font-bold active:scale-95' : ''} ${profit > 0 ? 'text-gray-900 font-medium' : profit < 0 ? 'text-red-600 bg-red-50/20' : 'text-gray-300'}`}
-                          >
-                            {formatCurrency(profit)}
-                          </td>
-                        );
+                      const cell = row.cells ? row.cells[day.toString()] : null;
+                      const profit = cell?.profit || 0;
+                      return (
+                        <td
+                          key={day}
+                          onClick={(e) => handleCellClick(e, cell)}
+                          className={`px-1 py-1.5 text-[11px] text-right font-mono border-r border-gray-50 transition-all ${cell ? 'cursor-pointer hover:bg-blue-100/50 hover:font-bold active:scale-95' : ''} ${profit > 0 ? 'text-gray-900 font-medium' : profit < 0 ? 'text-red-600 bg-red-50/20' : 'text-gray-300'}`}
+                        >
+                          {formatCurrency(profit)}
+                        </td>
+                      );
                     })}
                   </tr>
                 ))}
@@ -229,13 +229,13 @@ const FeeProfitMatrix = () => {
                   <td className="sticky left-[180px] z-40 px-2 py-2 text-xs text-right text-blue-900 bg-blue-50 border-t border-r border-gray-200 shadow-[2px_0_5px_rgba(0,0,0,0.1)]">
                     {formatCurrency(data.monthlySummary?.totalProfit || 0)}
                   </td>
-                  
+
                   {Array.from({ length: (data.daysInMonth || 0) }, (_, i) => i + 1).map(day => {
                     const total = data.dailyTotals ? (data.dailyTotals[day.toString()] || 0) : 0;
                     return (
-                        <td key={day} className={`px-1 py-2 text-xs text-right font-mono border-t border-r border-gray-200 ${total >= 0 ? 'text-green-700 font-bold' : 'text-red-700 bg-red-50/50 font-bold'}`}>
+                      <td key={day} className={`px-1 py-2 text-xs text-right font-mono border-t border-r border-gray-200 ${total >= 0 ? 'text-green-700 font-bold' : 'text-red-700 bg-red-50/50 font-bold'}`}>
                         {formatCurrency(total)}
-                        </td>
+                      </td>
                     );
                   })}
                 </tr>
@@ -245,14 +245,15 @@ const FeeProfitMatrix = () => {
         )}
       </div>
 
-      <CellPopover 
+      <CellPopover
         isOpen={popover.isOpen}
         onClose={() => setPopover({ ...popover, isOpen: false })}
         data={popover.data}
         position={popover.position}
       />
 
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         /* Custom scrollbar for better density */
         .overflow-auto::-webkit-scrollbar {
           height: 8px;
