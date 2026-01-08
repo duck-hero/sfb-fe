@@ -1,8 +1,70 @@
 import React, { useState, useEffect } from "react";
 import dayjs from "dayjs";
-import { ChevronLeft, ChevronRight, Calendar, RotateCw, Filter, Download } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar, RotateCw, Filter, Download, X, MoreVertical } from "lucide-react";
 import dashboardApi from "../../api/dashboardApi";
 import { toast } from "react-toastify";
+
+const CellPopover = ({ isOpen, onClose, data, position }) => {
+  const popoverRef = React.useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (popoverRef.current && !popoverRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen || !data || !position) return null;
+
+  const formatCurrency = (val) => {
+    return new Intl.NumberFormat('vi-VN').format(val || 0);
+  };
+
+  return (
+    <div 
+      className="fixed z-[100] animate-in fade-in zoom-in-95 duration-150"
+      style={{ 
+        top: position.y + 10, 
+        left: Math.min(position.x - 70, window.innerWidth - 220) 
+      }}
+      ref={popoverRef}
+    >
+      <div className="bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] border border-gray-100 w-[200px] overflow-hidden">
+        <div className="bg-gray-50 border-b border-gray-100 px-3 py-2 flex justify-between items-center">
+            <span className="text-[10px] font-black text-gray-500 uppercase">Chi tiết phí</span>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                <X size={12} />
+            </button>
+        </div>
+        <div className="p-3 space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-[10px] text-gray-400 font-bold uppercase">Spend</span>
+            <span className="text-xs font-bold text-gray-900">{formatCurrency(data.spend)}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-[10px] text-gray-400 font-bold uppercase">Fee</span>
+            <span className="text-xs font-bold text-purple-600">{formatCurrency(data.fee)}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-[10px] text-gray-400 font-bold uppercase">Comm.</span>
+            <span className="text-xs font-bold text-orange-600">{formatCurrency(data.commission)}</span>
+          </div>
+          <div className="pt-2 mt-2 border-t border-gray-50 flex justify-between items-center">
+            <span className="text-[10px] text-green-600 font-black uppercase">Profit</span>
+            <span className="text-sm font-black text-green-700">{formatCurrency(data.profit)}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const FeeProfitMatrix = () => {
   const [loading, setLoading] = useState(false);
@@ -11,6 +73,8 @@ const FeeProfitMatrix = () => {
     year: dayjs().year(),
     month: dayjs().month() + 1,
   });
+
+  const [popover, setPopover] = useState({ isOpen: false, data: null, position: null });
 
   const fetchMatrix = async () => {
     setLoading(true);
@@ -59,6 +123,16 @@ const FeeProfitMatrix = () => {
     if (amount === 0) return "-";
     if (amount === null || amount === undefined) return "-";
     return new Intl.NumberFormat('vi-VN', { style: 'decimal', maximumFractionDigits: 0 }).format(amount);
+  };
+
+  const handleCellClick = (e, cellData) => {
+    if (!cellData) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    setPopover({
+      isOpen: true,
+      data: cellData,
+      position: { x: rect.left + rect.width / 2, y: rect.bottom }
+    });
   };
 
   return (
@@ -116,7 +190,7 @@ const FeeProfitMatrix = () => {
               <thead className="sticky top-0 z-30">
                 <tr className="bg-gray-50/80 backdrop-blur-sm">
                   <th className="sticky left-0 z-40 min-w-[180px] px-2 py-2 text-left text-[10px] font-bold text-gray-500 uppercase border-b border-r border-gray-100 bg-gray-50/90">CODE KHÁCH</th>
-                  <th className="sticky left-[180px] z-40 w-[100px] px-2 py-2 text-right text-[10px] font-bold text-blue-600 uppercase border-b border-r border-gray-100 bg-gray-50/90 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">Tổng LN</th>
+                  <th className="sticky left-[180px] z-40 w-[100px] px-2 py-2 text-right text-[10px] font-bold text-blue-600 uppercase border-b border-r border-gray-100 bg-gray-50/90 shadow-[2px_0_5_px_rgba(0,0,0,0.05)]">Tổng LN</th>
                   
                   {Array.from({ length: (data.daysInMonth || 0) }, (_, i) => i + 1).map(day => (
                     <th key={day} className="min-w-[70px] px-1 py-2 text-center text-[10px] font-semibold text-gray-600 border-b border-r border-gray-100">
@@ -137,7 +211,11 @@ const FeeProfitMatrix = () => {
                         const cell = row.cells ? row.cells[day.toString()] : null;
                         const profit = cell?.profit || 0;
                         return (
-                          <td key={day} className={`px-1 py-1.5 text-[11px] text-right font-mono border-r border-gray-50 ${profit > 0 ? 'text-gray-900 font-medium' : profit < 0 ? 'text-red-600 bg-red-50/20' : 'text-gray-300'}`}>
+                          <td 
+                            key={day} 
+                            onClick={(e) => handleCellClick(e, cell)}
+                            className={`px-1 py-1.5 text-[11px] text-right font-mono border-r border-gray-50 transition-all ${cell ? 'cursor-pointer hover:bg-blue-100/50 hover:font-bold active:scale-95' : ''} ${profit > 0 ? 'text-gray-900 font-medium' : profit < 0 ? 'text-red-600 bg-red-50/20' : 'text-gray-300'}`}
+                          >
                             {formatCurrency(profit)}
                           </td>
                         );
@@ -166,6 +244,13 @@ const FeeProfitMatrix = () => {
           </div>
         )}
       </div>
+
+      <CellPopover 
+        isOpen={popover.isOpen}
+        onClose={() => setPopover({ ...popover, isOpen: false })}
+        data={popover.data}
+        position={popover.position}
+      />
 
       <style dangerouslySetInnerHTML={{ __html: `
         /* Custom scrollbar for better density */
