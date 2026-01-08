@@ -11,11 +11,13 @@ import DeleteConfirmModal from "../../components/Modal/DeleteConfirmModal";
 import DetailCustomerModal from "./DetailCustomerModal";
 import SpendTrackingModal from "./SpendTrackingModal";
 import CustomerDetailView from "./CustomerDetailView";
+import collaboratorApi from "../../api/collaboratorApi";
 
 function CustomerList() {
     const [customers, setCustomers] = useState([]);
     const [groups, setGroups] = useState([]);
     const [users, setUsers] = useState([]);
+    const [collaborators, setCollaborators] = useState([]);
     const [searchParams] = useSearchParams();
     const [loading, setLoading] = useState(false);
 
@@ -80,6 +82,18 @@ function CustomerList() {
         }
     };
 
+    // Fetch Collaborators
+    const fetchCollaborators = async () => {
+        try {
+            const res = await collaboratorApi.getPagedList(1, 100);
+            if (res.success) {
+                setCollaborators(res.data || []);
+            }
+        } catch (error) {
+            console.error("Failed to fetch collaborators", error);
+        }
+    };
+
     // Fetch Data
     const fetchCustomers = async (page = 1, size = 10, keyword = null, groupId = null, operatorId = null) => {
         setLoading(true);
@@ -118,6 +132,7 @@ function CustomerList() {
         fetchCustomers(pageNumber, pageSize, searchCode, selectedGroupId, selectedOperatorId);
         fetchGroups();
         fetchUsers();
+        fetchCollaborators();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pageNumber, pageSize]); // Trigger when page/size changes. Search is manual or separate.
 
@@ -156,14 +171,23 @@ function CustomerList() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        // If the empty option is selected for customerGroupId or operatorUserId, use null
-        const finalValue = ((name === "customerGroupId" || name === "operatorUserId") && value === "") ? null : value;
+        
+        let finalValue;
+        
+        // If the empty option is selected for dropdown fields, use null
+        if ((name === "customerGroupId" || name === "operatorUserId" || name === "collaboratorId") && value === "") {
+            finalValue = null;
+        } 
+        else {
+            finalValue = value;
+        }
+        
         setFormData((prev) => ({ ...prev, [name]: finalValue }));
     };
 
     // Create
     const handleOpenCreate = () => {
-        setFormData({ name: "", agencyCode: "", customerGroupId: null, operatorUserId: null });
+        setFormData({ name: "", agencyCode: "", customerGroupId: null, operatorUserId: null, collaboratorId: null, collaboratorRate: 0 });
         setIsCreateModalOpen(true);
     };
 
@@ -174,7 +198,12 @@ function CustomerList() {
         }
         setSaving(true);
         try {
-            await customerApi.createCustomer(formData);
+            // Convert collaboratorRate from percentage to decimal before sending to API
+            const dataToSend = {
+                ...formData,
+                collaboratorRate: formData.collaboratorRate ? Number(formData.collaboratorRate) / 100 : 0
+            };
+            await customerApi.createCustomer(dataToSend);
             toast.success("Thêm khách hàng thành công");
             setIsCreateModalOpen(false);
             fetchCustomers(pageNumber, pageSize, searchCode, selectedGroupId, selectedOperatorId);
@@ -197,14 +226,20 @@ function CustomerList() {
             setFormData({
                 ...detailData,
                 customerGroupId: detailData.customerGroupId || null,
-                operatorUserId: detailData.operatorUserId || null
+                operatorUserId: detailData.operatorUserId || null,
+                collaboratorId: detailData.collaboratorId || null,
+                // Convert API decimal to UI percentage (0.01 -> 1)
+                collaboratorRate: detailData.collaboratorRate ? (detailData.collaboratorRate * 100) : 0
             });
         } catch (error) {
             toast.error("Không tải được dữ liệu khách hàng");
             setFormData({
                 ...item,
                 customerGroupId: item.customerGroupId || null,
-                operatorUserId: item.operatorUserId || null
+                operatorUserId: item.operatorUserId || null,
+                collaboratorId: item.collaboratorId || null,
+                // Convert API decimal to UI percentage (0.01 -> 1)
+                collaboratorRate: item.collaboratorRate ? (item.collaboratorRate * 100) : 0
             });
         } finally {
             setIsEditLoading(false);
@@ -218,7 +253,12 @@ function CustomerList() {
         }
         setSaving(true);
         try {
-            await customerApi.updateCustomer(selectedCustomer.id, formData);
+            // Convert collaboratorRate from percentage to decimal before sending to API
+            const dataToSend = {
+                ...formData,
+                collaboratorRate: formData.collaboratorRate ? Number(formData.collaboratorRate) / 100 : 0
+            };
+            await customerApi.updateCustomer(selectedCustomer.id, dataToSend);
             toast.success("Cập nhật thành công");
             setIsEditModalOpen(false);
             fetchCustomers(pageNumber, pageSize, searchCode, selectedGroupId, selectedOperatorId);
@@ -350,6 +390,9 @@ function CustomerList() {
                                                 <th scope="col" className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
                                                     NV phụ trách
                                                 </th>
+                                                <th scope="col" className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                                    CTV
+                                                </th>
                                                 <th scope="col" className="px-3 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
                                                     Thao tác
                                                 </th>
@@ -397,6 +440,14 @@ function CustomerList() {
                                                         <td className="px-3 py-2">
                                                             <div className="text-[11px] text-orange-600 font-bold bg-orange-50 px-1.5 py-0.5 rounded-full inline-block">
                                                                 {customer.operatorUserName || "-"}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-3 py-2">
+                                                            <div className="text-[11px] text-blue-600 font-bold">
+                                                                {customer.collaboratorName || "-"}
+                                                                {customer.collaboratorRate > 0 && (
+                                                                    <span className="ml-1 text-gray-500 text-[10px]">({(customer.collaboratorRate * 100).toFixed(1)}%)</span>
+                                                                )}
                                                             </div>
                                                         </td>
                                                         <td className="px-3 py-2 text-right" onClick={(e) => e.stopPropagation()}>
@@ -483,6 +534,7 @@ function CustomerList() {
                 onChange={handleInputChange}
                 groups={groups}
                 users={users}
+                collaborators={collaborators}
             />
 
             <EditCustomerModal
@@ -495,6 +547,7 @@ function CustomerList() {
                 onChange={handleInputChange}
                 groups={groups}
                 users={users}
+                collaborators={collaborators}
             />
 
             <DeleteConfirmModal

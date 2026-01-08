@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Users, FileSpreadsheet, FileBox } from "lucide-react";
+import { Users, FileSpreadsheet, FileBox, TrendingUp } from "lucide-react";
 import CustomerList from "./CustomerList";
 import MonthlyCustomerReconciliation from "./MonthlyCustomerReconciliation";
 import CustomerGroupList from "./CustomerGroupList";
+import CollaboratorList from "./CollaboratorList";
 import AdAccountAuditReport from "./AdAccountAuditReport";
+import CTVStatistics from "./CTVStatistics";
 
 export default function CustomerManagementPage() {
   const [activeTab, setActiveTab] = useState("list");
@@ -20,9 +22,19 @@ export default function CustomerManagementPage() {
       icon: <Users className="w-4 h-4 text-blue-500" />,
     },
     {
+      key: "collaborator",
+      label: "CTV",
+      icon: <Users className="w-4 h-4 text-green-500" />,
+    },
+    {
       key: "reconciliation",
       label: "Tổng hợp công nợ",
       icon: <FileSpreadsheet className="w-4 h-4" />,
+    },
+    {
+      key: "ctv-stats",
+      label: "Thống kê CTV",
+      icon: <TrendingUp className="w-4 h-4 text-purple-500" />,
     },
     {
       key: "audit",
@@ -58,9 +70,11 @@ export default function CustomerManagementPage() {
       <div>
         {activeTab === "list" && <CustomerList />}
         {activeTab === "group" && <CustomerGroupList />}
+        {activeTab === "collaborator" && <CollaboratorList />}
         {activeTab === "reconciliation" && (
           <MonthlyCustomerReconciliation />
         )}
+        {activeTab === "ctv-stats" && <CTVStatistics />}
         {activeTab === "audit" && <AdAccountAuditReport />}
       </div>
     </div>

@@ -24,6 +24,7 @@ import BankCardStatistics from "../pages/Statistics/components/BankCardStatistic
 import TransactionStatistics from "../pages/TransactionManage/TransactionStatistics";
 import AdAccountAuditReport from "../pages/CustomerManage/AdAccountAuditReport";
 import ThresholdStats from "../pages/AdsAccountManage/ThresholdStats";
+import FeeProfitMatrix from "../pages/Statistics/FeeProfitMatrix";
 
 // 1. Import ProtectedRoute
 
@@ -85,6 +86,7 @@ export default function AppRoutes() {
             <Route path="statistics">
               <Route path="threshold" element={<ThresholdStats />} />
               <Route path="source-debt" element={<MonthlySourceStats />} />
+              <Route path="fee-profit-matrix" element={<FeeProfitMatrix />} />
             </Route>
           </Route>
 

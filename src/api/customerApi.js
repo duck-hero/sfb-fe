@@ -52,6 +52,8 @@ const customerApi = {
           agencyCode: data.agencyCode,
           customerGroupId: data.customerGroupId || null,
           operatorUserId: data.operatorUserId || null,
+          collaboratorId: data.collaboratorId || null,
+          collaboratorRate: data.collaboratorRate || 0,
         }
       );
       return response.data;
@@ -72,6 +74,8 @@ const customerApi = {
           agencyCode: data.agencyCode,
           customerGroupId: data.customerGroupId || null,
           operatorUserId: data.operatorUserId || null,
+          collaboratorId: data.collaboratorId || null,
+          collaboratorRate: data.collaboratorRate || 0,
         }
       );
       return response.data;

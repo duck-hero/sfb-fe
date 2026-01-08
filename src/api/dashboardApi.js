@@ -44,6 +44,47 @@ const dashboardApi = {
       throw handleApiError(error);
     }
   },
+
+  // Lấy tổng hợp hàng tháng
+  getMonthlySummary: async (year, month) => {
+    try {
+      const params = {};
+      if (year) params.year = year;
+      if (month) params.month = month;
+      const response = await axiosInstance.get(`${api}/dashboard/monthly-summary`, { params });
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  // Lấy ma trận lợi nhuận phí hàng ngày
+  getDailyFeeProfitMatrix: async (year, month) => {
+    try {
+      const response = await axiosInstance.get(
+        `${api}/dashboard/daily-fee-profit-matrix`,
+        {
+          params: { year, month },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  // Lấy thống kê CTV (Collaborator Summary)
+  getCTVSummary: async (year, month) => {
+    try {
+      const params = {};
+      if (year) params.year = year;
+      if (month) params.month = month;
+      const response = await axiosInstance.get(`${api}/dashboard/ctv-summary`, { params });
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 };
 
 export default dashboardApi;

@@ -173,7 +173,17 @@ const CustomerDetailView = ({ id }) => {
         <div className="flex justify-between items-start mb-4">
             <div>
                 <h2 className="text-lg font-bold text-gray-800">{data?.fullCustomerCode}</h2>
-                <p className="text-xs text-secondary italic">{data?.name}</p>
+                <p className="text-xs text-secondary italic mb-1">{data?.name}</p>
+                {data?.collaboratorName && (
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-[10px] font-bold px-2 py-0.5 bg-green-50 text-green-600 rounded border border-green-100">
+                      CTV: {data.collaboratorName}
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-50 text-blue-600 rounded border border-blue-100">
+                      Rate: {(data.collaboratorRate * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                )}
             </div>
             <button
                 onClick={handleOpenAddRental}

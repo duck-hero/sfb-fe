@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import sfbLogo from "../../assets/sfb-logo.png";
-import { LayoutDashboard, Mountain, Landmark, History, ChevronLeft, ChevronRight, UsersRound, Shield, ChevronDown, PieChart, Receipt, Database, LayoutList } from "lucide-react";
+import { LayoutDashboard, Mountain, Landmark, History, ChevronLeft, ChevronRight, UsersRound, Shield, ChevronDown, PieChart, Receipt, Database, LayoutList, TrendingUp } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
 const Sidebar = ({ onToggle, isCollapsed }) => {
@@ -11,13 +11,19 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
   const isTotalHeadPath = pathname.startsWith("/statistics/source-debt") || 
                          pathname.startsWith("/statistics/threshold") || 
                          pathname === "/bm-source-management";
+  
+  const isRevenuePath = pathname === "/statistics/fee-profit-matrix";
                          
   const [isTotalExpanded, setIsTotalExpanded] = useState(isTotalHeadPath);
+  const [isRevenueExpanded, setIsRevenueExpanded] = useState(isRevenuePath);
 
   // Open submenu automatically if pathname matches sub-items
   useEffect(() => {
     if (isTotalHeadPath && !isCollapsed) {
       setIsTotalExpanded(true);
+    }
+    if (isRevenuePath && !isCollapsed) {
+      setIsRevenueExpanded(true);
     }
   }, [pathname, isCollapsed]);
 
@@ -106,6 +112,39 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
             </div>
           )}
         </div>
+
+        {/* Doanh thu & lợi nhuận - Submenu */}
+        <div>
+          <button
+            onClick={() => !isCollapsed && setIsRevenueExpanded(!isRevenueExpanded)}
+            className={`w-full flex items-center justify-between rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${isRevenuePath && !isRevenueExpanded && active} ${isCollapsed ? 'justify-center px-3 py-3' : 'px-3 py-3'}`}
+            title={isCollapsed ? "Doanh thu & lợi nhuận" : ""}
+          >
+            <div className={`flex items-center ${isCollapsed ? '' : 'gap-3'}`}>
+              <TrendingUp size={20} className="flex-shrink-0" />
+              {!isCollapsed && <span className="truncate">DT & LN</span>}
+            </div>
+            {!isCollapsed && (
+              <ChevronDown 
+                size={16} 
+                className={`transition-transform duration-200 ${isRevenueExpanded ? 'rotate-180' : ''}`}
+              />
+            )}
+          </button>
+
+          {!isCollapsed && isRevenueExpanded && (
+            <div className="mt-1 ml-4 pl-4 border-l border-gray-200 space-y-1 animate-in slide-in-from-top-2 duration-200">
+              <Link
+                to="/statistics/fee-profit-matrix"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/statistics/fee-profit-matrix" && active}`}
+              >
+                <PieChart size={14} className="text-green-500" />
+                <span>Lợi nhuận phí</span>
+              </Link>
+            </div>
+          )}
+        </div>
+        
         <Link
           to="/bm-management"
           className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${pathname === "/bm-management" && active

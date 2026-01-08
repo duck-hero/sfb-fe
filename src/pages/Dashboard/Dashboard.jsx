@@ -8,9 +8,10 @@ import {
   BarElement,
   Title,
   Tooltip,
-  Legend,
+  Legend
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
+import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 
 // Register Chart.js components
 ChartJS.register(
@@ -64,7 +65,7 @@ const Dashboard = () => {
       const [topDebtRes, topCreditRes, reconciliationRes] = await Promise.allSettled([
         dashboardApi.getTopDebtCustomers(filters.year, filters.month, 5),
         dashboardApi.getTopCreditCustomers(filters.year, filters.month, 5),
-        dashboardApi.getAdAccountReconciliation(filters.year, filters.month),
+        dashboardApi.getMonthlySummary(filters.year, filters.month),
       ]);
 
       // Handle Top Debt
@@ -109,6 +110,30 @@ const Dashboard = () => {
       ...prev,
       [field]: value
     }));
+  };
+
+  const handlePrevMonth = () => {
+    setFilters(prev => {
+      let newMonth = prev.month - 1;
+      let newYear = prev.year;
+      if (newMonth < 1) {
+        newMonth = 12;
+        newYear -= 1;
+      }
+      return { year: newYear, month: newMonth };
+    });
+  };
+
+  const handleNextMonth = () => {
+    setFilters(prev => {
+      let newMonth = prev.month + 1;
+      let newYear = prev.year;
+      if (newMonth > 12) {
+        newMonth = 1;
+        newYear += 1;
+      }
+      return { year: newYear, month: newMonth };
+    });
   };
 
   // Customer Ranking Component (compact version)
@@ -309,15 +334,15 @@ const Dashboard = () => {
     );
   };
 
-  // Reconciliation Table Component (compact version)
-  const ReconciliationTable = ({ data, isLoading = false }) => {
+  // Monthly Summary Table Component
+  const MonthlySummaryTable = ({ data, isLoading = false }) => {
     if (isLoading) {
       return (
         <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
           <div className="animate-pulse">
             <div className="h-5 bg-gray-200 rounded w-40 mb-3"></div>
             <div className="space-y-2">
-              {[1, 2, 3, 4, 5].map(i => (
+              {[1, 2, 3, 4].map(i => (
                 <div key={i} className="h-12 bg-gray-100 rounded"></div>
               ))}
             </div>
@@ -326,29 +351,58 @@ const Dashboard = () => {
       );
     }
 
-    if (!data || !data.rows || data.rows.length === 0) {
+    if (!data) {
       return (
         <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
           <h3 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
             <span className="text-lg">📊</span>
-            Đối soát Tài khoản FB Ads
+            Tổng hợp hàng tháng
           </h3>
           <div className="text-center py-6">
-            <p className="text-gray-400 text-xs">Không có dữ liệu đối soát</p>
+            <p className="text-gray-400 text-xs">Không có dữ liệu</p>
           </div>
         </div>
       );
     }
 
+    const { head, customer, expense, revenue, totalCost } = data;
+
+    const rows = [
+      {
+        label: "Đầu tổng (Head)",
+        opening: head?.opening,
+        arisen: head?.amountDue,
+        paid: head?.paid,
+        closing: head?.closing,
+        isBold: true,
+        bgColor: "bg-blue-50"
+      },
+      {
+        label: "Khách hàng (Customer)",
+        opening: customer?.opening,
+        arisen: customer?.amountDue,
+        paid: customer?.paid,
+        closing: customer?.closing
+      },
+      {
+        label: "Chi phí (Expense)",
+        opening: expense?.inflow, // Use inflow/outflow logic if appropriate, but following user request for 4 columns
+        arisen: expense?.outflow,
+        paid: expense?.net,
+        closing: (expense?.inflow || 0) + (expense?.outflow || 0) + (expense?.net || 0), // Placeholder if mapping not clear
+        isExpense: true
+      }
+    ];
+
     return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mb-4">
         <div className="p-3 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
           <h3 className="text-base font-bold text-gray-800 flex items-center gap-2">
             <span className="text-lg">📊</span>
             <div>
-              <div>Đối soát Tài khoản FB Ads</div>
+              <div>Tổng hợp hàng tháng</div>
               <div className="text-xs font-normal text-gray-600 mt-0.5">
-                Tháng {data.month}/{data.year}
+                Tháng {filters.month}/{filters.year}
               </div>
             </div>
           </h3>
@@ -357,87 +411,56 @@ const Dashboard = () => {
         <table className="w-full text-xs">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 uppercase">Tên TK</th>
-              <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 uppercase">ID TK</th>
-              <th className="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase">Pay Facebook</th>
-              <th className="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase">Chi tiêu ghi nhận</th>
-              <th className="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase">Chênh lệch</th>
-              <th className="px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase">KH</th>
-              <th className="px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase">Status</th>
+              <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase">Hạng mục</th>
+              <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase">Đầu kỳ</th>
+              <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase">Phát sinh</th>
+              <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase">Thanh toán</th>
+              <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase">Cuối kỳ</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-              {data.rows.map((row, index) => {
-                // const varianceColor = row.variance > 0 
-                //   ? 'text-red-600 font-bold' 
-                //   : row.variance < 0 
-                //     ? 'text-green-600 font-bold' 
-                //     : 'text-gray-600';
-                
-                return (
-                  <tr key={row.adAccountId || index} className="hover:bg-blue-50 transition-colors">
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      <div className="text-xs font-medium text-gray-800 max-w-[150px] truncate" title={row.adAccountName}>
-                        {row.adAccountName}
-                      </div>
-                    </td>
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      <div className="text-xs text-gray-600 font-mono">{row.adAccountIdNumber}</div>
-                    </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-right">
-                      <div className="text-xs font-semibold text-gray-900">{formatCurrency(row.bankDebit)}</div>
-                    </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-right">
-                      <div className="text-xs font-semibold text-blue-600">{formatCurrency(row.allocatedSpend)}</div>
-                    </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-right">
-                      <div className="text-xs text-red-600 font-bold">
-                        {formatCurrency(Math.abs(row.variance))}
-                      </div>
-                    </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-center">
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800" title={row.customerCount}>
-                        {row.customerCount || 0}
-                      </span>
-                    </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-center">
-                      {row.locked ? (
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                          🔒
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                          ✓
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+            {/* Head Row */}
+            <tr>
+              <td className="px-3 py-3 whitespace-nowrap text-gray-700">Đầu tổng (Head)</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right text-gray-800">{formatCurrency(head?.opening)}</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right text-red-600">{formatCurrency(head?.amountDue)}</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right text-green-600">{formatCurrency(head?.paid)}</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right text-indigo-700">{formatCurrency(head?.closing)}</td>
+            </tr>
+            {/* Customer Row */}
+            <tr>
+              <td className="px-3 py-3 whitespace-nowrap text-gray-700">Khách hàng (Customer)</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right text-gray-800">{formatCurrency(customer?.opening)}</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right text-red-600">{formatCurrency(customer?.amountDue)}</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right text-green-600">{formatCurrency(customer?.paid)}</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right text-gray-800">{formatCurrency(customer?.closing)}</td>
+            </tr>
+            {/* Expense Row */}
+            <tr>
+              <td className="px-3 py-3 whitespace-nowrap text-gray-700">Chi phí (Expense)</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right text-blue-600">{formatCurrency(expense?.inflow)} (Inflow)</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right text-red-600">{formatCurrency(expense?.outflow)} (Outflow)</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right font-medium">{formatCurrency(expense?.net)} (Net)</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right text-gray-400">-</td>
+            </tr>
+          </tbody>
+        </table>
 
-          {/* Summary Footer */}
-          {data.rows && data.rows.length > 0 && (
-            <div className="px-3 py-2 bg-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
-              <div className="flex items-center justify-between text-xs">
-                <div className="text-gray-600">
-                  <span className="font-semibold text-gray-800">{data.rows.length}</span> Tài khoản
-                </div>
-                <div className="flex gap-4">
-                  <div className="text-gray-600">
-                  Tổng chi tiêu thực tế: <span className="font-semibold text-gray-800">{formatCurrency(data.rows.reduce((sum, r) => sum + (r.bankDebit || 0), 0))}</span>
-                  </div>
-                  <div className="text-gray-600">
-                    Tổng chi tiêu ghi nhận: <span className="font-semibold text-blue-600">{formatCurrency(data.rows.reduce((sum, r) => sum + (r.allocatedSpend || 0), 0))}</span>
-                  </div>
-                  <div className="text-gray-600">
-                    Tổng lệch: <span className="font-semibold text-red-600">{formatCurrency(data.rows.reduce((sum, r) => sum + (r.variance || 0), 0))}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+        {/* Footer Metrics */}
+        <div className="px-3 py-3 bg-gray-50 border-t border-gray-200 flex flex-wrap gap-6 items-center">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-500 font-medium">Doanh thu:</span>
+            <span className="text-sm font-bold text-green-600">{formatCurrency(revenue)}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-gray-500 font-medium">Tổng giá vốn:</span>
+            <span className="text-sm font-bold text-red-600">{formatCurrency(totalCost)}</span>
+          </div>
+          <div className="flex items-center gap-2 ml-auto">
+            <span className="text-gray-500 font-medium">Lợi nhuận gộp:</span>
+            <span className="text-sm font-bold text-indigo-600">{formatCurrency((revenue || 0) - (totalCost || 0))}</span>
+          </div>
+        </div>
       </div>
     );
   };
@@ -464,32 +487,26 @@ const Dashboard = () => {
         </div>
 
         {/* Filters - Compact */}
-        <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex gap-3 items-end">
-            <div className="flex-1">
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Năm</label>
-              <select
-                value={filters.year}
-                onChange={(e) => handleFilterChange("year", parseInt(e.target.value))}
-                className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                {Array.from({ length: 5 }, (_, i) => dayjs().year() - i).map(year => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
+        <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200 inline-block">
+          <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+            <button
+              onClick={handlePrevMonth}
+              className="p-1.5 hover:bg-white rounded-md transition-all shadow-sm"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <div className="flex items-center gap-2 px-3">
+              <Calendar size={16} className="text-gray-500" />
+              <span className="font-semibold text-sm">
+                Tháng {filters.month}/{filters.year}
+              </span>
             </div>
-            <div className="flex-1">
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Tháng</label>
-              <select
-                value={filters.month}
-                onChange={(e) => handleFilterChange("month", parseInt(e.target.value))}
-                className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
-                  <option key={month} value={month}>{month}</option>
-                ))}
-              </select>
-            </div>
+            <button
+              onClick={handleNextMonth}
+              className="p-1.5 hover:bg-white rounded-md transition-all shadow-sm"
+            >
+              <ChevronRight size={18} />
+            </button>
           </div>
         </div>
       </div>
@@ -508,8 +525,8 @@ const Dashboard = () => {
       <div className="grid grid-cols-10 gap-4">
         {/* Left Column - 60% (6 columns) */}
         <div className="col-span-10 lg:col-span-6 space-y-4">
-          {/* Reconciliation Table */}
-          <ReconciliationTable
+          {/* Monthly Summary Table */}
+          <MonthlySummaryTable
             data={reconciliation}
             isLoading={loadingStates.reconciliation}
           />
@@ -535,12 +552,40 @@ const Dashboard = () => {
         </div>
 
         {/* Right Column - 40% (4 columns) */}
-        <div className="col-span-10 lg:col-span-4">
+        <div className="col-span-10 lg:col-span-4 space-y-4">
+          {/* Detailed Expense Card (Optional, showing more detail for expense) */}
+          <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+            <h3 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
+              <span className="text-lg">💸</span>
+              Chi tiết chi phí
+            </h3>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center p-2 bg-blue-50 rounded">
+                <span className="text-xs text-gray-600">Tiền vào (Inflow):</span>
+                <span className="text-sm font-bold text-blue-600">{formatCurrency(reconciliation?.expense?.inflow)}</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-red-50 rounded">
+                <span className="text-xs text-gray-600">Tiền ra (Outflow):</span>
+                <span className="text-sm font-bold text-red-600">{formatCurrency(reconciliation?.expense?.outflow)}</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-gray-50 rounded border-t border-gray-200">
+                <span className="text-xs font-bold text-gray-700">Thực chi (Net):</span>
+                <span className="text-sm font-bold text-gray-800">{formatCurrency(reconciliation?.expense?.net)}</span>
+              </div>
+            </div>
+          </div>
+          
           {/* Reconciliation Chart */}
-          <ReconciliationChart
-            data={reconciliation}
-            isLoading={loadingStates.reconciliation}
-          />
+          {/* Note: The chart was using row-based data which is NOT present in monthly-summary. 
+              If the API doesn't return rows anymore, we should hide or adapt the chart.
+              Based on the provided response sample, there are no 'rows'.
+          */}
+          {reconciliation?.rows && (
+            <ReconciliationChart
+              data={reconciliation}
+              isLoading={loadingStates.reconciliation}
+            />
+          )}
         </div>
       </div>
     </div>
