@@ -12,7 +12,7 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
                          pathname === "/bm-source-management";
   
   const isRevenuePath = pathname === "/statistics/fee-profit-matrix" || pathname === "/statistics/threshold";
-  const isEmployeePath = pathname === "/user-management" || pathname === "/statistics/employee-debt";
+  const isEmployeePath = pathname === "/user-management" || pathname === "/statistics/employee-debt" || pathname === "/statistics/employee-sales";
   const isBankPath = pathname === "/transaction-history" || pathname.startsWith("/bank-management");
   const isCustomerPath = pathname.startsWith("/customer-management");
                          
@@ -179,7 +179,7 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
           >
             <div className={`flex items-center ${isCollapsed ? '' : 'gap-3'}`}>
               <PieChart size={20} className="flex-shrink-0" />
-              {!isCollapsed && <span className="truncate">Lợi nhuận</span>}
+              {!isCollapsed && <span className="truncate">Lợi nhuận & Chi phí</span>}
             </div>
             {!isCollapsed && (
               <ChevronDown 
@@ -313,6 +313,14 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
               >
                 <Receipt size={14} className="text-orange-500" />
                 <span>Công nợ nhân viên</span>
+              </Link>
+              
+              <Link
+                to="/statistics/employee-sales"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/statistics/employee-sales" && active}`}
+              >
+                <TrendingUp size={14} className="text-blue-500" />
+                <span>BC doanh số</span>
               </Link>
               
               {(hasRole('Admin')) && (

@@ -32,6 +32,7 @@ import TransactionStatistics from "../pages/TransactionManage/TransactionStatist
 import ThresholdStats from "../pages/AdsAccountManage/ThresholdStats";
 import FeeProfitMatrix from "../pages/Statistics/FeeProfitMatrix";
 import EmployeeDebtSummary from "../pages/Statistics/EmployeeDebtSummary";
+import EmployeeSalesReport from "../pages/Statistics/EmployeeSalesReport";
 
 // 1. Import ProtectedRoute
 
@@ -109,7 +110,9 @@ export default function AppRoutes() {
               <Route path="source-debt" element={<MonthlySourceStats />} />
               <Route path="fee-profit-matrix" element={<FeeProfitMatrix />} />
               <Route path="employee-debt" element={<EmployeeDebtSummary />} />
+              <Route path="employee-sales" element={<EmployeeSalesReport />} />
             </Route>
+            {/* End Statistics Routes */}
           </Route>
 
           {/* 4. Tuyến đường cài đặt /settings cũng cần được bảo vệ */}

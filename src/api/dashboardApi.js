@@ -87,12 +87,39 @@ const dashboardApi = {
   },
 
   // Lấy công nợ nhân viên (Employee Debt Summary)
-  getEmployeeDebtSummary: async (year, month) => {
+  getEmployeeDebtSummary: async (year, month, refresh = false) => {
     try {
       const params = {};
       if (year) params.year = year;
       if (month) params.month = month;
+      if (refresh) params.refresh = true;
       const response = await axiosInstance.get(`${api}/dashboard/employee-debt-summary`, { params });
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  getEmployeeSalesReport: async (year, month) => {
+    try {
+      const params = {};
+      if (year) params.year = year;
+      if (month) params.month = month;
+      const response = await axiosInstance.get(`${api}/dashboard/employee-sales-report`, { params });
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  updateEmployeeRevenueBonus: async (userId, year, month, revenueBonus) => {
+    try {
+      const response = await axiosInstance.put(`${api}/dashboard/employee-debt-revenue-bonus`, {
+        userId,
+        year,
+        month,
+        revenueBonus
+      });
       return response.data;
     } catch (error) {
       throw handleApiError(error);

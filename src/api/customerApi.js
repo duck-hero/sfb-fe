@@ -53,7 +53,7 @@ const customerApi = {
           customerGroupId: data.customerGroupId || null,
           operatorUserId: data.operatorUserId || null,
           collaboratorId: data.collaboratorId || null,
-          collaboratorRate: data.collaboratorRate || 0,
+          collaboratorRate: data.collaboratorRate || null,
         }
       );
       return response.data;
@@ -75,7 +75,7 @@ const customerApi = {
           customerGroupId: data.customerGroupId || null,
           operatorUserId: data.operatorUserId || null,
           collaboratorId: data.collaboratorId || null,
-          collaboratorRate: data.collaboratorRate || 0,
+          collaboratorRate: data.collaboratorRate || null,
         }
       );
       return response.data;
