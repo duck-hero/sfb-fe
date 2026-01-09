@@ -44,7 +44,7 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
   const active = "bg-blue-100 font-semibold";
 
   return (
-    <div className={`h-screen bg-white shadow-md fixed left-0 top-0 transition-all duration-300 ease-in-out z-[40] ${isCollapsed ? 'w-20 p-3' : 'w-64 p-5'
+    <div className={`h-screen bg-white shadow-md fixed left-0 top-0 transition-all duration-300 ease-in-out z-[40] flex flex-col ${isCollapsed ? 'w-20 p-3' : 'w-64 p-5'
       }`}>
       {/* Toggle Button - căn giữa chiều cao sidebar */}
       <button
@@ -55,12 +55,12 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
         {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
       </button>
 
-      <div className={`flex items-center gap-3 mb-10 ${isCollapsed ? 'justify-center' : ''}`}>
+      <div className={`flex items-center gap-3 mb-6 flex-shrink-0 ${isCollapsed ? 'justify-center' : ''}`}>
         <img src={sfbLogo} alt="Logo" className="h-10 w-auto" />
         {!isCollapsed && <h1 className="text-2xl font-bold text-primary-darkest">sFacebook</h1>}
       </div>
 
-      <nav className="space-y-2">
+      <nav className="space-y-2 flex-1 overflow-y-auto -mx-2 px-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
         <Link
           to="/"
           className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${pathname === "/" && active
