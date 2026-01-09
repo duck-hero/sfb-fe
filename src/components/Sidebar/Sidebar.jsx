@@ -118,7 +118,7 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/bank-management/statistics" && active}`}
               >
                 <BadgeCent size={14} />
-                <span>Thống kê</span>
+                <span>Thống kê thẻ</span>
               </Link>
               <Link
                 to="/transaction-history"
