@@ -85,6 +85,19 @@ const dashboardApi = {
       throw handleApiError(error);
     }
   },
+
+  // Lấy công nợ nhân viên (Employee Debt Summary)
+  getEmployeeDebtSummary: async (year, month) => {
+    try {
+      const params = {};
+      if (year) params.year = year;
+      if (month) params.month = month;
+      const response = await axiosInstance.get(`${api}/dashboard/employee-debt-summary`, { params });
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 };
 
 export default dashboardApi;

@@ -7,24 +7,31 @@ import Login from "../pages/Login/Login";
 import MainLayout from "../layouts/MainLayout";
 import UserInfo from "../pages/UserSettings/UserInfo";
 import Verify2FA from "../pages/Login/Verify2FA";
-// import BankList from "../pages/BankManage/BankList";
-// import BankAccountList from "../pages/BankAccountManage/BankAccountList";
-// import BankCardList from "../pages/BankCardManage/BankCardList";
+import BankList from "../pages/BankManage/BankList";
+import BankAccountList from "../pages/BankAccountManage/BankAccountList";
+import BankCardList from "../pages/BankCardManage/BankCardList";
 import ProtectedRoute from "../context/ProtectedRoute";
 import BmSourceList from "../pages/BmSourceManage/BmSourceList";
 // import BmAccountList from "../pages/BmAccountManage/BmAccountList";
 import BMManage from "../pages/BmManager/BMManage";
 import BankManagePage from "../pages/BankManagePage/BankManagePage";
+import BankStatisticsPage from "../pages/BankManagePage/BankStatisticsPage";
 import TransactionManage from "../pages/TransactionManage/TransactionManage";
-import CustomerManagementPage from "../pages/CustomerManage/CustomerManagementPage";
+import CustomerManagementPage from "../pages/CustomerManage/CustomerManagementPage"; // Keeping this as it might be used elsewhere or as index
+import CustomerList from "../pages/CustomerManage/CustomerList";
+import MonthlyCustomerReconciliation from "../pages/CustomerManage/MonthlyCustomerReconciliation";
+import CustomerGroupList from "../pages/CustomerManage/CustomerGroupList";
+import CollaboratorList from "../pages/CustomerManage/CollaboratorList";
+import AdAccountAuditReport from "../pages/CustomerManage/AdAccountAuditReport";
+import CTVStatistics from "../pages/CustomerManage/CTVStatistics";
 import MonthlySourceStats from "../pages/BmSourceManage/MonthlySourceStats";
 import UserList from "../pages/UserManage/UserList";
 import Dashboard from "../pages/Dashboard/Dashboard";
 import BankCardStatistics from "../pages/Statistics/components/BankCardStatistics";
 import TransactionStatistics from "../pages/TransactionManage/TransactionStatistics";
-import AdAccountAuditReport from "../pages/CustomerManage/AdAccountAuditReport";
 import ThresholdStats from "../pages/AdsAccountManage/ThresholdStats";
 import FeeProfitMatrix from "../pages/Statistics/FeeProfitMatrix";
+import EmployeeDebtSummary from "../pages/Statistics/EmployeeDebtSummary";
 
 // 1. Import ProtectedRoute
 
@@ -64,7 +71,13 @@ export default function AppRoutes() {
           */}
           <Route path="/" element={<MainLayout />}>
             <Route index element={<Dashboard />} />
-            <Route path="bank-management" element={<BankManagePage />} />
+            {/* <Route path="bank-management" element={<BankManagePage />} /> */}
+            <Route path="bank-management">
+               <Route path="banks" element={<BankList />} />
+               <Route path="accounts" element={<BankAccountList />} />
+               <Route path="cards" element={<BankCardList />} />
+               <Route path="statistics" element={<BankStatisticsPage />} />
+            </Route>
             {/* <Route
               path="bank-account-management"
               element={<BankAccountList />}
@@ -78,7 +91,15 @@ export default function AppRoutes() {
             </Route>
             {/* Chỉ Admin và Kế Toán Công Nợ mới có quyền truy cập */}
             <Route element={<ProtectedRoute allowedRoles={['Admin', 'Kế Toán Công Nợ']} />}>
-              <Route path="customer-management" element={<CustomerManagementPage />} />
+              {/* <Route path="customer-management" element={<CustomerManagementPage />} /> */}
+              <Route path="customer-management">
+                  <Route path="list" element={<CustomerList />} />
+                  <Route path="groups" element={<CustomerGroupList />} />
+                  <Route path="collaborators" element={<CollaboratorList />} />
+                  <Route path="reconciliation" element={<MonthlyCustomerReconciliation />} />
+                  <Route path="ctv-stats" element={<CTVStatistics />} />
+                  <Route path="audit" element={<AdAccountAuditReport />} />
+              </Route>
             </Route>
             <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
               <Route path="user-management" element={<UserList />} />
@@ -87,6 +108,7 @@ export default function AppRoutes() {
               <Route path="threshold" element={<ThresholdStats />} />
               <Route path="source-debt" element={<MonthlySourceStats />} />
               <Route path="fee-profit-matrix" element={<FeeProfitMatrix />} />
+              <Route path="employee-debt" element={<EmployeeDebtSummary />} />
             </Route>
           </Route>
 

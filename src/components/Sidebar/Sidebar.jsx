@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import sfbLogo from "../../assets/sfb-logo.png";
-import { LayoutDashboard, Mountain, Landmark, History, ChevronLeft, ChevronRight, UsersRound, Shield, ChevronDown, PieChart, Receipt, Database, LayoutList, TrendingUp } from "lucide-react";
+import { LayoutDashboard, Mountain, Landmark, History, ChevronLeft, ChevronRight, UsersRound, Shield, ChevronDown, PieChart, Receipt, Database, LayoutList, TrendingUp, Users, FileUser, CreditCard, BadgeCent, FileSpreadsheet, FileBox } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
 const Sidebar = ({ onToggle, isCollapsed }) => {
@@ -9,13 +9,18 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
   const { hasRole } = useAuth();
   
   const isTotalHeadPath = pathname.startsWith("/statistics/source-debt") || 
-                         pathname.startsWith("/statistics/threshold") || 
                          pathname === "/bm-source-management";
   
-  const isRevenuePath = pathname === "/statistics/fee-profit-matrix";
+  const isRevenuePath = pathname === "/statistics/fee-profit-matrix" || pathname === "/statistics/threshold";
+  const isEmployeePath = pathname === "/user-management" || pathname === "/statistics/employee-debt";
+  const isBankPath = pathname === "/transaction-history" || pathname.startsWith("/bank-management");
+  const isCustomerPath = pathname.startsWith("/customer-management");
                          
   const [isTotalExpanded, setIsTotalExpanded] = useState(isTotalHeadPath);
   const [isRevenueExpanded, setIsRevenueExpanded] = useState(isRevenuePath);
+  const [isEmployeeExpanded, setIsEmployeeExpanded] = useState(isEmployeePath);
+  const [isBankExpanded, setIsBankExpanded] = useState(isBankPath);
+  const [isCustomerExpanded, setIsCustomerExpanded] = useState(isCustomerPath);
 
   // Open submenu automatically if pathname matches sub-items
   useEffect(() => {
@@ -24,6 +29,15 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
     }
     if (isRevenuePath && !isCollapsed) {
       setIsRevenueExpanded(true);
+    }
+    if (isEmployeePath && !isCollapsed) {
+      setIsEmployeeExpanded(true);
+    }
+    if (isBankPath && !isCollapsed) {
+      setIsBankExpanded(true);
+    }
+    if (isCustomerPath && !isCollapsed) {
+      setIsCustomerExpanded(true);
     }
   }, [pathname, isCollapsed]);
 
@@ -57,15 +71,65 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
           {!isCollapsed && <span className="truncate">Dashboard</span>}
         </Link>
 
-        <Link
-          to="/bank-management"
-          className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${pathname === "/bank-management" && active
-            }`}
-          title={isCollapsed ? "Ngân hàng" : ""}
-        >
-          <Landmark size={20} className="flex-shrink-0" />
-          {!isCollapsed && <span className="truncate">Ngân hàng</span>}
-        </Link>
+        {/* Ngân hàng - Submenu */}
+        <div>
+          <button
+            onClick={() => !isCollapsed && setIsBankExpanded(!isBankExpanded)}
+            className={`w-full flex items-center justify-between rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${isBankPath && !isBankExpanded && active} ${isCollapsed ? 'justify-center px-3 py-3' : 'px-3 py-3'}`}
+            title={isCollapsed ? "Ngân hàng" : ""}
+          >
+            <div className={`flex items-center ${isCollapsed ? '' : 'gap-3'}`}>
+              <Landmark size={20} className="flex-shrink-0" />
+              {!isCollapsed && <span className="truncate">Ngân hàng</span>}
+            </div>
+            {!isCollapsed && (
+              <ChevronDown 
+                size={16} 
+                className={`transition-transform duration-200 ${isBankExpanded ? 'rotate-180' : ''}`}
+              />
+            )}
+          </button>
+
+          {!isCollapsed && isBankExpanded && (
+            <div className="mt-1 ml-4 pl-4 border-l border-gray-200 space-y-1 animate-in slide-in-from-top-2 duration-200">
+              <Link
+                to="/bank-management/banks"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/bank-management/banks" && active}`}
+              >
+                <Landmark size={14} />
+                <span>Danh sách ngân hàng</span>
+              </Link>
+              <Link
+                to="/bank-management/accounts"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/bank-management/accounts" && active}`}
+              >
+                <FileUser size={14} />
+                <span>Tài khoản ngân hàng</span>
+              </Link>
+              <Link
+                to="/bank-management/cards"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/bank-management/cards" && active}`}
+              >
+                <CreditCard size={14} />
+                <span>Thẻ ngân hàng</span>
+              </Link>
+              <Link
+                to="/bank-management/statistics"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/bank-management/statistics" && active}`}
+              >
+                <BadgeCent size={14} />
+                <span>Thống kê</span>
+              </Link>
+              <Link
+                to="/transaction-history"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/transaction-history" && active}`}
+              >
+                <History size={14} />
+                <span>Lịch sử giao dịch</span>
+              </Link>
+            </div>
+          )}
+        </div>
 
         {/* Đầu tổng - Submenu */}
         <div>
@@ -102,13 +166,6 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
                 <Receipt size={14} />
                 <span>Công nợ Đầu tổng</span>
               </Link>
-              <Link
-                to="/statistics/threshold"
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/statistics/threshold" && active}`}
-              >
-                <PieChart size={14} />
-                <span>Thống kê ngưỡng</span>
-              </Link>
             </div>
           )}
         </div>
@@ -121,8 +178,8 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
             title={isCollapsed ? "Doanh thu & lợi nhuận" : ""}
           >
             <div className={`flex items-center ${isCollapsed ? '' : 'gap-3'}`}>
-              <TrendingUp size={20} className="flex-shrink-0" />
-              {!isCollapsed && <span className="truncate">DT & LN</span>}
+              <PieChart size={20} className="flex-shrink-0" />
+              {!isCollapsed && <span className="truncate">Lợi nhuận</span>}
             </div>
             {!isCollapsed && (
               <ChevronDown 
@@ -141,6 +198,13 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
                 <PieChart size={14} className="text-green-500" />
                 <span>Lợi nhuận phí</span>
               </Link>
+              <Link
+                to="/statistics/threshold"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/statistics/threshold" && active}`}
+              >
+                <PieChart size={14} className="text-orange-500" />
+                <span>Thống kê ngưỡng</span>
+              </Link>
             </div>
           )}
         </div>
@@ -154,38 +218,115 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
           <Mountain size={20} className="flex-shrink-0" />
           {!isCollapsed && <span className="truncate">Quản lý FB</span>}
         </Link>
-        <Link
-          to="/transaction-history"
-          className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${pathname === "/transaction-history" && active
-            }`}
-          title={isCollapsed ? "Giao dịch" : ""}
-        >
-          <History size={20} className="flex-shrink-0" />
-          {!isCollapsed && <span className="truncate">Giao dịch</span>}
-        </Link>
 
-        <Link
-          to="/customer-management"
-          className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${pathname === "/customer-management" && active
-            }`}
-          title={isCollapsed ? "Khách hàng" : ""}
-        >
-          <UsersRound size={20} className="flex-shrink-0" />
-          {!isCollapsed && <span className="truncate">Khách hàng</span>}
-        </Link>
-
-        {/* Chỉ hiển thị cho Admin */}
-        {(hasRole('Admin')) && (
-          <Link
-            to="/user-management"
-            className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${pathname === "/user-management" && active
-              }`}
-            title={isCollapsed ? "Phân quyền" : ""}
+        {/* Khách hàng - Submenu */}
+        <div>
+          <button
+            onClick={() => !isCollapsed && setIsCustomerExpanded(!isCustomerExpanded)}
+            className={`w-full flex items-center justify-between rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${isCustomerPath && !isCustomerExpanded && active} ${isCollapsed ? 'justify-center px-3 py-3' : 'px-3 py-3'}`}
+            title={isCollapsed ? "Khách hàng" : ""}
           >
-            <Shield size={20} className="flex-shrink-0" />
-            {!isCollapsed && <span className="truncate">Phân quyền</span>}
-          </Link>
-        )}
+            <div className={`flex items-center ${isCollapsed ? '' : 'gap-3'}`}>
+              <UsersRound size={20} className="flex-shrink-0" />
+              {!isCollapsed && <span className="truncate">Khách hàng</span>}
+            </div>
+            {!isCollapsed && (
+              <ChevronDown 
+                size={16} 
+                className={`transition-transform duration-200 ${isCustomerExpanded ? 'rotate-180' : ''}`}
+              />
+            )}
+          </button>
+
+          {!isCollapsed && isCustomerExpanded && (
+            <div className="mt-1 ml-4 pl-4 border-l border-gray-200 space-y-1 animate-in slide-in-from-top-2 duration-200">
+              <Link
+                to="/customer-management/list"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/customer-management/list" && active}`}
+              >
+                <UsersRound size={14} />
+                <span>Danh sách</span>
+              </Link>
+              <Link
+                to="/customer-management/groups"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/customer-management/groups" && active}`}
+              >
+                <Users size={14} className="text-blue-500" />
+                <span>Nhóm khách hàng</span>
+              </Link>
+              <Link
+                to="/customer-management/collaborators"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/customer-management/collaborators" && active}`}
+              >
+                <Users size={14} className="text-green-500" />
+                <span>Cộng tác viên</span>
+              </Link>
+              <Link
+                to="/customer-management/reconciliation"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/customer-management/reconciliation" && active}`}
+              >
+                <FileSpreadsheet size={14} />
+                <span>Tổng hợp công nợ</span>
+              </Link>
+              <Link
+                to="/customer-management/ctv-stats"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/customer-management/ctv-stats" && active}`}
+              >
+                <TrendingUp size={14} className="text-purple-500" />
+                <span>Thống kê CTV</span>
+              </Link>
+              <Link
+                to="/customer-management/audit"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/customer-management/audit" && active}`}
+              >
+                <FileBox size={14} />
+                <span>BC đối soát</span>
+              </Link>
+            </div>
+          )}
+        </div>
+        
+        {/* Nhân viên - Submenu */}
+        <div>
+          <button
+            onClick={() => !isCollapsed && setIsEmployeeExpanded(!isEmployeeExpanded)}
+            className={`w-full flex items-center justify-between rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${isEmployeePath && !isEmployeeExpanded && active} ${isCollapsed ? 'justify-center px-3 py-3' : 'px-3 py-3'}`}
+            title={isCollapsed ? "Nhân viên" : ""}
+          >
+            <div className={`flex items-center ${isCollapsed ? '' : 'gap-3'}`}>
+              <Users size={20} className="flex-shrink-0" />
+              {!isCollapsed && <span className="truncate">Nhân viên</span>}
+            </div>
+            {!isCollapsed && (
+              <ChevronDown 
+                size={16} 
+                className={`transition-transform duration-200 ${isEmployeeExpanded ? 'rotate-180' : ''}`}
+              />
+            )}
+          </button>
+
+          {!isCollapsed && isEmployeeExpanded && (
+            <div className="mt-1 ml-4 pl-4 border-l border-gray-200 space-y-1 animate-in slide-in-from-top-2 duration-200">
+              <Link
+                to="/statistics/employee-debt"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/statistics/employee-debt" && active}`}
+              >
+                <Receipt size={14} className="text-orange-500" />
+                <span>Công nợ nhân viên</span>
+              </Link>
+              
+              {(hasRole('Admin')) && (
+                <Link
+                  to="/user-management"
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/user-management" && active}`}
+                >
+                  <Shield size={14} className="text-red-500" />
+                  <span>Phân quyền</span>
+                </Link>
+              )}
+            </div>
+          )}
+        </div>
       </nav>
     </div>
   );
