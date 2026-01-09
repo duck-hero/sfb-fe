@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import sfbLogo from "../../assets/sfb-logo.png";
-import { LayoutDashboard, Mountain, Landmark, History, ChevronLeft, ChevronRight, UsersRound, Shield, ChevronDown, PieChart, Receipt, Database, LayoutList, TrendingUp, Users, FileUser, CreditCard, BadgeCent, FileSpreadsheet, FileBox } from "lucide-react";
+import { LayoutDashboard, Mountain, Landmark, History, ChevronLeft, ChevronRight, UsersRound, Shield, ChevronDown, PieChart, Receipt, Database, LayoutList, TrendingUp, Users, FileUser, CreditCard, BadgeCent, FileSpreadsheet, FileBox, HandCoins } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
 const Sidebar = ({ onToggle, isCollapsed }) => {
@@ -205,6 +205,13 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
                 <PieChart size={14} className="text-orange-500" />
                 <span>Thống kê ngưỡng</span>
               </Link>
+              <Link
+                to="/statistics/expense-accounting"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/statistics/expense-accounting" && active}`}
+              >
+                <HandCoins size={14} className="text-red-500" />
+                <span>Thống kê chi phí</span>
+              </Link>
             </div>
           )}
         </div>
@@ -245,7 +252,7 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/customer-management/list" && active}`}
               >
                 <UsersRound size={14} />
-                <span>Danh sách</span>
+                <span>Khách hàng</span>
               </Link>
               <Link
                 to="/customer-management/groups"
@@ -259,7 +266,7 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/customer-management/collaborators" && active}`}
               >
                 <Users size={14} className="text-green-500" />
-                <span>Cộng tác viên</span>
+                <span>CTV</span>
               </Link>
               <Link
                 to="/customer-management/reconciliation"

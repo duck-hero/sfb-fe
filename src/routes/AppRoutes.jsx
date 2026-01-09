@@ -33,6 +33,7 @@ import ThresholdStats from "../pages/AdsAccountManage/ThresholdStats";
 import FeeProfitMatrix from "../pages/Statistics/FeeProfitMatrix";
 import EmployeeDebtSummary from "../pages/Statistics/EmployeeDebtSummary";
 import EmployeeSalesReport from "../pages/Statistics/EmployeeSalesReport";
+import ExpenseAccountingSummary from "../pages/Statistics/ExpenseAccountingSummary";
 
 // 1. Import ProtectedRoute
 
@@ -111,6 +112,7 @@ export default function AppRoutes() {
               <Route path="fee-profit-matrix" element={<FeeProfitMatrix />} />
               <Route path="employee-debt" element={<EmployeeDebtSummary />} />
               <Route path="employee-sales" element={<EmployeeSalesReport />} />
+              <Route path="expense-accounting" element={<ExpenseAccountingSummary />} />
             </Route>
             {/* End Statistics Routes */}
           </Route>
