@@ -4,6 +4,7 @@ import customerGroupApi from "../../api/customerGroupApi";
 import bmSourceApi from "../../api/bmSourceApi";
 import bankAccountApi from "../../api/bankAccountApi";
 import accountApi from "../../api/accountApi";
+import collaboratorApi from "../../api/collaboratorApi";
 import { X } from "lucide-react";
 
 export default function EditFinancialTransactionModal({
@@ -48,7 +49,8 @@ export default function EditFinancialTransactionModal({
           3: "NCC",
           4: "CP",
           5: "BANK",
-          6: "NV"
+          6: "NV",
+          7: "CTV"
         };
         setObjectType(sourceMap[formData.paymentSource] || null);
       } else if (["CP AGC", "Mua BM", "Mua TK"].includes(accObj)) {
@@ -102,6 +104,10 @@ export default function EditFinancialTransactionModal({
             );
             setDataList(filtered.slice(0, 15));
             break;
+          case "CTV":
+            res = await collaboratorApi.getPagedList(1, 15);
+            setDataList(res.data || []);
+            break;
           default:
             setDataList([]);
         }
@@ -129,7 +135,8 @@ export default function EditFinancialTransactionModal({
       "NCC": 3,
       "CP": 4,
       "BANK": 5,
-      "NV": 6
+      "NV": 6,
+      "CTV": 7
     };
 
     const pSource = sourceMap[newType] || null;
@@ -177,6 +184,9 @@ export default function EditFinancialTransactionModal({
       case "NV":
         name = item.code;
         break;
+      case "CTV":
+        name = item.code;
+        break;
       case "CP":
         name = item;
         break;
@@ -210,8 +220,8 @@ export default function EditFinancialTransactionModal({
           <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between mb-4 border-b pb-3">
               <h3 className="text-lg font-bold text-gray-800">
-                {formData.ids?.length > 1 
-                  ? `Cập nhật nhanh (${formData.ids.length} GD)` 
+                {formData.ids?.length > 1
+                  ? `Cập nhật nhanh (${formData.ids.length} GD)`
                   : "Chỉnh sửa giao dịch"}
               </h3>
               <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -241,6 +251,7 @@ export default function EditFinancialTransactionModal({
                     { id: "CP", label: "Chi phí" },
                     { id: "BANK", label: "Bank nội bộ" },
                     { id: "NV", label: "Nhân viên" },
+                    { id: "CTV", label: "CTV" },
                   ].map((type) => (
                     <label key={type.id} className="flex items-center gap-2 p-2 border border-gray-100 rounded-md hover:bg-gray-50 cursor-pointer">
                       <input
@@ -344,6 +355,12 @@ export default function EditFinancialTransactionModal({
                               <div className="flex flex-col">
                                 <span className="font-bold">{item.code}</span>
                                 <span className="text-[10px] text-gray-400">{item.name} - {item.userName}</span>
+                              </div>
+                            )}
+                            {objectType === "CTV" && (
+                              <div className="flex flex-col">
+                                <span className="font-bold">{item.code}</span>
+                                <span className="text-[10px] text-gray-400">{item.name}</span>
                               </div>
                             )}
                           </div>

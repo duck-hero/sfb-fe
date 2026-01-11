@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import dayjs from "dayjs";
 import dashboardApi from "../../api/dashboardApi";
 import {
@@ -34,6 +34,9 @@ const Dashboard = () => {
   const [topDebtCustomers, setTopDebtCustomers] = useState([]);
   const [topCreditCustomers, setTopCreditCustomers] = useState([]);
   const [reconciliation, setReconciliation] = useState(null);
+  const [ctvSummary, setCtvSummary] = useState(null);
+  const [employeeSummary, setEmployeeSummary] = useState(null);
+  const [expenseSummary, setExpenseSummary] = useState(null);
 
   // Loading states
   const [loadingStates, setLoadingStates] = useState({
@@ -51,7 +54,7 @@ const Dashboard = () => {
   // Fetch all dashboard data asynchronously
   const fetchDashboardData = async () => {
     setError(null);
-    
+
     // Set all loading states to true
     setLoadingStates(prev => ({
       ...prev,
@@ -62,10 +65,13 @@ const Dashboard = () => {
 
     try {
       // Fetch all APIs in parallel for better performance
-      const [topDebtRes, topCreditRes, reconciliationRes] = await Promise.allSettled([
+      const [topDebtRes, topCreditRes, reconciliationRes, ctvRes, employeeRes, expenseRes] = await Promise.allSettled([
         dashboardApi.getTopDebtCustomers(filters.year, filters.month, 5),
         dashboardApi.getTopCreditCustomers(filters.year, filters.month, 5),
         dashboardApi.getMonthlySummary(filters.year, filters.month),
+        dashboardApi.getCTVDebtSummary(filters.year, filters.month),
+        dashboardApi.getEmployeeDebtSummary(filters.year, filters.month),
+        dashboardApi.getExpenseAccountingSummary(filters.year, filters.month),
       ]);
 
       // Handle Top Debt
@@ -85,6 +91,21 @@ const Dashboard = () => {
         setReconciliation(reconciliationRes.value.data);
       }
       setLoadingStates(prev => ({ ...prev, reconciliation: false }));
+
+      // Handle CTV Summary
+      if (ctvRes.status === 'fulfilled' && ctvRes.value?.success) {
+        setCtvSummary(ctvRes.value.data);
+      }
+
+      // Handle Employee Summary
+      if (employeeRes.status === 'fulfilled' && employeeRes.value?.success) {
+        setEmployeeSummary(employeeRes.value.data);
+      }
+
+      // Handle Expense Summary
+      if (expenseRes.status === 'fulfilled' && expenseRes.value?.success) {
+        setExpenseSummary(expenseRes.value.data);
+      }
 
     } catch (err) {
       console.error("Dashboard API error:", err);
@@ -194,9 +215,9 @@ const Dashboard = () => {
     // Prepare chart data - Top 10 accounts by variance
     const chartData = useMemo(() => {
       if (!data || !data.rows || data.rows.length === 0) return null;
-      
+
       const top10 = data.rows.slice(0, 10);
-      
+
       return {
         labels: top10.map(row => {
           const name = row.adAccountName;
@@ -243,7 +264,7 @@ const Dashboard = () => {
         },
         tooltip: {
           callbacks: {
-            label: function(context) {
+            label: function (context) {
               return `${context.dataset.label}: ${formatCurrency(context.parsed.y)}`;
             },
           },
@@ -264,7 +285,7 @@ const Dashboard = () => {
             font: {
               size: 10,
             },
-            callback: function(value) {
+            callback: function (value) {
               if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
               if (value >= 1000) return `${(value / 1000).toFixed(0)}K`;
               return value;
@@ -305,7 +326,7 @@ const Dashboard = () => {
           <span className="text-lg">📈</span>
           Top 10 TK có chênh lệch cao
         </h3>
-        
+
         {/* Chart */}
         <div className="mb-4" style={{ height: '300px' }}>
           <Bar data={chartData} options={chartOptions} />
@@ -335,7 +356,7 @@ const Dashboard = () => {
   };
 
   // Monthly Summary Table Component
-  const MonthlySummaryTable = ({ data, isLoading = false }) => {
+  const MonthlySummaryTable = ({ data, ctvSummary, employeeSummary, expenseSummary, isLoading = false }) => {
     if (isLoading) {
       return (
         <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
@@ -422,10 +443,10 @@ const Dashboard = () => {
             {/* Head Row */}
             <tr>
               <td className="px-3 py-3 whitespace-nowrap text-gray-700">Đầu tổng (Head)</td>
-              <td className="px-3 py-3 whitespace-nowrap text-right text-gray-800">{formatCurrency(head?.opening)}</td>
-              <td className="px-3 py-3 whitespace-nowrap text-right text-red-600">{formatCurrency(head?.amountDue)}</td>
-              <td className="px-3 py-3 whitespace-nowrap text-right text-green-600">{formatCurrency(head?.paid)}</td>
-              <td className="px-3 py-3 whitespace-nowrap text-right text-indigo-700">{formatCurrency(head?.closing)}</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right text-gray-800 font-medium">{formatCurrency(head?.opening)}</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right text-red-600 font-bold">{formatCurrency(head?.amountDue)}</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right text-green-600 font-bold">{formatCurrency(head?.paid)}</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right text-indigo-700 font-bold">{formatCurrency(head?.closing)}</td>
             </tr>
             {/* Customer Row */}
             <tr>
@@ -435,14 +456,37 @@ const Dashboard = () => {
               <td className="px-3 py-3 whitespace-nowrap text-right text-green-600">{formatCurrency(customer?.paid)}</td>
               <td className="px-3 py-3 whitespace-nowrap text-right text-gray-800">{formatCurrency(customer?.closing)}</td>
             </tr>
-            {/* Expense Row */}
+            {/* CTV Row */}
             <tr>
-              <td className="px-3 py-3 whitespace-nowrap text-gray-700">Chi phí (Expense)</td>
-              <td className="px-3 py-3 whitespace-nowrap text-right text-blue-600">{formatCurrency(expense?.inflow)} (Inflow)</td>
-              <td className="px-3 py-3 whitespace-nowrap text-right text-red-600">{formatCurrency(expense?.outflow)} (Outflow)</td>
-              <td className="px-3 py-3 whitespace-nowrap text-right font-medium">{formatCurrency(expense?.net)} (Net)</td>
-              <td className="px-3 py-3 whitespace-nowrap text-right text-gray-400">-</td>
+              <td className="px-3 py-3 whitespace-nowrap text-gray-700">Cộng tác viên (CTV)</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right text-gray-800">{formatCurrency(ctvSummary?.total?.openingBalance)}</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right text-red-600">{formatCurrency(ctvSummary?.total?.commissionAmount)}</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right text-green-600">{formatCurrency(ctvSummary?.total?.paidAmount)}</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right text-gray-800">{formatCurrency(ctvSummary?.total?.closingBalance)}</td>
             </tr>
+            {/* Employee Row */}
+            <tr>
+              <td className="px-3 py-3 whitespace-nowrap text-gray-700">Nhân viên (Employee)</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right text-gray-800">{formatCurrency(employeeSummary?.total?.openingBalance)}</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right text-red-600">{formatCurrency(employeeSummary?.total?.debitAmount)}</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right text-green-600">{formatCurrency(employeeSummary?.total?.creditAmount)}</td>
+              <td className="px-3 py-3 whitespace-nowrap text-right text-gray-800">{formatCurrency(employeeSummary?.total?.closingBalance)}</td>
+            </tr>
+            {/* Expense Row */}
+            {(() => {
+              const totalDebit = expenseSummary?.rows?.reduce((sum, item) => sum + (item.debitAmount || 0), 0) || 0;
+              const totalCredit = expenseSummary?.rows?.reduce((sum, item) => sum + (item.creditAmount || 0), 0) || 0;
+              const totalClosing = totalDebit - totalCredit;
+              return (
+                <tr>
+                  <td className="px-3 py-3 whitespace-nowrap text-gray-700">Chi phí (Expense)</td>
+                  <td className="px-3 py-3 whitespace-nowrap text-right text-gray-800">{formatCurrency(0)}</td>
+                  <td className="px-3 py-3 whitespace-nowrap text-right text-red-600">{formatCurrency(totalDebit)}</td>
+                  <td className="px-3 py-3 whitespace-nowrap text-right text-green-600">{formatCurrency(totalCredit)}</td>
+                  <td className="px-3 py-3 whitespace-nowrap text-right text-gray-800">{formatCurrency(0)}</td>
+                </tr>
+              );
+            })()}
           </tbody>
         </table>
 
@@ -460,6 +504,145 @@ const Dashboard = () => {
             <span className="text-gray-500 font-medium">Lợi nhuận gộp:</span>
             <span className="text-sm font-bold text-indigo-600">{formatCurrency((revenue || 0) - (totalCost || 0))}</span>
           </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Summary Chart Component
+  const SummaryChart = ({ head, customer, ctv, employee, expense, isLoading = false }) => {
+    // Calculate Expense Totals
+    const expenseDebit = expense?.rows?.reduce((sum, item) => sum + (item.debitAmount || 0), 0) || 0;
+    const expenseCredit = expense?.rows?.reduce((sum, item) => sum + (item.creditAmount || 0), 0) || 0;
+    const expenseClosing = expenseDebit - expenseCredit;
+
+    const chartData = useMemo(() => {
+      if (!head && !customer && !ctv && !employee && !expense) return null;
+
+      const labels = ['Head', 'Customer', 'CTV', 'Employee', 'Expense'];
+
+      const openingData = [
+        head?.opening || 0,
+        customer?.opening || 0,
+        ctv?.total?.openingBalance || 0,
+        employee?.total?.openingBalance || 0,
+        0 // Expense Opening default
+      ];
+
+      const arisenData = [
+        head?.amountDue || 0,
+        customer?.amountDue || 0,
+        ctv?.total?.commissionAmount || 0,
+        employee?.total?.debitAmount || 0,
+        expenseDebit
+      ];
+
+      const paidData = [
+        head?.paid || 0,
+        customer?.paid || 0,
+        ctv?.total?.paidAmount || 0,
+        employee?.total?.creditAmount || 0,
+        expenseCredit
+      ];
+
+      const closingData = [
+        head?.closing || 0,
+        customer?.closing || 0,
+        ctv?.total?.closingBalance || 0,
+        employee?.total?.closingBalance || 0,
+        0 // Expense Closing default as requested
+      ];
+
+      return {
+        labels,
+        datasets: [
+          {
+            label: 'Đầu kỳ',
+            data: openingData,
+            backgroundColor: 'rgba(107, 114, 128, 0.7)',
+            borderColor: 'rgba(107, 114, 128, 1)',
+            borderWidth: 1,
+            hidden: true, // Hide by default to reduce clutter
+          },
+          {
+            label: 'Phát sinh',
+            data: arisenData,
+            backgroundColor: 'rgba(239, 68, 68, 0.7)',
+            borderColor: 'rgba(239, 68, 68, 1)',
+            borderWidth: 1,
+          },
+          {
+            label: 'Thanh toán',
+            data: paidData,
+            backgroundColor: 'rgba(34, 197, 94, 0.7)',
+            borderColor: 'rgba(34, 197, 94, 1)',
+            borderWidth: 1,
+          },
+          {
+            label: 'Cuối kỳ',
+            data: closingData,
+            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+            borderColor: 'rgba(59, 130, 246, 1)',
+            borderWidth: 1,
+          },
+        ],
+      };
+    }, [head, customer, ctv, employee, expense, expenseDebit, expenseCredit, expenseClosing]);
+
+    const options = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: { font: { size: 10 }, boxWidth: 10 },
+        },
+        tooltip: {
+          callbacks: {
+            label: function (context) {
+              return `${context.dataset.label}: ${formatCurrency(context.parsed.y)}`;
+            },
+          },
+        },
+      },
+      scales: {
+        x: { ticks: { font: { size: 10 } } },
+        y: {
+          ticks: {
+            font: { size: 10 },
+            callback: function (value) {
+              if (Math.abs(value) >= 1000000000) return `${(value / 1000000000).toFixed(1)}B`;
+              if (Math.abs(value) >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+              if (Math.abs(value) >= 1000) return `${(value / 1000).toFixed(0)}K`;
+              return value;
+            },
+          },
+        },
+      },
+    };
+
+    if (isLoading) {
+      return (
+        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm h-80">
+          <div className="animate-pulse flex items-end h-full space-x-4 pb-4 px-4">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="w-full bg-gray-100 rounded-t-lg" style={{ height: `${Math.random() * 80 + 20}%` }}></div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (!chartData) return null;
+
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+        <h3 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
+          <span className="text-lg">📊</span>
+          Biểu đồ tổng hợp
+        </h3>
+        <div style={{ height: '300px' }}>
+          <Bar data={chartData} options={options} />
         </div>
       </div>
     );
@@ -528,6 +711,9 @@ const Dashboard = () => {
           {/* Monthly Summary Table */}
           <MonthlySummaryTable
             data={reconciliation}
+            ctvSummary={ctvSummary}
+            employeeSummary={employeeSummary}
+            expenseSummary={expenseSummary}
             isLoading={loadingStates.reconciliation}
           />
 
@@ -553,40 +739,16 @@ const Dashboard = () => {
 
         {/* Right Column - 40% (4 columns) */}
         <div className="col-span-10 lg:col-span-4 space-y-4">
-          {/* Detailed Expense Card (Optional, showing more detail for expense) */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-            <h3 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
-              <span className="text-lg">💸</span>
-              Chi tiết chi phí
-            </h3>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center p-2 bg-blue-50 rounded">
-                <span className="text-xs text-gray-600">Tiền vào (Inflow):</span>
-                <span className="text-sm font-bold text-blue-600">{formatCurrency(reconciliation?.expense?.inflow)}</span>
-              </div>
-              <div className="flex justify-between items-center p-2 bg-red-50 rounded">
-                <span className="text-xs text-gray-600">Tiền ra (Outflow):</span>
-                <span className="text-sm font-bold text-red-600">{formatCurrency(reconciliation?.expense?.outflow)}</span>
-              </div>
-              <div className="flex justify-between items-center p-2 bg-gray-50 rounded border-t border-gray-200">
-                <span className="text-xs font-bold text-gray-700">Thực chi (Net):</span>
-                <span className="text-sm font-bold text-gray-800">{formatCurrency(reconciliation?.expense?.net)}</span>
-              </div>
-            </div>
-          </div>
-          
-          {/* Reconciliation Chart */}
-          {/* Note: The chart was using row-based data which is NOT present in monthly-summary. 
-              If the API doesn't return rows anymore, we should hide or adapt the chart.
-              Based on the provided response sample, there are no 'rows'.
-          */}
-          {reconciliation?.rows && (
-            <ReconciliationChart
-              data={reconciliation}
-              isLoading={loadingStates.reconciliation}
-            />
-          )}
+          <SummaryChart
+            head={reconciliation?.head}
+            customer={reconciliation?.customer}
+            ctv={ctvSummary}
+            employee={employeeSummary}
+            expense={expenseSummary}
+            isLoading={loadingStates.reconciliation}
+          />
         </div>
+
       </div>
     </div>
   );

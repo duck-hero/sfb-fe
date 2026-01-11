@@ -110,12 +110,12 @@ const bmSourceApi = {
   },
 
   // Lấy tổng hợp công nợ các đầu tổng
-  getReconciliationSummary: async (year, month) => {
+  getReconciliationSummary: async (year, month, refresh = false) => {
     try {
       const response = await axiosInstance.get(
         `${api}/BmSource/reconciliation-summary`,
         {
-          params: { year: year, month: month },
+          params: { year: year, month: month, refresh },
         }
       );
       return response.data;

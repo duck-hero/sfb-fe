@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Loader2, Calendar, FileText, TrendingUp, CreditCard, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import bmSourceApi from "../../api/bmSourceApi";
 import { toast } from "react-toastify";
@@ -10,15 +10,15 @@ const MonthlySourceStats = () => {
   const [data, setData] = useState([]);
   const [year, setYear] = useState(dayjs().year());
   const [month, setMonth] = useState(dayjs().month() + 1);
-  
+
   // Modal State
   const [selectedSource, setSelectedSource] = useState(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
 
-  const fetchStats = async () => {
+  const fetchStats = async (isRefresh = false) => {
     setLoading(true);
     try {
-      const response = await bmSourceApi.getReconciliationSummary(year, month);
+      const response = await bmSourceApi.getReconciliationSummary(year, month, isRefresh);
       if (response.success) {
         setData(response.data);
       } else {
@@ -65,29 +65,29 @@ const MonthlySourceStats = () => {
   };
 
   const formatCurrency = (amount) => {
-     if (amount === undefined || amount === null) return "-";
-     return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
+    if (amount === undefined || amount === null) return "-";
+    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
   };
 
   // Calculate totals for footer
   const totals = data.reduce((acc, curr) => ({
-      openingBalance: acc.openingBalance + (curr.openingBalance || 0),
-      totalAds: acc.totalAds + (curr.totalAds || 0),
-      totalFee: acc.totalFee + (curr.totalFee || 0),
-      totalAdsPlusFee: acc.totalAdsPlusFee + (curr.totalAdsPlusFee || 0),
-      totalThreshold: acc.totalThreshold + (curr.totalThreshold || 0),
-      manualDiscount: acc.manualDiscount + (curr.manualDiscount || 0),
-      paid: acc.paid + (curr.paid || 0),
-      currentDebt: acc.currentDebt + (curr.currentDebt || 0)
+    openingBalance: acc.openingBalance + (curr.openingBalance || 0),
+    totalAds: acc.totalAds + (curr.totalAds || 0),
+    totalFee: acc.totalFee + (curr.totalFee || 0),
+    totalAdsPlusFee: acc.totalAdsPlusFee + (curr.totalAdsPlusFee || 0),
+    totalThreshold: acc.totalThreshold + (curr.totalThreshold || 0),
+    manualDiscount: acc.manualDiscount + (curr.manualDiscount || 0),
+    paid: acc.paid + (curr.paid || 0),
+    currentDebt: acc.currentDebt + (curr.currentDebt || 0)
   }), {
-      openingBalance: 0,
-      totalAds: 0,
-      totalFee: 0,
-      totalAdsPlusFee: 0,
-      totalThreshold: 0,
-      manualDiscount: 0,
-      paid: 0,
-      currentDebt: 0
+    openingBalance: 0,
+    totalAds: 0,
+    totalFee: 0,
+    totalAdsPlusFee: 0,
+    totalThreshold: 0,
+    manualDiscount: 0,
+    paid: 0,
+    currentDebt: 0
   });
 
   return (
@@ -97,10 +97,10 @@ const MonthlySourceStats = () => {
           <FileText className="w-6 h-6 text-blue-600" />
           Tổng hợp công nợ đầu tổng tháng {month}/{year}
         </h2>
-        
+
         <div className="flex items-center gap-3">
-          <button 
-            onClick={fetchStats}
+          <button
+            onClick={() => fetchStats(true)}
             disabled={loading}
             className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-blue-600 transition-colors border border-transparent hover:border-gray-200"
             title="Làm mới dữ liệu"
@@ -178,18 +178,18 @@ const MonthlySourceStats = () => {
             <tbody className="divide-y divide-gray-100 bg-white">
               {data && data.length > 0 ? (
                 data.map((item) => (
-                  <tr 
-                    key={item.sourceId} 
+                  <tr
+                    key={item.sourceId}
                     onClick={() => handleRowClick(item)}
                     className="hover:bg-blue-50/50 transition-all cursor-pointer group"
                   >
                     <td className="px-6 py-4 font-bold text-gray-800 border-r border-gray-100 group-hover:text-blue-600 transition-colors">
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
-                                {item.sourceName.charAt(0).toUpperCase()}
-                            </div>
-                            {item.sourceName}
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
+                          {item.sourceName.charAt(0).toUpperCase()}
                         </div>
+                        {item.sourceName}
+                      </div>
                     </td>
                     <td className="px-4 py-4 text-right text-gray-700 border-r border-gray-100 font-medium">{formatNumber(item.openingBalance)}</td>
                     <td className="px-4 py-4 text-right text-gray-700 border-r border-gray-100 font-medium">{formatNumber(item.totalAds)}</td>
@@ -199,7 +199,7 @@ const MonthlySourceStats = () => {
                     <td className="px-4 py-4 text-right text-purple-600 border-r border-gray-100 font-medium">{formatNumber(item.manualDiscount)}</td>
                     <td className="px-4 py-4 text-right text-green-600 border-r border-gray-100 font-medium">{formatNumber(item.paid)}</td>
                     <td className={`px-4 py-4 text-right font-bold ${item.currentDebt > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                        {formatNumber(item.currentDebt)}
+                      {formatNumber(item.currentDebt)}
                     </td>
                   </tr>
                 ))
@@ -207,8 +207,8 @@ const MonthlySourceStats = () => {
                 <tr>
                   <td colSpan={9} className="px-6 py-12 text-center text-gray-400 bg-gray-50 italic">
                     <div className="flex flex-col items-center gap-2">
-                        <FileText className="w-8 h-8 text-gray-300" />
-                        Không có dữ liệu công nợ cho tháng này
+                      <FileText className="w-8 h-8 text-gray-300" />
+                      Không có dữ liệu công nợ cho tháng này
                     </div>
                   </td>
                 </tr>
@@ -216,19 +216,19 @@ const MonthlySourceStats = () => {
             </tbody>
             {/* Footer Totals */}
             {data && data.length > 0 && (
-                <tfoot className="bg-gray-100 font-bold border-t-2 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] sticky bottom-0 z-20">
-                    <tr>
-                        <td className="px-6 py-4 uppercase text-gray-600" colSpan={1}>Tổng cộng</td>
-                        <td className="px-4 py-4 text-right text-gray-800 border-r border-gray-200">{formatNumber(totals.openingBalance)}</td>
-                        <td className="px-4 py-4 text-right text-gray-800 border-r border-gray-200">{formatNumber(totals.totalAds)}</td>
-                        <td className="px-4 py-4 text-right text-gray-800 border-r border-gray-200">{formatNumber(totals.totalFee)}</td>
-                        <td className="px-4 py-4 text-right text-blue-800 bg-blue-100/50 border-r border-blue-200">{formatNumber(totals.totalAdsPlusFee)}</td>
-                        <td className="px-4 py-4 text-right text-orange-700 border-r border-gray-200">{formatNumber(totals.totalThreshold)}</td>
-                        <td className="px-4 py-4 text-right text-purple-700 border-r border-gray-200">{formatNumber(totals.manualDiscount)}</td>
-                        <td className="px-4 py-4 text-right text-green-700 border-r border-gray-200">{formatNumber(totals.paid)}</td>
-                        <td className="px-4 py-4 text-right text-red-700">{formatNumber(totals.currentDebt)}</td>
-                    </tr>
-                </tfoot>
+              <tfoot className="bg-gray-100 font-bold border-t-2 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] sticky bottom-0 z-20">
+                <tr>
+                  <td className="px-6 py-4 uppercase text-gray-600" colSpan={1}>Tổng cộng</td>
+                  <td className="px-4 py-4 text-right text-gray-800 border-r border-gray-200">{formatNumber(totals.openingBalance)}</td>
+                  <td className="px-4 py-4 text-right text-gray-800 border-r border-gray-200">{formatNumber(totals.totalAds)}</td>
+                  <td className="px-4 py-4 text-right text-gray-800 border-r border-gray-200">{formatNumber(totals.totalFee)}</td>
+                  <td className="px-4 py-4 text-right text-blue-800 bg-blue-100/50 border-r border-blue-200">{formatNumber(totals.totalAdsPlusFee)}</td>
+                  <td className="px-4 py-4 text-right text-orange-700 border-r border-gray-200">{formatNumber(totals.totalThreshold)}</td>
+                  <td className="px-4 py-4 text-right text-purple-700 border-r border-gray-200">{formatNumber(totals.manualDiscount)}</td>
+                  <td className="px-4 py-4 text-right text-green-700 border-r border-gray-200">{formatNumber(totals.paid)}</td>
+                  <td className="px-4 py-4 text-right text-red-700">{formatNumber(totals.currentDebt)}</td>
+                </tr>
+              </tfoot>
             )}
           </table>
         </div>
@@ -236,13 +236,13 @@ const MonthlySourceStats = () => {
 
       {/* Detail Modal */}
       {selectedSource && (
-          <SourceDetailModal 
-            open={detailModalOpen}
-            onClose={() => setDetailModalOpen(false)}
-            source={selectedSource}
-            year={year}
-            month={month}
-          />
+        <SourceDetailModal
+          open={detailModalOpen}
+          onClose={() => setDetailModalOpen(false)}
+          source={selectedSource}
+          year={year}
+          month={month}
+        />
       )}
     </div>
   );

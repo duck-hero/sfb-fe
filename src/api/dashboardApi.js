@@ -86,6 +86,20 @@ const dashboardApi = {
     }
   },
 
+  // Lấy chi tiết công nợ CTV (Collaborator Debt Summary)
+  getCTVDebtSummary: async (year, month, refresh = false) => {
+    try {
+      const params = {};
+      if (year) params.year = year;
+      if (month) params.month = month;
+      if (refresh) params.refresh = true;
+      const response = await axiosInstance.get(`${api}/dashboard/ctv-debt-summary`, { params });
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
   // Lấy công nợ nhân viên (Employee Debt Summary)
   getEmployeeDebtSummary: async (year, month, refresh = false) => {
     try {

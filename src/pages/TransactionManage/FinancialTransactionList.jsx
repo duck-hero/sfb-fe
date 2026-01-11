@@ -10,6 +10,7 @@ import customerApi from "../../api/customerApi";
 import customerGroupApi from "../../api/customerGroupApi";
 import bmSourceApi from "../../api/bmSourceApi";
 import accountApi from "../../api/accountApi";
+import collaboratorApi from "../../api/collaboratorApi";
 
 import DateRangePicker from "../../components/DateFilter/DateRangePicker";
 import DateCell from "../../components/DateFilter/DateCell";
@@ -165,6 +166,17 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
               }
               setDataList(filteredNV.slice(0, 15));
               break;
+            case "CTV":
+              res = await collaboratorApi.getPagedList(1, 15);
+              let itemsCTV = res.data || [];
+              if (searchTerm) {
+                itemsCTV = itemsCTV.filter(c =>
+                  c.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  c.name?.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+              }
+              setDataList(itemsCTV);
+              break;
           }
         } catch (error) {
           console.error("Search failed:", error);
@@ -185,6 +197,7 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
       case "NCC": name = item.sourceName; break;
       case "BANK": name = item.code; break;
       case "NV": name = item.code; break;
+      case "CTV": name = item.code; break;
       case "CP": name = item; break;
     }
     setSearchTerm(name);
@@ -459,13 +472,14 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
               <option value="CP">Chi phí</option>
               <option value="BANK">Bank nội bộ</option>
               <option value="NV">Nhân viên</option>
+              <option value="CTV">CTV</option>
             </select>
           </div>
 
           {objectType && (
             <div className="relative" ref={dropdownRef}>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tìm {objectType}
+                Tìm {objectType === "CTV" ? "CTV" : objectType}
               </label>
               <div className="relative">
                 <input
@@ -537,6 +551,12 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
                             <span className="text-[10px] text-gray-500">{item.userName} - {item.fullName}</span>
                           </>
                         )}
+                        {objectType === "CTV" && (
+                          <>
+                            <span className="text-xs font-bold">{item.code}</span>
+                            <span className="text-[10px] text-gray-500">{item.name}</span>
+                          </>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -563,31 +583,33 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
       </div>
 
       {/* Bulk Actions Bar */}
-      {selectedIds.length > 0 && (
-        <div className="flex justify-start mb-2 animate-in slide-in-from-left-2 duration-300">
-          <div className="bg-white px-3 py-1.5 rounded-lg shadow-sm border border-blue-100 flex items-center gap-4 text-[11px]">
-            <span className="font-bold text-gray-700">
-              Đã chọn <span className="text-blue-600">{selectedIds.length}</span> GD
-            </span>
-            <div className="flex items-center gap-2 border-l pl-4 border-gray-100">
-              <button
-                onClick={() => handleOpenEditModal(selectedIds)}
-                className="px-3 py-1 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 transition-all flex items-center gap-1.5 shadow-sm"
-              >
-                <SquarePen size={12} />
-                Cập nhật đồng loạt
-              </button>
-              <button
-                onClick={() => setSelectedIds([])}
-                className="text-gray-400 hover:text-red-500 transition-colors p-1"
-                title="Hủy chọn"
-              >
-                <X size={14} />
-              </button>
+      {
+        selectedIds.length > 0 && (
+          <div className="flex justify-start mb-2 animate-in slide-in-from-left-2 duration-300">
+            <div className="bg-white px-3 py-1.5 rounded-lg shadow-sm border border-blue-100 flex items-center gap-4 text-[11px]">
+              <span className="font-bold text-gray-700">
+                Đã chọn <span className="text-blue-600">{selectedIds.length}</span> GD
+              </span>
+              <div className="flex items-center gap-2 border-l pl-4 border-gray-100">
+                <button
+                  onClick={() => handleOpenEditModal(selectedIds)}
+                  className="px-3 py-1 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 transition-all flex items-center gap-1.5 shadow-sm"
+                >
+                  <SquarePen size={12} />
+                  Cập nhật đồng loạt
+                </button>
+                <button
+                  onClick={() => setSelectedIds([])}
+                  className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                  title="Hủy chọn"
+                >
+                  <X size={14} />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Table */}
       <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
@@ -788,65 +810,67 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
       </div>
 
       {/* Scan Transaction Modal */}
-      {scanModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Quét giao dịch</h3>
+      {
+        scanModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <h3 className="text-lg font-semibold mb-4">Quét giao dịch</h3>
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Thời gian quét:</label>
-              <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
-                Từ: {dayjs(filters.fromEffectiveDate).format('DD/MM/YYYY HH:mm:ss')}<br />
-                Đến: {dayjs(filters.toEffectiveDate).format('DD/MM/YYYY HH:mm:ss')}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Thời gian quét:</label>
+                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+                  Từ: {dayjs(filters.fromEffectiveDate).format('DD/MM/YYYY HH:mm:ss')}<br />
+                  Đến: {dayjs(filters.toEffectiveDate).format('DD/MM/YYYY HH:mm:ss')}
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Chọn tài khoản ngân hàng:</label>
+                <select
+                  value={selectedAccount ? bankList.findIndex(bank =>
+                    (bank.id === selectedAccount.id) ||
+                    (bank.accountBankNumber === selectedAccount.accountBankNumber)
+                  ) : ''}
+                  onChange={(e) => {
+                    const account = bankList[parseInt(e.target.value)];
+                    setSelectedAccount(account);
+                  }}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Chọn tài khoản...</option>
+                  {bankList.map((bank, index) => (
+                    <option key={bank.id || bank.accountBankNumber || index} value={index}>
+                      {bank.accountBankNumber || bank.accountNumber} - {bank.accountBankHolderName || 'Unknown'}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => {
+                    setScanModalOpen(false);
+                    setSelectedAccount(null);
+                  }}
+                  className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={handleScanTransaction}
+                  disabled={!selectedAccount || !selectedAccount.accountBankNumber || !selectedAccount.loginUsername}
+                  className={`px-4 py-2 text-sm rounded-md ${selectedAccount && selectedAccount.accountBankNumber && selectedAccount.loginUsername
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                >
+                  Bắt đầu quét
+                </button>
               </div>
             </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Chọn tài khoản ngân hàng:</label>
-              <select
-                value={selectedAccount ? bankList.findIndex(bank =>
-                  (bank.id === selectedAccount.id) ||
-                  (bank.accountBankNumber === selectedAccount.accountBankNumber)
-                ) : ''}
-                onChange={(e) => {
-                  const account = bankList[parseInt(e.target.value)];
-                  setSelectedAccount(account);
-                }}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Chọn tài khoản...</option>
-                {bankList.map((bank, index) => (
-                  <option key={bank.id || bank.accountBankNumber || index} value={index}>
-                    {bank.accountBankNumber || bank.accountNumber} - {bank.accountBankHolderName || 'Unknown'}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => {
-                  setScanModalOpen(false);
-                  setSelectedAccount(null);
-                }}
-                className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={handleScanTransaction}
-                disabled={!selectedAccount || !selectedAccount.accountBankNumber || !selectedAccount.loginUsername}
-                className={`px-4 py-2 text-sm rounded-md ${selectedAccount && selectedAccount.accountBankNumber && selectedAccount.loginUsername
-                  ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-              >
-                Bắt đầu quét
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Edit Transaction Modal */}
       <EditFinancialTransactionModal
@@ -857,6 +881,6 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
         onSave={handleSaveEdit}
         loading={editLoading}
       />
-    </div>
+    </div >
   );
 }

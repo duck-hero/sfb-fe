@@ -7,15 +7,15 @@ import { useAuth } from "../../context/AuthContext";
 const Sidebar = ({ onToggle, isCollapsed }) => {
   const { pathname } = useLocation();
   const { hasRole } = useAuth();
-  
-  const isTotalHeadPath = pathname.startsWith("/statistics/source-debt") || 
-                         pathname === "/bm-source-management";
-  
+
+  const isTotalHeadPath = pathname.startsWith("/statistics/source-debt") ||
+    pathname === "/bm-source-management";
+
   const isRevenuePath = pathname === "/statistics/fee-profit-matrix" || pathname === "/statistics/threshold";
   const isEmployeePath = pathname === "/user-management" || pathname === "/statistics/employee-debt" || pathname === "/statistics/employee-sales";
   const isBankPath = pathname === "/transaction-history" || pathname.startsWith("/bank-management");
   const isCustomerPath = pathname.startsWith("/customer-management");
-                         
+
   const [isTotalExpanded, setIsTotalExpanded] = useState(isTotalHeadPath);
   const [isRevenueExpanded, setIsRevenueExpanded] = useState(isRevenuePath);
   const [isEmployeeExpanded, setIsEmployeeExpanded] = useState(isEmployeePath);
@@ -83,8 +83,8 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
               {!isCollapsed && <span className="truncate">Ngân hàng</span>}
             </div>
             {!isCollapsed && (
-              <ChevronDown 
-                size={16} 
+              <ChevronDown
+                size={16}
                 className={`transition-transform duration-200 ${isBankExpanded ? 'rotate-180' : ''}`}
               />
             )}
@@ -143,8 +143,8 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
               {!isCollapsed && <span className="truncate">Đầu tổng</span>}
             </div>
             {!isCollapsed && (
-              <ChevronDown 
-                size={16} 
+              <ChevronDown
+                size={16}
                 className={`transition-transform duration-200 ${isTotalExpanded ? 'rotate-180' : ''}`}
               />
             )}
@@ -182,8 +182,8 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
               {!isCollapsed && <span className="truncate">Lợi nhuận & Chi phí</span>}
             </div>
             {!isCollapsed && (
-              <ChevronDown 
-                size={16} 
+              <ChevronDown
+                size={16}
                 className={`transition-transform duration-200 ${isRevenueExpanded ? 'rotate-180' : ''}`}
               />
             )}
@@ -215,7 +215,7 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
             </div>
           )}
         </div>
-        
+
         <Link
           to="/bm-management"
           className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${pathname === "/bm-management" && active
@@ -238,8 +238,8 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
               {!isCollapsed && <span className="truncate">Khách hàng</span>}
             </div>
             {!isCollapsed && (
-              <ChevronDown 
-                size={16} 
+              <ChevronDown
+                size={16}
                 className={`transition-transform duration-200 ${isCustomerExpanded ? 'rotate-180' : ''}`}
               />
             )}
@@ -283,6 +283,13 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
                 <span>Thống kê CTV</span>
               </Link>
               <Link
+                to="/customer-management/ctv-debt-summary"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/customer-management/ctv-debt-summary" && active}`}
+              >
+                <Receipt size={14} className="text-orange-500" />
+                <span>Công nợ CTV</span>
+              </Link>
+              <Link
                 to="/customer-management/audit"
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/customer-management/audit" && active}`}
               >
@@ -292,7 +299,7 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
             </div>
           )}
         </div>
-        
+
         {/* Nhân viên - Submenu */}
         <div>
           <button
@@ -305,8 +312,8 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
               {!isCollapsed && <span className="truncate">Nhân viên</span>}
             </div>
             {!isCollapsed && (
-              <ChevronDown 
-                size={16} 
+              <ChevronDown
+                size={16}
                 className={`transition-transform duration-200 ${isEmployeeExpanded ? 'rotate-180' : ''}`}
               />
             )}
@@ -321,7 +328,7 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
                 <Receipt size={14} className="text-orange-500" />
                 <span>Công nợ nhân viên</span>
               </Link>
-              
+
               <Link
                 to="/statistics/employee-sales"
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/statistics/employee-sales" && active}`}
@@ -329,7 +336,7 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
                 <TrendingUp size={14} className="text-blue-500" />
                 <span>BC doanh số</span>
               </Link>
-              
+
               {(hasRole('Admin')) && (
                 <Link
                   to="/user-management"

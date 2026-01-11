@@ -34,6 +34,7 @@ import FeeProfitMatrix from "../pages/Statistics/FeeProfitMatrix";
 import EmployeeDebtSummary from "../pages/Statistics/EmployeeDebtSummary";
 import EmployeeSalesReport from "../pages/Statistics/EmployeeSalesReport";
 import ExpenseAccountingSummary from "../pages/Statistics/ExpenseAccountingSummary";
+import CollaboratorDebtSummary from "../pages/CustomerManage/CollaboratorDebtSummary";
 
 // 1. Import ProtectedRoute
 
@@ -75,10 +76,10 @@ export default function AppRoutes() {
             <Route index element={<Dashboard />} />
             {/* <Route path="bank-management" element={<BankManagePage />} /> */}
             <Route path="bank-management">
-               <Route path="banks" element={<BankList />} />
-               <Route path="accounts" element={<BankAccountList />} />
-               <Route path="cards" element={<BankCardList />} />
-               <Route path="statistics" element={<BankStatisticsPage />} />
+              <Route path="banks" element={<BankList />} />
+              <Route path="accounts" element={<BankAccountList />} />
+              <Route path="cards" element={<BankCardList />} />
+              <Route path="statistics" element={<BankStatisticsPage />} />
             </Route>
             {/* <Route
               path="bank-account-management"
@@ -95,12 +96,13 @@ export default function AppRoutes() {
             <Route element={<ProtectedRoute allowedRoles={['Admin', 'Kế Toán Công Nợ']} />}>
               {/* <Route path="customer-management" element={<CustomerManagementPage />} /> */}
               <Route path="customer-management">
-                  <Route path="list" element={<CustomerList />} />
-                  <Route path="groups" element={<CustomerGroupList />} />
-                  <Route path="collaborators" element={<CollaboratorList />} />
-                  <Route path="reconciliation" element={<MonthlyCustomerReconciliation />} />
-                  <Route path="ctv-stats" element={<CTVStatistics />} />
-                  <Route path="audit" element={<AdAccountAuditReport />} />
+                <Route path="list" element={<CustomerList />} />
+                <Route path="groups" element={<CustomerGroupList />} />
+                <Route path="collaborators" element={<CollaboratorList />} />
+                <Route path="reconciliation" element={<MonthlyCustomerReconciliation />} />
+                <Route path="ctv-stats" element={<CTVStatistics />} />
+                <Route path="ctv-debt-summary" element={<CollaboratorDebtSummary />} />
+                <Route path="audit" element={<AdAccountAuditReport />} />
               </Route>
             </Route>
             <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
