@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import sfbLogo from "../../assets/sfb-logo.png";
-import { LayoutDashboard, Mountain, Landmark, History, ChevronLeft, ChevronRight, UsersRound, Shield, ChevronDown, PieChart, Receipt, Database, LayoutList, TrendingUp, Users, FileUser, CreditCard, BadgeCent, FileSpreadsheet, FileBox, HandCoins } from "lucide-react";
+import { LayoutDashboard, Mountain, Landmark, History, ChevronLeft, ChevronRight, UsersRound, Shield, ChevronDown, PieChart, Receipt, Database, LayoutList, TrendingUp, Users, FileUser, CreditCard, BadgeCent, FileSpreadsheet, FileBox, HandCoins, Megaphone, UserCog } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
 const Sidebar = ({ onToggle, isCollapsed }) => {
@@ -15,12 +15,14 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
   const isEmployeePath = pathname === "/user-management" || pathname === "/statistics/employee-debt" || pathname === "/statistics/employee-sales";
   const isBankPath = pathname === "/transaction-history" || pathname.startsWith("/bank-management");
   const isCustomerPath = pathname.startsWith("/customer-management");
+  const isFbPath = pathname.startsWith("/bm-management");
 
   const [isTotalExpanded, setIsTotalExpanded] = useState(isTotalHeadPath);
   const [isRevenueExpanded, setIsRevenueExpanded] = useState(isRevenuePath);
   const [isEmployeeExpanded, setIsEmployeeExpanded] = useState(isEmployeePath);
   const [isBankExpanded, setIsBankExpanded] = useState(isBankPath);
   const [isCustomerExpanded, setIsCustomerExpanded] = useState(isCustomerPath);
+  const [isFbExpanded, setIsFbExpanded] = useState(isFbPath);
 
   // Open submenu automatically if pathname matches sub-items
   useEffect(() => {
@@ -38,6 +40,9 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
     }
     if (isCustomerPath && !isCollapsed) {
       setIsCustomerExpanded(true);
+    }
+    if (isFbPath && !isCollapsed) {
+      setIsFbExpanded(true);
     }
   }, [pathname, isCollapsed]);
 
@@ -216,15 +221,44 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
           )}
         </div>
 
-        <Link
-          to="/bm-management"
-          className={`flex items-center ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-3'} rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${pathname === "/bm-management" && active
-            }`}
-          title={isCollapsed ? "Quản lý FB" : ""}
-        >
-          <Mountain size={20} className="flex-shrink-0" />
-          {!isCollapsed && <span className="truncate">Quản lý FB</span>}
-        </Link>
+        {/* Quản lý FB - Submenu */}
+        <div>
+          <button
+            onClick={() => !isCollapsed && setIsFbExpanded(!isFbExpanded)}
+            className={`w-full flex items-center justify-between rounded-lg hover:bg-gray-100 transition-all duration-300 min-h-[48px] ${isFbPath && !isFbExpanded && active} ${isCollapsed ? 'justify-center px-3 py-3' : 'px-3 py-3'}`}
+            title={isCollapsed ? "Quản lý FB" : ""}
+          >
+            <div className={`flex items-center ${isCollapsed ? '' : 'gap-3'}`}>
+              <Mountain size={20} className="flex-shrink-0" />
+              {!isCollapsed && <span className="truncate">Quản lý FB</span>}
+            </div>
+            {!isCollapsed && (
+              <ChevronDown
+                size={16}
+                className={`transition-transform duration-200 ${isFbExpanded ? 'rotate-180' : ''}`}
+              />
+            )}
+          </button>
+
+          {!isCollapsed && isFbExpanded && (
+            <div className="mt-1 ml-4 pl-4 border-l border-gray-200 space-y-1 animate-in slide-in-from-top-2 duration-200">
+              <Link
+                to="/bm-management/ads-accounts"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/bm-management/ads-accounts" && active}`}
+              >
+                <Megaphone size={14} />
+                <span>Tài khoản quảng cáo</span>
+              </Link>
+              <Link
+                to="/bm-management/bm-accounts"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/bm-management/bm-accounts" && active}`}
+              >
+                <UserCog size={14} />
+                <span>BM Gốc</span>
+              </Link>
+            </div>
+          )}
+        </div>
 
         {/* Khách hàng - Submenu */}
         <div>

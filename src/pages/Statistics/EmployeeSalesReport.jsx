@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import dashboardApi from "../../api/dashboardApi";
 import dayjs from "dayjs";
-import { Loader2, AlertCircle, ChevronLeft, ChevronRight, RefreshCw, Layers, ChevronDown, ChevronRight as ChevronRightIcon } from "lucide-react";
+import { Loader2, AlertCircle, ChevronLeft, ChevronRight, RefreshCw, Layers, ChevronDown, ChevronRight as ChevronRightIcon, Calendar } from "lucide-react";
 
 /**
  * Page: Báo cáo doanh số nhân viên
@@ -77,30 +77,36 @@ const EmployeeSalesReport = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-lg border border-gray-200">
-          <button
-            onClick={handlePrevMonth}
-            className="p-1.5 hover:bg-white hover:shadow-sm rounded-md transition-all text-gray-600"
-          >
-            <ChevronLeft size={18} />
-          </button>
-          <span className="text-sm font-semibold min-w-[100px] text-center text-gray-700 select-none">
-            Tháng {month}/{year}
-          </span>
-          <button
-            onClick={handleNextMonth}
-            className="p-1.5 hover:bg-white hover:shadow-sm rounded-md transition-all text-gray-600"
-          >
-            <ChevronRight size={18} />
-          </button>
-          <div className="w-px h-4 bg-gray-300 mx-1"></div>
-          <button
+        <div className="flex items-center gap-3">
+          <button 
             onClick={fetchData}
-            className="p-1.5 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-all text-gray-500"
+            disabled={loading}
+            className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-blue-600 transition-colors border border-transparent hover:border-gray-200"
             title="Làm mới dữ liệu"
           >
-            <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
           </button>
+
+          <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+            <button
+              onClick={handlePrevMonth}
+              className="p-1.5 hover:bg-white rounded-md transition-all shadow-sm"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <div className="flex items-center gap-2 px-3">
+              <Calendar size={16} className="text-gray-500" />
+              <span className="font-semibold text-sm">
+                Tháng {month}/{year}
+              </span>
+            </div>
+            <button
+              onClick={handleNextMonth}
+              className="p-1.5 hover:bg-white rounded-md transition-all shadow-sm"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
         </div>
       </div>
 

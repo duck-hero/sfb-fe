@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Calendar, RotateCw, ChevronDown, ChevronUp, Users, CreditCard, TrendingUp, DollarSign } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar, RotateCw, RefreshCw, ChevronDown, ChevronUp, Users, CreditCard, TrendingUp, DollarSign } from "lucide-react";
 import dashboardApi from "../../api/dashboardApi";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
@@ -67,39 +67,42 @@ const CTVStatistics = () => {
   return (
     <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 h-full flex flex-col">
       <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center gap-4">
+        <div>
           <h2 className="text-sm font-bold uppercase text-primary-darkest">
-            Thống kê hoa hồng CTV tháng {month}/{year}
+            Thống kê hoa hồng CTV
           </h2>
+        </div>
+
+        <div className="flex items-center gap-3">
           <button
             onClick={fetchStats}
             disabled={loading}
-            className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-blue-600 transition-colors border border-gray-200"
+            className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-blue-600 transition-colors border border-transparent hover:border-gray-200"
             title="Làm mới dữ liệu"
           >
-            <RotateCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`w-5 h-5 ${loading ? "animate-spin" : ""}`} />
           </button>
-        </div>
 
-        <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
-          <button
-            onClick={handlePrevMonth}
-            className="p-1 hover:bg-white rounded-md transition-all shadow-sm"
-          >
-            <ChevronLeft size={16} />
-          </button>
-          <div className="flex items-center gap-2 px-3">
-            <Calendar size={14} className="text-gray-500" />
-            <span className="font-semibold text-[11px]">
-              Tháng {month}/{year}
-            </span>
+          <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+            <button
+              onClick={handlePrevMonth}
+              className="p-1.5 hover:bg-white rounded-md transition-all shadow-sm"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <div className="flex items-center gap-2 px-3">
+              <Calendar size={16} className="text-gray-500" />
+              <span className="font-semibold text-sm">
+                Tháng {month}/{year}
+              </span>
+            </div>
+            <button
+              onClick={handleNextMonth}
+              className="p-1.5 hover:bg-white rounded-md transition-all shadow-sm"
+            >
+              <ChevronRight size={18} />
+            </button>
           </div>
-          <button
-            onClick={handleNextMonth}
-            className="p-1 hover:bg-white rounded-md transition-all shadow-sm"
-          >
-            <ChevronRight size={16} />
-          </button>
         </div>
       </div>
 

@@ -12,8 +12,9 @@ import BankAccountList from "../pages/BankAccountManage/BankAccountList";
 import BankCardList from "../pages/BankCardManage/BankCardList";
 import ProtectedRoute from "../context/ProtectedRoute";
 import BmSourceList from "../pages/BmSourceManage/BmSourceList";
-// import BmAccountList from "../pages/BmAccountManage/BmAccountList";
-import BMManage from "../pages/BmManager/BMManage";
+import BmAccountList from "../pages/BmAccountManage/BmAccountList";
+// import BMManage from "../pages/BmManager/BMManage";
+import AdsAccountList from "../pages/AdsAccountManage/AdsAccountList";
 import BankManagePage from "../pages/BankManagePage/BankManagePage";
 import BankStatisticsPage from "../pages/BankManagePage/BankStatisticsPage";
 import TransactionManage from "../pages/TransactionManage/TransactionManage";
@@ -86,8 +87,12 @@ export default function AppRoutes() {
               element={<BankAccountList />}
             />
             <Route path="bank-card-management" element={<BankCardList />} /> */}
-            <Route path="bm-management" element={<BMManage />} />
-            <Route path="bm-source-management" element={<BmSourceList />} />
+            {/* <Route path="bm-management" element={<BMManage />} /> */}
+            <Route path="bm-management">
+              <Route index element={<AdsAccountList />} />
+              <Route path="ads-accounts" element={<AdsAccountList />} />
+              <Route path="bm-accounts" element={<BmAccountList />} />
+            </Route>
             {/* Chỉ Admin và Kế Toán mới xem được lịch sử giao dịch */}
             <Route element={<ProtectedRoute allowedRoles={['Admin', 'Kế Toán', 'Kế Toán Tiền']} />}>
               <Route path="transaction-history" element={<TransactionManage />} />

@@ -1,9 +1,10 @@
 import { useEffect, useState, useMemo } from "react";
-import { Plus, RotateCw, Trash2, Search } from "lucide-react";
+import { Plus, RotateCw, Trash2, Search, LineChart } from "lucide-react";
 import customerApi from "../../api/customerApi";
 import adsAccountApi from "../../api/adsAccountApi";
 import customerAdsAccountApi from "../../api/customerAdsAccountApi";
 import { toast } from "react-toastify";
+import SpendTrackingModal from "./SpendTrackingModal";
 
 // Helper formatter
 const formatDate = (dateString) => {
@@ -58,6 +59,7 @@ const CustomerDetailView = ({ id }) => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
   const [activeTab, setActiveTab] = useState("ACTIVE"); // 'ACTIVE' | 'HISTORY'
+  const [isSpendModalOpen, setIsSpendModalOpen] = useState(false);
   
   // Add Rental State
   const [isAddRentalOpen, setIsAddRentalOpen] = useState(false);
@@ -211,6 +213,14 @@ const CustomerDetailView = ({ id }) => {
                 LỊCH SỬ ({allAccounts.length})
             </button>
         </div>
+
+        <button
+          onClick={() => setIsSpendModalOpen(true)}
+          className="p-1.5 hover:bg-green-50 rounded-lg transition-colors border border-transparent hover:border-green-100 text-gray-500 hover:text-green-600"
+          title="Theo dõi chi tiêu"
+        >
+          <LineChart className="h-4 w-4" />
+        </button>
       </div>
 
       {/* Account List */}
@@ -379,6 +389,12 @@ const CustomerDetailView = ({ id }) => {
             </div>
         </div>
       )}
+
+      <SpendTrackingModal
+        open={isSpendModalOpen}
+        customer={data}
+        onClose={() => setIsSpendModalOpen(false)}
+      />
     </div>
   );
 };

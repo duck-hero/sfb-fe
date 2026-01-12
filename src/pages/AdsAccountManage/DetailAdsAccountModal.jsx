@@ -431,7 +431,7 @@ export default function DetailAdsAccountModal({
                                 className="p-2 bg-gray-50 border border-gray-200 rounded text-xs cursor-pointer hover:bg-blue-50 transition-colors"
                                 onClick={() => {
                                   if (renter.customerId) {
-                                    window.open(`/customer-management?detailId=${renter.customerId}`, "_blank");
+                                    window.open(`/customer-management/list?detailId=${renter.customerId}`, "_blank");
                                   } else {
                                     toast.warning("Không tìm thấy ID khách hàng");
                                   }

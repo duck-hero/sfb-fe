@@ -470,7 +470,7 @@ const handleEditSave = async (dataToSend) => {
                   Tên tài khoản
                 </th>
                 <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-900  tracking-wider text-primary-darkest">
-                  Chi tiêu hiện tại
+                  Tổng chi tiêu
                 </th>
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-900  tracking-wider text-primary-darkest">
                   BM Gốc
