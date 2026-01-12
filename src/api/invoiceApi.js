@@ -37,10 +37,10 @@ const invoiceApi = {
   },
 
   // Generate Group Invoice Draft
-  generateGroupInvoice: async (groupId, year, month) => {
+  generateGroupInvoice: async (groupId, customerId, year, month) => {
     try {
       const response = await axiosInstance.post(`${api}/customers/groups/${groupId}/invoices/generate`, null, {
-        params: { year, month }
+        params: { year, month, customerId }
       });
       return response.data;
     } catch (error) {

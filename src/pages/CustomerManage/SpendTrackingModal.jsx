@@ -134,7 +134,7 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
             let res;
             // Check if customer belongs to a group based on the grid data
             if (data?.customerGroupId) {
-                res = await invoiceApi.generateGroupInvoice(data.customerGroupId, year, month);
+                res = await invoiceApi.generateGroupInvoice(data.customerGroupId, customerId, year, month);
             } else {
                 res = await invoiceApi.generateInvoice(customerId, year, month);
             }
