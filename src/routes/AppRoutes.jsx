@@ -93,6 +93,7 @@ export default function AppRoutes() {
               <Route path="ads-accounts" element={<AdsAccountList />} />
               <Route path="bm-accounts" element={<BmAccountList />} />
             </Route>
+            <Route path="bm-source-management" element={<BmSourceList />} />
             {/* Chỉ Admin và Kế Toán mới xem được lịch sử giao dịch */}
             <Route element={<ProtectedRoute allowedRoles={['Admin', 'Kế Toán', 'Kế Toán Tiền']} />}>
               <Route path="transaction-history" element={<TransactionManage />} />
