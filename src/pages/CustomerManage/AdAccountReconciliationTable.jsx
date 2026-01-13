@@ -121,8 +121,13 @@ const AdAccountReconciliationTable = ({ data, loading }) => {
                                     {({ open }) => (
                                         <>
                                             <Popover.Button className="focus:outline-none w-full h-full flex items-center justify-end gap-1">
-                                                <span>Dư đầu tháng</span>
-                                                <Upload className="w-3 h-3 text-gray-400 group-hover:text-blue-600" />
+                                                <div className="flex flex-col items-end">
+                                                    <div className="flex items-center gap-1">
+                                                        <span>Dư đầu tháng</span>
+                                                        <Upload className="w-3 h-3 text-gray-400 group-hover:text-blue-600" />
+                                                    </div>
+                                                    <div className="text-[8px] text-gray-400 font-normal lowercase">(Dư đầu tháng)</div>
+                                                </div>
                                             </Popover.Button>
                                             <Transition
                                                 as={Fragment}
@@ -153,7 +158,7 @@ const AdAccountReconciliationTable = ({ data, loading }) => {
                                         </>
                                     )}
                                 </Popover>
-                                <input
+                                 <input
                                     type="file"
                                     ref={fileInputRef}
                                     onChange={handleFileChange}
@@ -161,10 +166,22 @@ const AdAccountReconciliationTable = ({ data, loading }) => {
                                     accept=".xlsx, .xls"
                                 />
                             </th>
-                             <th className="px-3 py-2 text-right text-[10px] font-bold text-gray-600 uppercase tracking-wider border-r border-gray-100">Pay Facebook</th>
-                             <th className="px-3 py-2 text-center text-[10px] font-bold text-gray-600 uppercase tracking-wider border-r border-gray-100">Chi tiêu thực tế (File upload)</th>
-                            <th className="px-3 py-2 text-right text-[10px] font-bold text-gray-600 uppercase tracking-wider border-r border-gray-100">Chi tiêu ghi nhận</th>
-                            <th className="px-3 py-2 text-right text-[10px] font-bold text-gray-600 uppercase tracking-wider border-r border-gray-100">Chênh lệch</th>
+                             <th className="px-3 py-2 text-right border-r border-gray-100">
+                                <div className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">Pay Facebook</div>
+                                <div className="text-[8px] text-gray-400 font-normal lowercase">(Pay Facebook)</div>
+                             </th>
+                             <th className="px-3 py-2 text-center border-r border-gray-100">
+                                <div className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">Chi tiêu thực tế</div>
+                                <div className="text-[8px] text-gray-400 font-normal lowercase">(Tiêu thực)</div>
+                             </th>
+                            <th className="px-3 py-2 text-right border-r border-gray-100">
+                                <div className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">Chi tiêu ghi nhận</div>
+                                <div className="text-[8px] text-gray-400 font-normal lowercase">(Tiêu ghi nhận)</div>
+                            </th>
+                            <th className="px-3 py-2 text-right border-r border-gray-100">
+                                <div className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">Chênh lệch</div>
+                                <div className="text-[8px] text-gray-400 font-normal lowercase">(Dư + Tiêu thực - Pay FB)</div>
+                            </th>
                             <th className="px-3 py-2 text-center text-[10px] font-bold text-gray-600 uppercase tracking-wider border-r border-gray-100">KH</th>
                             <th className="px-3 py-2 text-center text-[10px] font-bold text-gray-600 uppercase tracking-wider">Status</th>
                         </tr>
