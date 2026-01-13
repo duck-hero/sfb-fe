@@ -145,6 +145,23 @@ createAdsAccount: async (adAccountName, adAccountIdNumber, bmAccountId, bmWorkin
       throw handleApiError(error);
     }
   },
+
+  // Import lịch sử dư nợ
+  importAdsAccountDebtHistory: async (formData, year, month) => {
+    try {
+      if (year) formData.append('Year', year);
+      if (month) formData.append('Month', month);
+      
+      const response = await axiosInstance.post(`${api}/AdsAccount/ImportAdsAccountDebtHistory`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 };
 
 export default adsAccountApi;
