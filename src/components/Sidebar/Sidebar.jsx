@@ -62,7 +62,7 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
 
       <div className={`flex items-center gap-3 mb-6 flex-shrink-0 ${isCollapsed ? 'justify-center' : ''}`}>
         <img src={sfbLogo} alt="Logo" className="h-10 w-auto" />
-        {!isCollapsed && <h1 className="text-2xl font-bold text-primary-darkest">sFacebook</h1>}
+        {!isCollapsed && <h1 className="text-2xl font-bold text-primary-darkest">HDG AGC</h1>}
       </div>
 
       <nav className="space-y-2 flex-1 overflow-y-auto -mx-2 px-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
