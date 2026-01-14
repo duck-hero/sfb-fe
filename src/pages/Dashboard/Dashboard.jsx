@@ -31,8 +31,6 @@ const formatCurrency = (amount) => {
 
 const Dashboard = () => {
   // Separate state for each section
-  const [topDebtCustomers, setTopDebtCustomers] = useState([]);
-  const [topCreditCustomers, setTopCreditCustomers] = useState([]);
   const [reconciliation, setReconciliation] = useState(null);
   const [ctvSummary, setCtvSummary] = useState(null);
   const [employeeSummary, setEmployeeSummary] = useState(null);
@@ -40,8 +38,6 @@ const Dashboard = () => {
 
   // Loading states
   const [loadingStates, setLoadingStates] = useState({
-    topDebt: false,
-    topCredit: false,
     reconciliation: false,
   });
 
@@ -58,33 +54,19 @@ const Dashboard = () => {
     // Set all loading states to true
     setLoadingStates(prev => ({
       ...prev,
-      topDebt: true,
-      topCredit: true,
       reconciliation: true,
     }));
 
     try {
       // Fetch all APIs in parallel for better performance
-      const [topDebtRes, topCreditRes, reconciliationRes, ctvRes, employeeRes, expenseRes] = await Promise.allSettled([
-        dashboardApi.getTopDebtCustomers(filters.year, filters.month, 5),
-        dashboardApi.getTopCreditCustomers(filters.year, filters.month, 5),
+      const [reconciliationRes, ctvRes, employeeRes, expenseRes] = await Promise.allSettled([
         dashboardApi.getMonthlySummary(filters.year, filters.month),
         dashboardApi.getCTVDebtSummary(filters.year, filters.month),
         dashboardApi.getEmployeeDebtSummary(filters.year, filters.month),
         dashboardApi.getExpenseAccountingSummary(filters.year, filters.month),
       ]);
 
-      // Handle Top Debt
-      if (topDebtRes.status === 'fulfilled' && topDebtRes.value?.success) {
-        setTopDebtCustomers(topDebtRes.value.data || []);
-      }
-      setLoadingStates(prev => ({ ...prev, topDebt: false }));
 
-      // Handle Top Credit
-      if (topCreditRes.status === 'fulfilled' && topCreditRes.value?.success) {
-        setTopCreditCustomers(topCreditRes.value.data || []);
-      }
-      setLoadingStates(prev => ({ ...prev, topCredit: false }));
 
       // Handle Reconciliation
       if (reconciliationRes.status === 'fulfilled' && reconciliationRes.value?.success) {
@@ -113,8 +95,6 @@ const Dashboard = () => {
       // Reset all loading states on error
       setLoadingStates(prev => ({
         ...prev,
-        topDebt: false,
-        topCredit: false,
         reconciliation: false,
       }));
     }
@@ -157,58 +137,7 @@ const Dashboard = () => {
     });
   };
 
-  // Customer Ranking Component (compact version)
-  const CustomerRankingCard = ({ customers, title, type = "debt", isLoading = false }) => {
-    if (isLoading) {
-      return (
-        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm h-full">
-          <div className="animate-pulse space-y-3">
-            <div className="h-5 bg-gray-200 rounded w-32 mb-3"></div>
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-16 bg-gray-100 rounded"></div>
-            ))}
-          </div>
-        </div>
-      );
-    }
 
-    return (
-      <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm h-full flex flex-col">
-        <h3 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
-          <span className="text-lg">{type === 'debt' ? '👥' : '💰'}</span>
-          {title}
-        </h3>
-        {customers && customers.length > 0 ? (
-          <div className="space-y-2 flex-1 overflow-y-auto">
-            {customers.map((customer, index) => (
-              <div key={customer.customerId || index} className="flex items-center justify-between p-2.5 bg-gray-50 rounded border border-gray-100 hover:border-gray-300 transition-all">
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-xs text-gray-800 truncate mb-0.5">
-                    {customer.fullCustomerCode || `${customer.customerCode} - ${customer.customerName}`}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    Khách đã thanh toán: <span className="font-medium text-green-600">{formatCurrency(customer.paidInMonth || 0)}</span>
-                  </div>
-                </div>
-                <div className="text-right ml-2 flex-shrink-0">
-                  <div className={`font-bold text-sm ${type === 'debt' ? 'text-red-600' : 'text-green-600'}`}>
-                    {type === 'debt' ? formatCurrency(customer.debt || 0) : formatCurrency(customer.credit || 0)}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {formatCurrency(customer.closingBalance || 0)}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-6 flex-1 flex items-center justify-center">
-            <p className="text-gray-400 text-xs">Không có dữ liệu</p>
-          </div>
-        )}
-      </div>
-    );
-  };
 
   // Chart Component for Reconciliation Data using Chart.js (React 19 compatible)
   const ReconciliationChart = ({ data, isLoading = false }) => {
@@ -491,7 +420,7 @@ const Dashboard = () => {
         </table>
 
         {/* Footer Metrics */}
-        <div className="px-3 py-3 bg-gray-50 border-t border-gray-200 flex flex-wrap gap-6 items-center">
+        {/* <div className="px-3 py-3 bg-gray-50 border-t border-gray-200 flex flex-wrap gap-6 items-center">
           <div className="flex items-center gap-2">
             <span className="text-gray-500 font-medium">Doanh thu:</span>
             <span className="text-sm font-bold text-green-600">{formatCurrency(revenue)}</span>
@@ -504,7 +433,7 @@ const Dashboard = () => {
             <span className="text-gray-500 font-medium">Lợi nhuận gộp:</span>
             <span className="text-sm font-bold text-indigo-600">{formatCurrency((revenue || 0) - (totalCost || 0))}</span>
           </div>
-        </div>
+        </div> */}
       </div>
     );
   };
@@ -657,40 +586,42 @@ const Dashboard = () => {
             <h1 className="text-2xl font-bold text-gray-800 mb-1">Thống Kê</h1>
             <p className="text-sm text-gray-600">Tháng {filters.month}/{filters.year}</p>
           </div>
+        </div>
+
+        {/* Filters - Compact */}
+        <div className="flex items-center gap-3">
+          <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200 inline-block font-sans">
+            <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+              <button
+                onClick={handlePrevMonth}
+                className="p-1.5 hover:bg-white rounded-md transition-all shadow-sm"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <div className="flex items-center gap-2 px-3">
+                <Calendar size={16} className="text-gray-500" />
+                <span className="font-semibold text-sm">
+                  Tháng {filters.month}/{filters.year}
+                </span>
+              </div>
+              <button
+                onClick={handleNextMonth}
+                className="p-1.5 hover:bg-white rounded-md transition-all shadow-sm"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          </div>
+
           <button
             onClick={fetchDashboardData}
             disabled={Object.values(loadingStates).some(v => v)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 h-[46px]"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            Làm mới
           </button>
-        </div>
-
-        {/* Filters - Compact */}
-        <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200 inline-block">
-          <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
-            <button
-              onClick={handlePrevMonth}
-              className="p-1.5 hover:bg-white rounded-md transition-all shadow-sm"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <div className="flex items-center gap-2 px-3">
-              <Calendar size={16} className="text-gray-500" />
-              <span className="font-semibold text-sm">
-                Tháng {filters.month}/{filters.year}
-              </span>
-            </div>
-            <button
-              onClick={handleNextMonth}
-              className="p-1.5 hover:bg-white rounded-md transition-all shadow-sm"
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
         </div>
       </div>
 
@@ -717,24 +648,7 @@ const Dashboard = () => {
             isLoading={loadingStates.reconciliation}
           />
 
-          {/* Top Credit & Debt - Side by side */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Top Credit */}
-            <CustomerRankingCard
-              customers={topCreditCustomers}
-              title="Top khách có dư"
-              type="credit"
-              isLoading={loadingStates.topCredit}
-            />
 
-            {/* Top Debt */}
-            <CustomerRankingCard
-              customers={topDebtCustomers}
-              title="Top khách có nợ"
-              type="debt"
-              isLoading={loadingStates.topDebt}
-            />
-          </div>
         </div>
 
         {/* Right Column - 40% (4 columns) */}
