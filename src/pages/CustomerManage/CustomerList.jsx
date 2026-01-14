@@ -433,17 +433,17 @@ function CustomerList() {
                                                             </div>
                                                         </td>
                                                         <td className="px-3 py-2">
-                                                            <div className="text-[11px] text-purple-600 font-bold bg-purple-50 px-1.5 py-0.5 rounded-full inline-block">
+                                                            <div className="text-xs text-gray-600 font-medium">
                                                                 {customer.customerGroupName || "-"}
                                                             </div>
                                                         </td>
                                                         <td className="px-3 py-2">
-                                                            <div className="text-[11px] text-orange-600 font-bold bg-orange-50 px-1.5 py-0.5 rounded-full inline-block">
+                                                            <div className="text-xs text-gray-600 font-medium">
                                                                 {customer.operatorUserName || "-"}
                                                             </div>
                                                         </td>
                                                         <td className="px-3 py-2">
-                                                            <div className="text-[11px] text-blue-600 font-bold">
+                                                            <div className="text-xs text-gray-600 font-medium">
                                                                 {customer.collaboratorName || "-"}
                                                                 {customer.collaboratorRate > 0 && (
                                                                     <span className="ml-1 text-gray-500 text-[10px]">({(customer.collaboratorRate * 100).toFixed(1)}%)</span>

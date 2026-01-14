@@ -422,7 +422,7 @@ function BankCardList() {
               <p className="text-gray-500 text-sm">Không tìm thấy dữ liệu</p>
             </div>
           ) : (
-            <div className="mt-4 space-y-2">
+            <div className="mt-2 space-y-1">
               {bankCards.map((card, index) => {
                 return (
                   <div
@@ -489,10 +489,10 @@ function BankCardList() {
                             e.stopPropagation();
                             openEditModal(card.id);
                           }}
-                          className="p-1.5 bg-white hover:bg-blue-50 rounded shadow-sm transition-colors"
+                          className="p-1.5 bg-white hover:bg-yellow-50 rounded shadow-sm transition-colors"
                           title="Chỉnh sửa"
                         >
-                          <SquarePen className="h-3.5 w-3.5 text-blue-600" />
+                          <SquarePen className="h-3.5 w-3.5 text-yellow-600" />
                         </button>
                         <button
                           onClick={(e) => {

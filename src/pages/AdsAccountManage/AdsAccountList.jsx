@@ -226,26 +226,6 @@ function AdsAccountList() {
     });
   };
 
-  // Hàm save cho Edit Modal gọi
-//   const handleEditSave = async (dataToSend) => {
-//     setSaving(true);
-//     try {
-//       // Nếu dataToSend không được truyền từ modal, dùng formData
-//       const payload = dataToSend || formData;
-//       await adsAccountApi.updateAdsAccount(payload);
-
-//       toast.success("Cập nhật thành công");
-//       setIsEditModalOpen(false);
-//       fetchAdsAccounts();
-//     } catch (err) {
-//       console.error(err);
-//       toast.error("Cập nhật thất bại");
-//     } finally {
-//       setSaving(false);
-//     }
-//   };
-// File: AdsAccountList.js
-
 const handleEditSave = async (dataToSend) => {
     setSaving(true);
     try {
@@ -335,7 +315,7 @@ const handleEditSave = async (dataToSend) => {
         )}
         {isThresholdEating && (
           <span className="inline-block px-2 py-0.5 text-xs font-medium text-orange-600 border border-orange-600 rounded-md bg-white whitespace-nowrap">
-            Đã ăn ngưỡng
+            Đã cắt ngưỡng
           </span>
         )}
       </div>
@@ -367,7 +347,7 @@ const handleEditSave = async (dataToSend) => {
 
   const renderBmWorking = (bmWorkingValue) => {
     const displayText = getBmWorkingDisplayText(bmWorkingValue);
-    return <span className="font-medium text-gray-900">{displayText}</span>;
+    return <span className="font-sm text-gray-900">{displayText}</span>;
   };
 
   return (
@@ -514,7 +494,7 @@ const handleEditSave = async (dataToSend) => {
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-700 text-center">
                     <div className="flex flex-col items-center leading-tight">
-                      <span className="font-medium text-[13px] text-gray-900">
+                      <span className="font-medium text-[11px] text-gray-900">
                         {x.currentSpend ? Number(x.currentSpend).toLocaleString('vi-VN') : 0}
                       </span>
                       <span className="italic text-[10px] text-gray-500 -mt-0.5">

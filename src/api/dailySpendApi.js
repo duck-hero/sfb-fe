@@ -35,6 +35,18 @@ const dailySpendApi = {
     } catch (error) {
       throw handleApiError(error);
     }
+  },
+
+  // Get Daily Spend Audit History
+  getDailySpendAudit: async (customerAdsAccountId, date) => {
+    try {
+      const response = await axiosInstance.get(`${api}/daily-spend-audits`, {
+        params: { CustomerAdsAccountId: customerAdsAccountId, Date: date }
+      });
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
   }
 };
 

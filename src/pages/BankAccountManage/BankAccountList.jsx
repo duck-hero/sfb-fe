@@ -390,19 +390,19 @@ function BankAccountList() {
                   <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
                     {x.accountBankNumber}
                   </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
+                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
                     {x.accountBankHolderName}
                   </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
+                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
                     {x.bankCode}
                   </td>
-                   <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
+                   <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
                     {x.code || "-"}
                   </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
+                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
                     {formatAccountType(x.type)}
                   </td>
-                  <td className="w-1/12 px-3 py-2 whitespace-nowrap text-xs text-gray-500 flex items-center">
+                  <td className="w-1/12 px-3 py-2 whitespace-nowrap text-xs text-gray-900 flex items-center">
                     <button className=" " onClick={() => openEditModal(x.id)}>
                       <SquarePen className="h-4 w-4 text-warning mr-2 ml-1.5 flex-shrink-0 cursor-pointer" />
                     </button>

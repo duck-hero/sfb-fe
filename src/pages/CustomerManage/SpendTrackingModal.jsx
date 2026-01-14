@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useState, useRef, useMemo } from "react";
 import { Dialog, Transition, Menu } from "@headlessui/react";
-import { X, ChevronLeft, ChevronRight, Save, RotateCw, Plus, Trash2, ChevronDown, Eye, FileSpreadsheet } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Save, RotateCw, Plus, Trash2, ChevronDown, Eye, FileSpreadsheet, History, User, Clock, ArrowRight } from "lucide-react";
 import dailySpendApi from "../../api/dailySpendApi";
 import invoiceApi from "../../api/invoiceApi";
 import customerApi from "../../api/customerApi";
@@ -27,6 +27,12 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
         date: new Date().toISOString().split('T')[0],
         note: ""
     });
+
+    // History Sidebar State
+    const [showHistorySidebar, setShowHistorySidebar] = useState(false);
+    const [auditData, setAuditData] = useState([]);
+    const [loadingAudit, setLoadingAudit] = useState(false);
+    const [selectedAuditCell, setSelectedAuditCell] = useState(null); // { accountName, date, customerAdsAccountId }
 
     // Helper to format currency
     const formatCurrency = (value) => {
@@ -313,6 +319,54 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
         }
     };
 
+    const fetchCellAudit = async (rowIndex, day) => {
+        const row = data?.rows[rowIndex];
+        if (!row) return;
+
+        const customerAdsAccountId = row.customerAdsAccountId;
+        const dateStr = getDateString(data.year, data.month, day);
+        
+        setSelectedAuditCell({
+            accountName: row.adAccountName,
+            date: dateStr,
+            customerAdsAccountId
+        });
+
+        if (!showHistorySidebar) return; // Only fetch if sidebar is open? 
+        // User said: "mỗi lần tôi chọn ô thì nó đều call api để load lên còn về nút có icon history chỉ là bấm vào để ẩn hiển cái đó"
+        // So we call it regardless of sidebar state.
+
+        setLoadingAudit(true);
+        try {
+            const res = await dailySpendApi.getDailySpendAudit(customerAdsAccountId, dateStr);
+            setAuditData(res.data || []);
+        } catch (error) {
+            console.error("Failed to fetch audit history", error);
+            setAuditData([]);
+        } finally {
+            setLoadingAudit(false);
+        }
+    };
+
+    // Auto-fetch when sidebar opens if a cell is already selected
+    useEffect(() => {
+        if (showHistorySidebar && selectedAuditCell && auditData.length === 0) {
+            const { customerAdsAccountId, date } = selectedAuditCell;
+            const refetch = async () => {
+                setLoadingAudit(true);
+                try {
+                    const res = await dailySpendApi.getDailySpendAudit(customerAdsAccountId, date);
+                    setAuditData(res.data || []);
+                } catch (error) {
+                    setAuditData([]);
+                } finally {
+                    setLoadingAudit(false);
+                }
+            };
+            refetch();
+        }
+    }, [showHistorySidebar]);
+
     // Generate Days Array [1, 2, ... daysInMonth]
     const daysArray = useMemo(() => {
         if (!data) return [];
@@ -546,6 +600,20 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
                                                     </div>
                                                 </div>
                                             )}
+
+                                            <div className="ml-auto flex items-center pr-2">
+                                                <button
+                                                    onClick={() => setShowHistorySidebar(!showHistorySidebar)}
+                                                    className={`p-2 rounded-lg transition-all flex items-center gap-2 border ${
+                                                        showHistorySidebar 
+                                                        ? 'bg-blue-600 text-white border-blue-500 shadow-sm' 
+                                                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                                    }`}
+                                                    title="Lịch sử thay đổi"
+                                                >
+                                                    <History className={`w-4 h-4 ${showHistorySidebar ? 'animate-pulse' : ''}`} />
+                                                </button>
+                                            </div>
                                         </div>
                                     )}
 
@@ -881,6 +949,7 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
                                                                         onChange={(e) => handleCellChange(rowIndex, day, e.target.value)}
                                                                         onBlur={(e) => saveCellData(rowIndex, day, e.target.value)}
                                                                         onKeyDown={handleKeyDown}
+                                                                        onFocus={() => fetchCellAudit(rowIndex, day)}
                                                                     />
                                                                 </td>
                                                             )
@@ -921,13 +990,108 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
                                     )}
                                 </div>
 
+                                {/* History Sidebar */}
+                                <Transition
+                                    show={showHistorySidebar}
+                                    as={Fragment}
+                                    enter="transform transition ease-in-out duration-300"
+                                    enterFrom="translate-x-full"
+                                    enterTo="translate-x-0"
+                                    leave="transform transition ease-in-out duration-300"
+                                    leaveFrom="translate-x-0"
+                                    leaveTo="translate-x-full"
+                                >
+                                    <div className="absolute top-0 right-0 w-80 h-full bg-white border-l border-gray-200 z-50 flex flex-col shadow-2xl">
+                                        <div className="flex-none p-4 border-b bg-gray-50 flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <History className="w-4 h-4 text-blue-600" />
+                                                <h3 className="font-bold text-gray-800 text-sm italic">Lịch sử thay đổi</h3>
+                                            </div>
+                                            <button
+                                                onClick={() => setShowHistorySidebar(false)}
+                                                className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+                                            >
+                                                <X className="w-4 h-4 text-gray-500" />
+                                            </button>
+                                        </div>
+
+                                        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                                            {!selectedAuditCell ? (
+                                                <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                                                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                                                        <History className="w-6 h-6 text-gray-300" />
+                                                    </div>
+                                                    <p className="text-sm text-gray-500 font-medium">Chọn một ô chi tiêu để xem lịch sử</p>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-4">
+                                                    <div className="bg-blue-50/50 p-3 rounded-xl border border-blue-100">
+                                                        <p className="text-[10px] text-blue-600 font-bold uppercase tracking-wider mb-1">Đang xem</p>
+                                                        <p className="text-xs font-bold text-gray-900 leading-tight">{selectedAuditCell.accountName}</p>
+                                                        <p className="text-[11px] text-gray-500 mt-1 font-mono">{selectedAuditCell.date}</p>
+                                                    </div>
+
+                                                    {loadingAudit ? (
+                                                        <div className="flex flex-col items-center justify-center py-12">
+                                                            <RotateCw className="w-6 h-6 text-blue-500 animate-spin mb-2" />
+                                                            <span className="text-xs text-gray-400">Đang tải lịch sử...</span>
+                                                        </div>
+                                                    ) : auditData.length === 0 ? (
+                                                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                                                            <p className="text-xs text-gray-400 italic">Không có bản ghi thay đổi nào cho ô này</p>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="divide-y divide-gray-100 border-t border-b border-gray-100 -mx-4">
+                                                            {auditData.map((item, index) => (
+                                                                <div key={index} className="px-4 py-2 hover:bg-gray-50 transition-colors">
+                                                                    <div className="flex items-center justify-between gap-2 mb-1">
+                                                                        <div className="flex items-center gap-1.5 min-w-0">
+                                                                            <span className={`flex-none text-[9px] font-bold px-1 rounded-sm uppercase ${
+                                                                                item.action === 'Insert' ? 'text-green-600 bg-green-50' :
+                                                                                item.action === 'Update' ? 'text-blue-600 bg-blue-50' :
+                                                                                'text-red-600 bg-red-50'
+                                                                            }`}>
+                                                                                {item.action === 'Insert' ? 'Thêm' : item.action === 'Update' ? 'Sửa' : 'Xóa'}
+                                                                            </span>
+                                                                            <span className="text-[11px] text-gray-700 font-bold truncate">
+                                                                                {item.changedByName || "Hệ thống"}
+                                                                            </span>
+                                                                        </div>
+                                                                        <span className="flex-none text-[9px] text-gray-400 font-mono">
+                                                                            {new Date(item.changedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} {new Date(item.changedAt).toLocaleDateString('vi-VN')}
+                                                                        </span>
+                                                                    </div>
+
+                                                                    <div className="flex items-center gap-1.5 text-[11px]">
+                                                                        <span className="text-gray-400 line-through">
+                                                                            {formatCurrency(item.oldSpend || 0)}
+                                                                        </span>
+                                                                        <ArrowRight className="w-2.5 h-2.5 text-gray-300" />
+                                                                        <span className="font-bold text-gray-900">
+                                                                            {formatCurrency(item.newSpend || 0)}
+                                                                        </span>
+                                                                    </div>
+
+                                                                    {item.reason && (
+                                                                        <p className="mt-1 text-[10px] text-gray-500 italic leading-tight">
+                                                                            "{item.reason}"
+                                                                        </p>
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </Transition>
                             </Dialog.Panel>
                         </Transition.Child>
                     </div>
                 </div>
             </Dialog>
 
-            {/* Invoice Modal */}
             <InvoiceDetailModal
                 open={invoiceModalOpen}
                 onClose={() => setInvoiceModalOpen(false)}
