@@ -69,6 +69,46 @@ const financialTransactionApi = {
     }
   },
 
+  exportExcel: async (
+    sortOrder,
+    fromEffectiveDate,
+    toEffectiveDate,
+    searchTerm,
+    transactionType,
+    bankAccountId,
+    bankAccountType,
+    amount,
+    accountingObject
+  ) => {
+    try {
+      const params = {};
+
+      if (sortOrder) params.SortOrder = sortOrder;
+      if (fromEffectiveDate) params.FromEffectiveDate = fromEffectiveDate;
+      if (toEffectiveDate) params.ToEffectiveDate = toEffectiveDate;
+      if (searchTerm) params.SearchTerm = searchTerm;
+      if (transactionType) params.TransactionType = transactionType;
+      if (bankAccountId) params.BankAccountId = bankAccountId;
+
+      if (bankAccountType !== null && bankAccountType !== undefined) {
+        params.BankAccountType = bankAccountType;
+      }
+      if (amount) params.Amount = amount;
+      if (accountingObject) params.AccountingObject = accountingObject;
+
+      const response = await axiosInstance.get(
+        `${api}/FinancialTransaction/ExportExcel`,
+        {
+          params,
+          responseType: "blob",
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 };
 
 export default financialTransactionApi;
