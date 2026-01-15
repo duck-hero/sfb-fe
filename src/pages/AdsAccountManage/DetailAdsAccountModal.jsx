@@ -246,15 +246,41 @@ export default function DetailAdsAccountModal({
                                 Trạng thái
                               </label>
                               <div className="w-full h-10 flex items-center bg-gray-50 border border-gray-300 rounded-lg px-3">
-                                {accountData?.locked ? (
-                                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                                    🔒 Đã khóa
-                                  </span>
-                                ) : (
-                                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                    ✓ Hoạt động
-                                  </span>
-                                )}
+                                {(() => {
+                                  const status = accountData?.status;
+                                  switch (status) {
+                                    case 'LIVE':
+                                      return (
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                          ✓ LIVE
+                                        </span>
+                                      );
+                                    case 'HOLD':
+                                      return (
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
+                                          ⏸ HOLD
+                                        </span>
+                                      );
+                                    case 'BACK':
+                                      return (
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                          ↩ BACK
+                                        </span>
+                                      );
+                                    case 'DIE':
+                                      return (
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                          🔒 DIE
+                                        </span>
+                                      );
+                                    default:
+                                      return (
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                          {status || 'N/A'}
+                                        </span>
+                                      );
+                                  }
+                                })()}
                               </div>
                             </div>
 
@@ -537,12 +563,12 @@ export default function DetailAdsAccountModal({
                     <div className="max-h-48 overflow-y-auto border border-blue-500 rounded-lg divide-y divide-gray-50">
                       {loadingCustomers ? (
                         <div className="p-4 flex justify-center"><RotateCw className="w-5 h-5 animate-spin text-blue-500" /></div>
-                      ) : availableCustomers.filter(c => 
-                          c.name?.toLowerCase().includes(searchCustomer.toLowerCase()) || 
-                          c.fullCustomerCode?.toLowerCase().includes(searchCustomer.toLowerCase())
-                        ).length > 0 ? (
-                        availableCustomers.filter(c => 
-                          c.name?.toLowerCase().includes(searchCustomer.toLowerCase()) || 
+                      ) : availableCustomers.filter(c =>
+                        c.name?.toLowerCase().includes(searchCustomer.toLowerCase()) ||
+                        c.fullCustomerCode?.toLowerCase().includes(searchCustomer.toLowerCase())
+                      ).length > 0 ? (
+                        availableCustomers.filter(c =>
+                          c.name?.toLowerCase().includes(searchCustomer.toLowerCase()) ||
                           c.fullCustomerCode?.toLowerCase().includes(searchCustomer.toLowerCase())
                         ).map(customer => (
                           <div

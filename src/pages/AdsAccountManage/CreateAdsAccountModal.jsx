@@ -17,7 +17,7 @@ export default function CreateAdsAccountModal({
   return (
     <Transition appear show={open} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
-        
+
         {/* Overlay */}
         <Transition.Child
           as={Fragment}
@@ -47,7 +47,7 @@ export default function CreateAdsAccountModal({
               <Dialog.Panel
                 className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-8 text-left shadow-xl transition-all"
               >
-                
+
                 {/* Title */}
                 <Dialog.Title className="text-2xl font-semibold text-center mb-5">
                   Thêm tài khoản quảng cáo
@@ -131,6 +131,25 @@ export default function CreateAdsAccountModal({
                     </select>
                   </div>
 
+                  {/* Input 5: Account Status (status) */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Trạng thái tài khoản
+                    </label>
+                    <select
+                      name="status"
+                      value={formData.status || "LIVE"}
+                      onChange={onChange}
+                      disabled={saving}
+                      className="w-full h-12 border border-gray-300 rounded-xl px-3 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                    >
+                      <option value="LIVE">LIVE</option>
+                      <option value="HOLD">HOLD</option>
+                      <option value="BACK">BACK</option>
+                      <option value="DIE">DIE</option>
+                    </select>
+                  </div>
+
                 </div>
 
                 {/* Import Button (Separate Row) */}
@@ -157,11 +176,10 @@ export default function CreateAdsAccountModal({
                   <button
                     onClick={onSave}
                     disabled={saving}
-                    className={`w-32 py-2 rounded-xl font-semibold transition flex justify-center items-center ${
-                      saving
+                    className={`w-32 py-2 rounded-xl font-semibold transition flex justify-center items-center ${saving
                         ? "bg-primary-darkest opacity-50 cursor-not-allowed"
                         : "bg-primary-dark text-white hover:bg-primary-darkest"
-                    }`}
+                      }`}
                   >
                     {saving ? (
                       <>

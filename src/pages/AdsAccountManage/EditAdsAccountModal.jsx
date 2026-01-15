@@ -57,16 +57,9 @@ export default function EditAdsAccountModal({
 
   const isContentReady = !loading;
 
-  // --- LOGIC XỬ LÝ TRẠNG THÁI LOCKED ---
-  // API: locked = true (Đã khóa), locked = false (Hoạt động)
-  // UI Switch: Bật (True) = Hoạt động, Tắt (False) = Khóa
-  // => Giá trị Switch ngược với giá trị locked
-  const isAccountActive = formData.locked === false;
-
-  const handleStatusChange = (isActive) => {
-    // Nếu Switch BẬT (isActive = true) -> locked = false
-    // Nếu Switch TẮT (isActive = false) -> locked = true
-    onChange({ target: { name: "locked", value: !isActive } });
+  // Logic xử lý trạng thái
+  const handleStatusChange = (e) => {
+    onChange(e);
   };
 
   return (
@@ -181,41 +174,23 @@ export default function EditAdsAccountModal({
                         </select>
                       </div>
 
-                      {/* Switch: Locked Status */}
-                      <div className="flex items-center justify-between pt-2 pb-2">
-                        <label className="block text-sm font-medium">
-                          Trạng thái hoạt động
+                      {/* Select: Account Status */}
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Trạng thái tài khoản
                         </label>
-                        <Switch
-                          checked={isAccountActive}
+                        <select
+                          name="status"
+                          value={formData.status || "LIVE"}
                           onChange={handleStatusChange}
                           disabled={saving}
-                          className={`${
-                            isAccountActive ? "bg-green-600" : "bg-red-600"
-                          } relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-600`}
+                          className="w-full h-12 border border-gray-300 rounded-xl px-3 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
                         >
-                          <span
-                            className={`${
-                              isAccountActive
-                                ? "translate-x-6"
-                                : "translate-x-1"
-                            } inline-block h-4 w-4 transform rounded-full bg-white transition`}
-                          />
-                        </Switch>
-
-                        <span
-                          className={`text-sm font-semibold w-24 text-right ${
-                            isAccountActive ? "text-green-600" : "text-red-600"
-                          }`}
-                        >
-                          {isAccountActive ? "Hoạt động" : "Đã khóa"}
-                        </span>
-                      </div>
-
-                      <div className="text-xs text-gray-500 -mt-2 text-right">
-                        {isAccountActive
-                          ? "Tài khoản đang hoạt động bình thường."
-                          : "Tài khoản đang bị khóa/vô hiệu hóa."}
+                          <option value="LIVE">LIVE</option>
+                          <option value="HOLD">HOLD</option>
+                          <option value="BACK">BACK</option>
+                          <option value="DIE">DIE</option>
+                        </select>
                       </div>
                     </div>
 
@@ -232,11 +207,10 @@ export default function EditAdsAccountModal({
                       <button
                         onClick={handleSaveClick}
                         disabled={saving}
-                        className={`w-32 py-2 rounded-xl font-semibold transition flex justify-center items-center ${
-                          saving
-                            ? "bg-primary-darkest opacity-50 cursor-not-allowed"
-                            : "bg-primary-dark text-white hover:bg-primary-darkest"
-                        }`}
+                        className={`w-32 py-2 rounded-xl font-semibold transition flex justify-center items-center ${saving
+                          ? "bg-primary-darkest opacity-50 cursor-not-allowed"
+                          : "bg-primary-dark text-white hover:bg-primary-darkest"
+                          }`}
                       >
                         {saving ? (
                           <div className="flex justify-center items-center">

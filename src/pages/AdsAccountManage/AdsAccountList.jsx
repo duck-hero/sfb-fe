@@ -45,7 +45,7 @@ function AdsAccountList() {
   const [searchAdAccountId, setSearchAdAccountId] = useState(""); // Input - real-time typing
   const [filterBmAccountId, setFilterBmAccountId] = useState(""); // Select
   const [filterBmWorking, setFilterBmWorking] = useState(""); // Select (Integer: "", "1", "2", ...)
-  const [filterLocked, setFilterLocked] = useState(""); // Select (Boolean: "", "true", "false")
+  const [filterStatus, setFilterStatus] = useState(""); // Select ('LIVE', 'HOLD', 'BACK', 'DIE')
 
   // Debounced search text (300ms delay)
   const debouncedSearchText = useDebounce(searchAdAccountId, 300);
@@ -60,7 +60,7 @@ function AdsAccountList() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isEditLoading, setIsEditLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  
+
   // Data cho Edit/Create
   const [formData, setFormData] = useState({
     id: 0,
@@ -68,7 +68,7 @@ function AdsAccountList() {
     adAccountIdNumber: "",
     bmAccountId: "",
     bmWorking: "", // Integer value: 1, 2, etc.
-    locked: false,
+    status: "LIVE",
   });
 
   // Delete
@@ -80,7 +80,7 @@ function AdsAccountList() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
   const [detailData, setDetailData] = useState(null);
-  
+
   // Record Threshold Eating Modal
   const [isThresholdModalOpen, setIsThresholdModalOpen] = useState(false);
   const [selectedAdAccount, setSelectedAdAccount] = useState(null);
@@ -97,10 +97,8 @@ function AdsAccountList() {
   const fetchAdsAccounts = async () => {
     setLoading(true);
     try {
-      // Xử lý locked: convert string sang boolean hoặc null
-      let lockedParam = null;
-      if (filterLocked === "true") lockedParam = true;
-      if (filterLocked === "false") lockedParam = false;
+      // Xử lý status: lấy trực tiếp giá trị chuỗi
+      let statusParam = filterStatus || null;
 
       // Xử lý bmWorking: convert string sang number hoặc null
       let bmWorkingParam = null;
@@ -112,7 +110,7 @@ function AdsAccountList() {
         pageNumber,
         pageSize,
         debouncedSearchText.trim(),
-        lockedParam,
+        statusParam,
         filterBmAccountId,
         bmWorkingParam // Thêm param bmWorking
       );
@@ -130,14 +128,14 @@ function AdsAccountList() {
   useEffect(() => {
     fetchAdsAccounts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageNumber, pageSize, debouncedSearchText, filterBmAccountId, filterBmWorking, filterLocked]);
+  }, [pageNumber, pageSize, debouncedSearchText, filterBmAccountId, filterBmWorking, filterStatus]);
 
   // --- 2. FETCH DROPDOWN DATA (BM Account) ---
   useEffect(() => {
     const fetchBmDropdown = async () => {
       try {
         // Giả sử API getBmAccountList trả về { data: [...] } hoặc { items: [...] }
-        const res = await bmAccountApi.getBmAccountList(1, 999); 
+        const res = await bmAccountApi.getBmAccountList(1, 999);
         setBmList(res?.data || res?.items || []);
       } catch (err) {
         // toast.error("Lỗi tải BM Account");
@@ -149,7 +147,7 @@ function AdsAccountList() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setPageNumber(1);
-  }, [debouncedSearchText, filterBmAccountId, filterBmWorking, filterLocked]);
+  }, [debouncedSearchText, filterBmAccountId, filterBmWorking, filterStatus]);
 
   // --- PAGINATION HELPERS ---
   // const handlePrev = () => pageNumber > 1 && setPageNumber(pageNumber - 1);
@@ -162,7 +160,7 @@ function AdsAccountList() {
       adAccountIdNumber: "",
       bmAccountId: "",
       bmWorking: "", // Mặc định
-      locked: false, // Mặc định
+      status: "LIVE", // Mặc định
     });
     setIsCreateModalOpen(true);
   };
@@ -207,7 +205,7 @@ function AdsAccountList() {
         adAccountIdNumber: data.adAccountIdNumber,
         bmAccountId: data.bmAccountId,
         bmWorking: data.bmWorking ? data.bmWorking.toString() : "", // Convert sang string cho form
-        locked: data.locked,
+        status: data.status,
         // Các trường khác nếu cần update
       });
     } catch {
@@ -221,12 +219,12 @@ function AdsAccountList() {
   const handleEditChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({
-        ...formData,
-        [name]: type === "checkbox" ? checked : value
+      ...formData,
+      [name]: type === "checkbox" ? checked : value
     });
   };
 
-const handleEditSave = async (dataToSend) => {
+  const handleEditSave = async (dataToSend) => {
     setSaving(true);
     try {
       // Lấy dữ liệu hiện tại từ form
@@ -241,7 +239,7 @@ const handleEditSave = async (dataToSend) => {
         id: rawData.id,
         bmAccountId: rawData.bmAccountId,
         bmWorking: bmWorkingValue, // Thêm bmWorking
-        locked: rawData.locked,
+        status: rawData.status,
         // Đổi tên key cho khớp API
         adsAccountName: rawData.adAccountName,       // API cần ads, State đang là ad
         adsAccountIdNumber: rawData.adAccountIdNumber // API cần ads, State đang là ad
@@ -257,7 +255,7 @@ const handleEditSave = async (dataToSend) => {
     } finally {
       setSaving(false);
     }
-};
+  };
 
   // --- 6. DELETE ---
   const handleOpenDelete = (item) => {
@@ -301,18 +299,46 @@ const handleEditSave = async (dataToSend) => {
 
   // --- RENDER HELPERS ---
   const renderAccountStatus = (account) => {
-    const { locked, isThresholdEating } = account;
+    const { status, isThresholdEating } = account;
+
+    const getStatusBadge = (status) => {
+      switch (status) {
+        case 'LIVE':
+          return (
+            <span className="inline-block px-2 py-0.5 text-xs font-medium text-green-600 border border-green-600 rounded-md bg-white whitespace-nowrap">
+              LIVE
+            </span>
+          );
+        case 'HOLD':
+          return (
+            <span className="inline-block px-2 py-0.5 text-xs font-medium text-orange-600 border border-orange-600 rounded-md bg-white whitespace-nowrap">
+              HOLD
+            </span>
+          );
+        case 'BACK':
+          return (
+            <span className="inline-block px-2 py-0.5 text-xs font-medium text-blue-600 border border-blue-600 rounded-md bg-white whitespace-nowrap">
+              BACK
+            </span>
+          );
+        case 'DIE':
+          return (
+            <span className="inline-block px-2 py-0.5 text-xs font-medium text-red-600 border border-red-600 rounded-md bg-white whitespace-nowrap">
+              DIE
+            </span>
+          );
+        default:
+          return (
+            <span className="inline-block px-2 py-0.5 text-xs font-medium text-gray-600 border border-gray-600 rounded-md bg-white whitespace-nowrap">
+              {status || 'N/A'}
+            </span>
+          );
+      }
+    };
+
     return (
       <div className="flex flex-col items-center gap-1">
-        {locked ? (
-          <span className="inline-block px-2 py-0.5 text-xs font-medium text-red-600 border border-red-600 rounded-md bg-white whitespace-nowrap">
-            Đã khóa
-          </span>
-        ) : (
-          <span className="inline-block px-2 py-0.5 text-xs font-medium text-green-600 border border-green-600 rounded-md bg-white whitespace-nowrap">
-            Hoạt động
-          </span>
-        )}
+        {getStatusBadge(status)}
         {isThresholdEating && (
           <span className="inline-block px-2 py-0.5 text-xs font-medium text-orange-600 border border-orange-600 rounded-md bg-white whitespace-nowrap">
             Đã cắt ngưỡng
@@ -415,16 +441,18 @@ const handleEditSave = async (dataToSend) => {
                 </select>
               </div>
 
-              {/* Input 4: Locked Status (Filter) */}
+              {/* Input 4: Status (Filter) */}
               <div className="flex items-center px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100 hover:shadow-md">
                 <select
-                  value={filterLocked}
-                  onChange={(e) => setFilterLocked(e.target.value)}
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
                   className="w-full text-gray-800 bg-transparent text-sm focus:outline-none"
                 >
                   <option value="">-- Trạng thái --</option>
-                  <option value="false">Hoạt động</option>
-                  <option value="true">Đã khóa</option>
+                  <option value="LIVE">LIVE</option>
+                  <option value="HOLD">HOLD</option>
+                  <option value="BACK">BACK</option>
+                  <option value="DIE">DIE</option>
                 </select>
               </div>
             </div>
@@ -434,7 +462,7 @@ const handleEditSave = async (dataToSend) => {
 
       {/* --- TABLE SECTION --- */}
       {loading ? (
-      <TableSkeleton/> // Hoặc component TableSkeleton
+        <TableSkeleton /> // Hoặc component TableSkeleton
       ) : (
         <div className="overflow-x-auto shadow-md rounded-lg ">
           <table className="w-full divide-y divide-gray-200">
@@ -472,13 +500,13 @@ const handleEditSave = async (dataToSend) => {
             <tbody className="bg-white divide-y divide-gray-200">
               {adsAccounts.length === 0 && (
                 <tr>
-                   <td colSpan="9" className="px-3 py-3 text-center text-gray-500 text-sm">
-                      Không tìm thấy dữ liệu
-                   </td>
+                  <td colSpan="9" className="px-3 py-3 text-center text-gray-500 text-sm">
+                    Không tìm thấy dữ liệu
+                  </td>
                 </tr>
               )}
               {adsAccounts.map((x, index) => (
-                <tr 
+                <tr
                   key={x.id}
                   onClick={() => openDetailModal(x.id)}
                   className="cursor-pointer hover:bg-gray-50 transition-colors"
@@ -539,30 +567,30 @@ const handleEditSave = async (dataToSend) => {
                     </div>
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500 flex justify-center items-center gap-1.5">
-                    <button 
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedAdAccount(x);
                         setIsThresholdModalOpen(true);
-                      }} 
+                      }}
                       title="Cắn ngưỡng TK"
                     >
                       <Coins className="h-4 w-4 text-primary-dark cursor-pointer hover:text-primary-darkest transition-colors" />
                     </button>
-                    <button 
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         openEditModal(x.id);
-                      }} 
+                      }}
                       title="Chỉnh sửa"
                     >
                       <SquarePen className="h-4 w-4 text-warning cursor-pointer" />
                     </button>
-                    <button 
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleOpenDelete(x);
-                      }} 
+                      }}
                       title="Xóa"
                     >
                       <Trash className="h-4 w-4 text-error cursor-pointer" />
@@ -606,25 +634,23 @@ const handleEditSave = async (dataToSend) => {
                       <button
                         onClick={() => pageNumber > 1 && setPageNumber(pageNumber - 1)}
                         disabled={pageNumber === 1}
-                        className={`p-1.5 rounded-full transition duration-150 text-xs ${
-                          pageNumber === 1
-                            ? "text-gray-400 cursor-not-allowed"
-                            : "text-gray-700 hover:bg-gray-100"
-                        }`}
+                        className={`p-1.5 rounded-full transition duration-150 text-xs ${pageNumber === 1
+                          ? "text-gray-400 cursor-not-allowed"
+                          : "text-gray-700 hover:bg-gray-100"
+                          }`}
                       >
-                         &lt; {/* Icon Prev */}
+                        &lt; {/* Icon Prev */}
                       </button>
 
                       <button
                         onClick={() => pageNumber < totalPages && setPageNumber(pageNumber + 1)}
                         disabled={pageNumber === totalPages}
-                        className={`p-1.5 rounded-full transition duration-150 text-xs ${
-                          pageNumber === totalPages
-                            ? "text-gray-400 cursor-not-allowed"
-                            : "text-gray-700 hover:bg-gray-100"
-                        }`}
+                        className={`p-1.5 rounded-full transition duration-150 text-xs ${pageNumber === totalPages
+                          ? "text-gray-400 cursor-not-allowed"
+                          : "text-gray-700 hover:bg-gray-100"
+                          }`}
                       >
-                         &gt; {/* Icon Next */}
+                        &gt; {/* Icon Next */}
                       </button>
                     </div>
                   </div>
@@ -636,7 +662,7 @@ const handleEditSave = async (dataToSend) => {
       )}
 
       {/* --- MODALS --- */}
-      
+
       {/* Modal Xóa - Sử dụng lại của bạn */}
       <DeleteConfirmModal
         open={openDeleteModal}
@@ -649,7 +675,7 @@ const handleEditSave = async (dataToSend) => {
 
       {/* --- Placeholder cho Modal Create/Edit --- */}
       {/* Bạn cần cập nhật component Modal Create/Edit để nhận đúng props (adAccountName, bmList...) */}
-      
+
       <CreateAdsAccountModal
         open={isCreateModalOpen}
         formData={formData}
@@ -661,8 +687,8 @@ const handleEditSave = async (dataToSend) => {
         }}
         saving={saving}
         bmList={bmList} // Truyền list BM vào để select
-      /> 
-     
+      />
+
 
       <EditAdsAccountModal
         open={isEditModalOpen}
@@ -673,7 +699,7 @@ const handleEditSave = async (dataToSend) => {
         onClose={() => setIsEditModalOpen(false)}
         onSave={handleEditSave}
         bmList={bmList}
-      /> 
+      />
 
       <DetailAdsAccountModal
         open={isDetailModalOpen}

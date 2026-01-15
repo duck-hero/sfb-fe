@@ -234,11 +234,20 @@ const AdAccountReconciliationTable = ({ data, loading }) => {
                                         </span>
                                     </td>
                                     <td className="px-3 py-2 text-center">
-                                        {row.locked ? (
-                                            <span className="text-red-400" title="Đã khóa">🔒</span>
-                                        ) : (
-                                            <span className="text-green-500" title="Hoạt động">✓</span>
-                                        )}
+                                        {(() => {
+                                            switch (row.status) {
+                                                case 'LIVE':
+                                                    return <span className="text-green-500 font-bold" title="LIVE">LIVE</span>;
+                                                case 'HOLD':
+                                                    return <span className="text-orange-500 font-bold" title="HOLD">HOLD</span>;
+                                                case 'BACK':
+                                                    return <span className="text-blue-500 font-bold" title="BACK">BACK</span>;
+                                                case 'DIE':
+                                                    return <span className="text-red-500 font-bold" title="DIE">DIE</span>;
+                                                default:
+                                                    return <span className="text-gray-400">{row.status || 'N/A'}</span>;
+                                            }
+                                        })()}
                                     </td>
                                 </tr>
                             ))}

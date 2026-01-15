@@ -3,24 +3,24 @@ import axiosInstance from "./axiosInstance";
 
 const adsAccountApi = {
   // Lấy danh sách tài khoản (có phân trang)
-getAdsAccountList: async (pageNumber = 1, pageSize = 10, adAccountIdNumber, locked, bmAccountId, bmWorking) => {
-  try {
-    const params = { PageNumber: pageNumber, PageSize: pageSize };
-    if (adAccountIdNumber) params.AdAccountIdNumber = adAccountIdNumber;
-    if (locked !== null && locked !== undefined) params.Locked = locked; 
-    if (bmAccountId) params.BmAccountId = bmAccountId; 
-    if (bmWorking !== null && bmWorking !== undefined) params.BmWorking = bmWorking; 
+  getAdsAccountList: async (pageNumber = 1, pageSize = 10, adAccountIdNumber, status, bmAccountId, bmWorking) => {
+    try {
+      const params = { PageNumber: pageNumber, PageSize: pageSize };
+      if (adAccountIdNumber) params.AdAccountIdNumber = adAccountIdNumber;
+      if (status) params.Status = status;
+      if (bmAccountId) params.BmAccountId = bmAccountId;
+      if (bmWorking !== null && bmWorking !== undefined) params.BmWorking = bmWorking;
 
 
-    const response = await axiosInstance.get(
-      `${api}/AdsAccount/GetPagedListAdAccount`,
-      { params }
-    );
-    return response.data;
-  } catch (error) {
-    throw handleApiError(error);
-  }
-},
+      const response = await axiosInstance.get(
+        `${api}/AdsAccount/GetPagedListAdAccount`,
+        { params }
+      );
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
   // Lấy thông tin tài khoản theo Id
   getAdsAccountById: async (id) => {
     try {
@@ -45,7 +45,7 @@ getAdsAccountList: async (pageNumber = 1, pageSize = 10, adAccountIdNumber, lock
     }
   },
 
-    // Xóa thông tin tài khoản theo Id
+  // Xóa thông tin tài khoản theo Id
   deleteAdsAccountById: async (id) => {
     try {
       const response = await axiosInstance.delete(`${api}/AdsAccount/DeleteAdAccount`, {
@@ -58,20 +58,20 @@ getAdsAccountList: async (pageNumber = 1, pageSize = 10, adAccountIdNumber, lock
     }
   },
   // Thêm mới
-createAdsAccount: async (adAccountName, adAccountIdNumber, bmAccountId, bmWorking) => {
-  try {
-    const response = await axiosInstance.post(`${api}/AdsAccount/CreateAdAccount`, {
-      adAccountName: adAccountName,
-      adAccountIdNumber: adAccountIdNumber,
-      bmAccountId: bmAccountId,
-      bmWorking: bmWorking,
-    });
+  createAdsAccount: async (adAccountName, adAccountIdNumber, bmAccountId, bmWorking) => {
+    try {
+      const response = await axiosInstance.post(`${api}/AdsAccount/CreateAdAccount`, {
+        adAccountName: adAccountName,
+        adAccountIdNumber: adAccountIdNumber,
+        bmAccountId: bmAccountId,
+        bmWorking: bmWorking,
+      });
 
-    return response.data;
-  } catch (error) {
-    throw handleApiError(error);
-  }
-},
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 
   // Import Ads Accounts
   importAdsAccounts: async (formData) => {
@@ -151,7 +151,7 @@ createAdsAccount: async (adAccountName, adAccountIdNumber, bmAccountId, bmWorkin
     try {
       if (year) formData.append('Year', year);
       if (month) formData.append('Month', month);
-      
+
       const response = await axiosInstance.post(`${api}/AdsAccount/ImportAdsAccountDebtHistory`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',

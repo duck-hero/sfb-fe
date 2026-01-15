@@ -31,60 +31,60 @@ const ContentSkeleton = () => (
   <>
     {/* 1. THÔNG TIN CHUNG (Grid 2 cột) */}
     <div className="mb-3">
-        <div className="h-5 w-40 bg-gray-300 rounded-full animate-pulse mb-3"></div>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-            {/* ID Thẻ & Tổng lần thêm */}
-            <InputSkeleton />
-            <InputSkeleton />
-            {/* Số thẻ & Tên chủ thẻ */}
-            <InputSkeleton />
-            <InputSkeleton />
-            {/* Ngày phát hành & Ngày hết hạn */}
-            <InputSkeleton />
-            <InputSkeleton />
-            {/* Trạng thái (col-span-2) */}
-            <div className="col-span-2">
-                <InputSkeleton />
-            </div>
+      <div className="h-5 w-40 bg-gray-300 rounded-full animate-pulse mb-3"></div>
+      <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+        {/* ID Thẻ & Tổng lần thêm */}
+        <InputSkeleton />
+        <InputSkeleton />
+        {/* Số thẻ & Tên chủ thẻ */}
+        <InputSkeleton />
+        <InputSkeleton />
+        {/* Ngày phát hành & Ngày hết hạn */}
+        <InputSkeleton />
+        <InputSkeleton />
+        {/* Trạng thái (col-span-2) */}
+        <div className="col-span-2">
+          <InputSkeleton />
         </div>
+      </div>
     </div>
-    
+
     {/* 2. TÀI KHOẢN NGÂN HÀNG */}
     <div className="border-t pt-4 mb-3">
-        <div className="h-5 w-56 bg-gray-300 rounded-full animate-pulse mb-3"></div>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-            <InputSkeleton />
-            <InputSkeleton />
-        </div>
+      <div className="h-5 w-56 bg-gray-300 rounded-full animate-pulse mb-3"></div>
+      <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+        <InputSkeleton />
+        <InputSkeleton />
+      </div>
     </div>
 
     {/* 3. Vận hành */}
     <div className="border-t pt-4">
-        <div className="h-5 w-48 bg-gray-300 rounded-full animate-pulse mb-3"></div>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-            <InputSkeleton />
-            <InputSkeleton />
-        </div>
+      <div className="h-5 w-48 bg-gray-300 rounded-full animate-pulse mb-3"></div>
+      <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+        <InputSkeleton />
+        <InputSkeleton />
+      </div>
     </div>
 
 
     {/* FOOTER BUTTONS */}
     <div className="mt-6 flex justify-end">
-        <div className="px-4 py-2 w-20 h-10 bg-gray-200 rounded-lg animate-pulse"></div>
+      <div className="px-4 py-2 w-20 h-10 bg-gray-200 rounded-lg animate-pulse"></div>
     </div>
   </>
 );
 
 export default function DetailBankCardModal({
-// ... (Phần props giữ nguyên)
+  // ... (Phần props giữ nguyên)
   open,
   loading,
-  cardData, 
+  cardData,
   onClose,
   refreshData, // New prop to refresh data after update
 }) {
   const [updatingId, setUpdatingId] = useState(null);
-  
+
   const handleUpdateStatus = async (id, newStatus) => {
     setUpdatingId(id);
     try {
@@ -97,7 +97,7 @@ export default function DetailBankCardModal({
       setUpdatingId(null);
     }
   };
-  
+
   const isContentReady = !loading;
   return (
     <Transition appear show={open} as={Fragment}>
@@ -136,62 +136,62 @@ export default function DetailBankCardModal({
                     <div className="grid grid-cols-2 gap-6">
                       {/* LEFT COLUMN: Card Details */}
                       <div className="flex flex-col gap-5">
-                        
+
                         {/* --- 1. THÔNG TIN CHUNG VỀ THẺ --- */}
                         <section>
                           <h3 className="text-base font-semibold text-gray-800 mb-3">
-                              Thông tin chung
+                            Thông tin chung
                           </h3>
                           <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                              {/* ID Thẻ */}
-                              {/* <DetailField
+                            {/* ID Thẻ */}
+                            {/* <DetailField
                                   label="ID Thẻ"
                                   value={cardData?.id}
                               /> */}
-                              {/* Số thẻ (Đầy đủ/4 số cuối) */}
-                              <DetailField
-                                  label="Số thẻ"
-                                  value={cardData?.cardNumber || cardData?.cardLastDigits}
-                              />
-                              {/* Tên chủ thẻ */}
-                              <DetailField
-                                  label="Tên chủ thẻ"
-                                  value={cardData?.cardHolderName}
-                              />
-                              {/* Ngày phát hành */}
-                              <DetailField
-                                  label="Ngày phát hành"
-                                  value={cardData?.issuedDate?.split("T")[0] || "N/A"}
-                              />
-                              {/* Ngày hết hạn */}
-                              <DetailField
-                                  label="Ngày hết hạn"
-                                  value={cardData?.expirationDate?.split("T")[0] || "N/A"}
-                              />
-                              {/* Tổng lần thêm */}
-                              <DetailField
-                                  label="Tổng lần thêm"
-                                  value={cardData?.addTotal}
-                              />
-                              
+                            {/* Số thẻ (Đầy đủ/4 số cuối) */}
+                            <DetailField
+                              label="Số thẻ"
+                              value={cardData?.cardNumber || cardData?.cardLastDigits}
+                            />
+                            {/* Tên chủ thẻ */}
+                            <DetailField
+                              label="Tên chủ thẻ"
+                              value={cardData?.cardHolderName}
+                            />
+                            {/* Ngày phát hành */}
+                            <DetailField
+                              label="Ngày phát hành"
+                              value={cardData?.issuedDate?.split("T")[0] || "N/A"}
+                            />
+                            {/* Ngày hết hạn */}
+                            <DetailField
+                              label="Ngày hết hạn"
+                              value={cardData?.expirationDate?.split("T")[0] || "N/A"}
+                            />
+                            {/* Tổng lần thêm */}
+                            <DetailField
+                              label="Tổng lần thêm"
+                              value={cardData?.addTotal}
+                            />
 
-                              {/* Trạng thái - Dùng 2 cột (col-span-2) */}
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                  Trạng thái
-                                </label>
-                                <div className="w-full h-10 flex items-center bg-gray-50 border border-gray-300 rounded-lg px-3">
-                                  {cardData?.status === 'ACTIVE' ? (
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                      ✓ Hoạt động
-                                    </span>
-                                  ) : (
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                                      🔒 Khóa
-                                    </span>
-                                  )}
-                                </div>
+
+                            {/* Trạng thái - Dùng 2 cột (col-span-2) */}
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Trạng thái
+                              </label>
+                              <div className="w-full h-10 flex items-center bg-gray-50 border border-gray-300 rounded-lg px-3">
+                                {cardData?.status === 'ACTIVE' ? (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                    ✓ Hoạt động
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                    🔒 Khóa
+                                  </span>
+                                )}
                               </div>
+                            </div>
                           </div>
                         </section>
 
@@ -201,19 +201,19 @@ export default function DetailBankCardModal({
                             Thông tin Tài khoản Ngân hàng
                           </h3>
                           <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                              {/* Tên Ngân hàng */}
-                              <DetailField
-                                  label="Tên Ngân hàng"
-                                  value={cardData?.bankName}
-                              />
-                              {/* Số tài khoản */}
-                              <DetailField
-                                  label="Số tài khoản"
-                                  value={cardData?.bankAccountNumber}
-                              />
+                            {/* Tên Ngân hàng */}
+                            <DetailField
+                              label="Tên Ngân hàng"
+                              value={cardData?.bankName}
+                            />
+                            {/* Số tài khoản */}
+                            <DetailField
+                              label="Số tài khoản"
+                              value={cardData?.bankAccountNumber}
+                            />
                           </div>
                         </section>
-                        
+
 
                         {/* --- 3. THÔNG TIN VẬN HÀNH --- */}
                         <section className="border-t pt-4">
@@ -221,16 +221,16 @@ export default function DetailBankCardModal({
                             Thông tin Vận hành
                           </h3>
                           <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                              {/* Người phụ trách (Tên) */}
-                              <DetailField
-                                  label="Người phụ trách (Tên)"
-                                  value={cardData?.assignedUserName}
-                              />
-                              {/* Người phụ trách (Email) */}
-                              <DetailField
-                                  label="Người phụ trách (Email)"
-                                  value={cardData?.assignedUserEmail}
-                              />
+                            {/* Người phụ trách (Tên) */}
+                            <DetailField
+                              label="Người phụ trách (Tên)"
+                              value={cardData?.assignedUserName}
+                            />
+                            {/* Người phụ trách (Email) */}
+                            <DetailField
+                              label="Người phụ trách (Email)"
+                              value={cardData?.assignedUserEmail}
+                            />
                           </div>
                         </section>
                       </div>
@@ -245,9 +245,15 @@ export default function DetailBankCardModal({
                             cardData.adAccounts.map((account) => (
                               <div
                                 key={account.adAccountId}
-                                className={`group flex items-center justify-between p-2 bg-white border border-gray-200 rounded shadow-sm hover:shadow-md transition-all ${
-                                  account.locked ? 'border-l-4 border-l-red-500' : 'border-l-4 border-l-green-500'
-                                }`}
+                                className={`group flex items-center justify-between p-2 bg-white border border-gray-200 rounded shadow-sm hover:shadow-md transition-all ${(() => {
+                                  switch (account.status) {
+                                    case 'LIVE': return 'border-l-4 border-l-green-500';
+                                    case 'HOLD': return 'border-l-4 border-l-orange-500';
+                                    case 'BACK': return 'border-l-4 border-l-blue-500';
+                                    case 'DIE': return 'border-l-4 border-l-red-500';
+                                    default: return 'border-l-4 border-l-gray-300';
+                                  }
+                                })()}`}
                               >
                                 {/* Left: Info */}
                                 <div className="flex-1 min-w-0 mr-2">
@@ -255,38 +261,43 @@ export default function DetailBankCardModal({
                                     <p className="text-sm font-medium text-gray-900 truncate" title={account.adAccountName}>
                                       {account.adAccountName}
                                     </p>
-                                    {account.locked && (
-                                      <span className="text-[10px]" title="Tài khoản bị khóa">🔒</span>
-                                    )}
+                                    {(() => {
+                                      switch (account.status) {
+                                        case 'LIVE': return <span className="text-[10px] text-green-600 font-bold" title="LIVE">LIVE</span>;
+                                        case 'HOLD': return <span className="text-[10px] text-orange-600 font-bold" title="HOLD">HOLD</span>;
+                                        case 'BACK': return <span className="text-[10px] text-blue-600 font-bold" title="BACK">BACK</span>;
+                                        case 'DIE': return <span className="text-[10px] text-red-600 font-bold" title="DIE">DIE</span>;
+                                        default: return null;
+                                      }
+                                    })()}
                                   </div>
                                   <p className="text-[11px] text-gray-500">
                                     ID: {account.adAccountIdNumber}
                                   </p>
                                 </div>
-                                
+
                                 {/* Right: Status & Action */}
                                 <div className="flex flex-col items-end gap-1">
                                   {/* Minimal Dropdown */}
                                   <div className="relative">
-                                     <select
+                                    <select
                                       value={account.linkStatus || 'NEW'}
                                       onChange={(e) => handleUpdateStatus(account.id, e.target.value)}
                                       disabled={updatingId === account.id}
-                                      className={`text-xs font-semibold cursor-pointer outline-none bg-transparent py-0.5 pl-1 pr-0 text-right ${
-                                        account.linkStatus === 'NEW' ? 'text-blue-600' : 
-                                        account.linkStatus === 'OUT' ? 'text-red-500' : 'text-gray-600'
-                                      } ${updatingId === account.id ? 'opacity-50 cursor-wait' : ''}`}
+                                      className={`text-xs font-semibold cursor-pointer outline-none bg-transparent py-0.5 pl-1 pr-0 text-right ${account.linkStatus === 'NEW' ? 'text-blue-600' :
+                                          account.linkStatus === 'OUT' ? 'text-red-500' : 'text-gray-600'
+                                        } ${updatingId === account.id ? 'opacity-50 cursor-wait' : ''}`}
                                     >
                                       <option value="NEW">Add mới</option>
                                       <option value="OUT">Đá thẻ</option>
                                     </select>
                                     {updatingId === account.id && (
-                                       <span className="absolute -left-3 top-1/2 -translate-y-1/2">
-                                          <svg className="animate-spin h-2.5 w-2.5 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                          </svg>
-                                       </span>
+                                      <span className="absolute -left-3 top-1/2 -translate-y-1/2">
+                                        <svg className="animate-spin h-2.5 w-2.5 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                      </span>
                                     )}
                                   </div>
 
