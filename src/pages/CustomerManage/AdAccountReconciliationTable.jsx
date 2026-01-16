@@ -241,9 +241,11 @@ const AdAccountReconciliationTable = ({ data, loading }) => {
                                                 case 'HOLD':
                                                     return <span className="text-orange-500 font-bold" title="HOLD">HOLD</span>;
                                                 case 'BACK':
-                                                    return <span className="text-blue-500 font-bold" title="BACK">BACK</span>;
+                                                    return <span className="text-gray-500 font-bold" title="BACK">BACK</span>;
                                                 case 'DIE':
                                                     return <span className="text-red-500 font-bold" title="DIE">DIE</span>;
+                                                case 'UNPAID':
+                                                    return <span className="text-red-500 font-bold" title="UNPAID">UNPAID</span>;
                                                 default:
                                                     return <span className="text-gray-400">{row.status || 'N/A'}</span>;
                                             }

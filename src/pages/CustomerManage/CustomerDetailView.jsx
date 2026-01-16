@@ -6,6 +6,23 @@ import customerAdsAccountApi from "../../api/customerAdsAccountApi";
 import { toast } from "react-toastify";
 import SpendTrackingModal from "./SpendTrackingModal";
 
+// Custom debounce hook
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
+
 // Helper formatter
 const formatDate = (dateString) => {
   if (!dateString) return "N/A";
@@ -68,6 +85,7 @@ const CustomerDetailView = ({ id }) => {
   const [selectedAccountId, setSelectedAccountId] = useState(null);
   const [adding, setAdding] = useState(false);
   const [searchAccount, setSearchAccount] = useState("");
+  const debouncedSearchAccount = useDebounce(searchAccount, 500);
 
   // New Rental Fields
   const getTodayString = () => new Date().toISOString().split('T')[0];
@@ -109,15 +127,34 @@ const CustomerDetailView = ({ id }) => {
     setPaymentMode(2);
 
     setLoadingAccounts(true);
-    try {
-      const res = await adsAccountApi.getAdsAccountList(1, 100);
-      setAvailableAccounts(res.data || res.items || []);
-    } catch (error) {
-      toast.error("Không tải được danh sách tài khoản");
-    } finally {
-      setLoadingAccounts(false);
-    }
+    // try {
+    //   // Fetch initial list (empty search)
+    //   // Note: We rely on useEffect below to fetch data when modal opens
+    // } catch (error) {
+    //   toast.error("Không tải được danh sách tài khoản");
+    // } finally {
+    //   setLoadingAccounts(false);
+    // }
   };
+
+  // Effect to handle search
+  useEffect(() => {
+    if (!isAddRentalOpen) return;
+    
+    const searchAccounts = async () => {
+      setLoadingAccounts(true);
+      try {
+        const res = await adsAccountApi.getAdsAccountList(1, 20, debouncedSearchAccount);
+        setAvailableAccounts(res.data || res.items || []);
+      } catch (error) {
+        // toast.error("Tìm kiếm thất bại");
+      } finally {
+        setLoadingAccounts(false);
+      }
+    };
+
+    searchAccounts();
+  }, [debouncedSearchAccount, isAddRentalOpen]);
 
   const handleAddRental = async () => {
     if (!selectedAccountId) return;
@@ -338,13 +375,24 @@ const CustomerDetailView = ({ id }) => {
               <div className="max-h-48 overflow-y-auto border border-blue-500 rounded-lg divide-y divide-gray-50">
                 {loadingAccounts ? (
                   <div className="p-4 flex justify-center"><RotateCw className="w-5 h-5 animate-spin text-blue-500" /></div>
-                ) : availableAccounts.filter(a => a.adAccountIdNumber?.includes(searchAccount)).map(acc => (
+                ) : availableAccounts.map(acc => (
                   <div
                     key={acc.id}
                     onClick={() => setSelectedAccountId(acc.id)}
                     className={`p-3 cursor-pointer transition-colors ${selectedAccountId === acc.id ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
                   >
-                    <div className="text-xs font-bold text-gray-800">{acc.adAccountIdNumber}</div>
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="text-xs font-bold text-gray-800">{acc.adAccountIdNumber}</div>
+                      {(() => {
+                        switch (acc.status) {
+                          case 'LIVE': return <span className="px-1.5 py-0.5 text-[8px] font-bold bg-green-100 text-green-700 rounded border border-green-200">LIVE</span>;
+                          case 'HOLD': return <span className="px-1.5 py-0.5 text-[8px] font-bold bg-orange-100 text-orange-700 rounded border border-orange-200">HOLD</span>;
+                          case 'DIE': return <span className="px-1.5 py-0.5 text-[8px] font-bold bg-red-100 text-red-700 rounded border border-red-200">DIE</span>;
+                          case 'BACK': return <span className="px-1.5 py-0.5 text-[8px] font-bold bg-gray-100 text-gray-700 rounded border border-gray-200">BACK</span>;
+                          default: return <span className="px-1.5 py-0.5 text-[8px] font-bold bg-gray-100 text-gray-700 rounded border border-gray-200">{acc.status || 'N/A'}</span>;
+                        }
+                      })()}
+                    </div>
                     <div className="text-[10px] text-gray-400 truncate">{acc.adAccountName}</div>
                   </div>
                 ))}
