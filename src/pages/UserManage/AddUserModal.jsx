@@ -96,6 +96,12 @@ export default function AddUserModal({ open, onClose, onSuccess, userToEdit = nu
     setError("");
 
     try {
+      if (!formData.code || formData.code.trim() === "") {
+         setError("Vui lòng nhập Mã nhân viên (Code)");
+         setLoading(false);
+         return;
+      }
+
       if (userToEdit) {
          await accountApi.updateUser(formData);
          toast.success("Cập nhật người dùng thành công");
@@ -155,7 +161,9 @@ export default function AddUserModal({ open, onClose, onSuccess, userToEdit = nu
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Mã nhân viên (Code)</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Mã nhân viên (Code) <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="text"
                       name="code"
@@ -163,6 +171,7 @@ export default function AddUserModal({ open, onClose, onSuccess, userToEdit = nu
                       onChange={handleChange}
                       placeholder="VD: NV001"
                       disabled={!!userToEdit}
+                      required
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 bg-gray-50"
                     />
                   </div>
