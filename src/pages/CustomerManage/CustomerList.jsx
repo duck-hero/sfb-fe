@@ -12,6 +12,7 @@ import DetailCustomerModal from "./DetailCustomerModal";
 import SpendTrackingModal from "./SpendTrackingModal";
 import CustomerDetailView from "./CustomerDetailView";
 import collaboratorApi from "../../api/collaboratorApi";
+import ImportCustomerModal from "./ImportCustomerModal";
 
 function CustomerList() {
     const [customers, setCustomers] = useState([]);
@@ -37,6 +38,7 @@ function CustomerList() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
     // Detail Modal
     const [detailId, setDetailId] = useState(null);
@@ -99,10 +101,10 @@ function CustomerList() {
         setLoading(true);
         try {
             const res = await customerApi.getCustomerList(
-                page, 
-                size, 
-                keyword || null, 
-                groupId || null, 
+                page,
+                size,
+                keyword || null,
+                groupId || null,
                 operatorId || null
             );
 
@@ -113,12 +115,12 @@ function CustomerList() {
             setTotalItems(total);
             setTotalPages(res.totalPages || Math.ceil(total / size) || 1);
             setPageNumber(page); // Sync state
-            
+
             // Auto select first customer if none selected and items exist
             if (items.length > 0 && !inlineDetailId) {
                 setInlineDetailId(items[0].id);
             }
-            
+
             setLoading(false);
         } catch (error) {
             console.error("Failed to fetch customers", error);
@@ -171,17 +173,17 @@ function CustomerList() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        
+
         let finalValue;
-        
+
         // If the empty option is selected for dropdown fields, use null
         if ((name === "customerGroupId" || name === "operatorUserId" || name === "collaboratorId") && value === "") {
             finalValue = null;
-        } 
+        }
         else {
             finalValue = value;
         }
-        
+
         setFormData((prev) => ({ ...prev, [name]: finalValue }));
     };
 
@@ -309,7 +311,7 @@ function CustomerList() {
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full">
                         {/* Integrated Toolbar */}
                         <div className="p-3 border-b border-gray-100 bg-gray-50/30 flex flex-col gap-2">
-                             <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2">
                                 <div className="flex-1 relative group">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
                                     <input
@@ -330,9 +332,9 @@ function CustomerList() {
                                 >
                                     <Plus className="h-4 w-4" />
                                 </button>
-                             </div>
-                             
-                             <div className="flex items-center gap-2">
+                            </div>
+
+                            <div className="flex items-center gap-2">
                                 <select
                                     value={selectedGroupId}
                                     onChange={(e) => setSelectedGroupId(e.target.value)}
@@ -361,7 +363,7 @@ function CustomerList() {
                                 >
                                     Lọc dữ liệu
                                 </button>
-                             </div>
+                            </div>
                         </div>
 
                         {loading ? (
@@ -501,7 +503,7 @@ function CustomerList() {
                                             disabled={pageNumber === 1}
                                             className="p-1 rounded bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-30 transition-all shadow-sm"
                                         >
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                                         </button>
                                         <span className="font-bold text-gray-700 px-1">{pageNumber}/{totalPages}</span>
                                         <button
@@ -509,7 +511,7 @@ function CustomerList() {
                                             disabled={pageNumber === totalPages}
                                             className="p-1 rounded bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-30 transition-all shadow-sm"
                                         >
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                                         </button>
                                     </div>
                                 </div>
@@ -529,12 +531,21 @@ function CustomerList() {
                 open={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
                 onSave={handleCreateSave}
+                onImportClick={() => setIsImportModalOpen(true)}
                 saving={saving}
                 formData={formData}
                 onChange={handleInputChange}
                 groups={groups}
                 users={users}
                 collaborators={collaborators}
+            />
+
+            <ImportCustomerModal
+                open={isImportModalOpen}
+                onClose={() => setIsImportModalOpen(false)}
+                onSuccess={() => {
+                    fetchCustomers(pageNumber, pageSize, searchCode, selectedGroupId, selectedOperatorId);
+                }}
             />
 
             <EditCustomerModal

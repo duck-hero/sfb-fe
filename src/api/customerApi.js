@@ -179,6 +179,20 @@ const customerApi = {
       throw handleApiError(error);
     }
   },
+
+  // Import Customers
+  importCustomers: async (formData) => {
+    try {
+      const response = await axiosInstance.post(`${api}/Customer/ImportCustomer`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 };
 
 export default customerApi;

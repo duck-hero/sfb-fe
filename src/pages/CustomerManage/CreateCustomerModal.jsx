@@ -1,11 +1,11 @@
-  const CreateCustomerModal = ({ open, onClose, onSave, saving, formData, onChange, groups, users, collaborators }) => {
+const CreateCustomerModal = ({ open, onClose, onSave, saving, formData, onChange, groups, users, collaborators, onImportClick }) => {
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md">
         <h3 className="text-lg font-semibold mb-4">Thêm khách hàng mới</h3>
-        
+
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Tên khách hàng (*)</label>
@@ -100,7 +100,19 @@
           )}
         </div>
 
-        <div className="flex justify-end gap-3 mt-6">
+        {/* Import Button (Separate Row) */}
+        <div className="mt-8 pt-6 border-t border-gray-100">
+          <button
+            onClick={onImportClick}
+            disabled={saving}
+            className="w-full py-2.5 rounded-xl bg-green-600 text-white hover:bg-green-700 transition flex items-center justify-center text-sm font-semibold shadow-sm"
+          >
+            <svg className="h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+            Import Customer (Excel)
+          </button>
+        </div>
+
+        <div className="flex justify-end gap-3 mt-4">
           <button
             onClick={onClose}
             className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
