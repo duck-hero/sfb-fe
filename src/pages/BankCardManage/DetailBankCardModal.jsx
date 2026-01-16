@@ -39,8 +39,7 @@ const ContentSkeleton = () => (
         {/* Số thẻ & Tên chủ thẻ */}
         <InputSkeleton />
         <InputSkeleton />
-        {/* Ngày phát hành & Ngày hết hạn */}
-        <InputSkeleton />
+        {/* Ngày hết hạn */}
         <InputSkeleton />
         {/* Trạng thái (col-span-2) */}
         <div className="col-span-2">
@@ -157,11 +156,6 @@ export default function DetailBankCardModal({
                             <DetailField
                               label="Tên chủ thẻ"
                               value={cardData?.cardHolderName}
-                            />
-                            {/* Ngày phát hành */}
-                            <DetailField
-                              label="Ngày phát hành"
-                              value={cardData?.issuedDate?.split("T")[0] || "N/A"}
                             />
                             {/* Ngày hết hạn */}
                             <DetailField

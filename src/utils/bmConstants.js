@@ -1,10 +1,11 @@
 // BM Working mapping - dễ dàng mở rộng thêm
 export const BM_WORKING_MAP = {
   1: 'KIENHUNG',
-  2: 'NQL005',
-  // Dành chỗ cho các giá trị khác trong tương lai
-  // 3: 'VALUE_3',
-  // 4: 'VALUE_4',
+  2: 'NQL-005',
+  3: 'NQL-006',
+  4: 'LUCKY5',
+  5: 'PHÚ XUÂN ',
+  6: 'VN',
 };
 
 // Helper function để lấy display text từ value
