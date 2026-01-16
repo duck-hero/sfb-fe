@@ -45,7 +45,7 @@ function AdsAccountList() {
   const [searchAdAccountId, setSearchAdAccountId] = useState(""); // Input - real-time typing
   const [filterBmAccountId, setFilterBmAccountId] = useState(""); // Select
   const [filterBmWorking, setFilterBmWorking] = useState(""); // Select (Integer: "", "1", "2", ...)
-  const [filterStatus, setFilterStatus] = useState(""); // Select ('LIVE', 'HOLD', 'BACK', 'DIE')
+  const [filterStatus, setFilterStatus] = useState(""); // Select ('LIVE', 'HOLD', 'BACK', 'DIE', 'UNPAID')
 
   // Debounced search text (300ms delay)
   const debouncedSearchText = useDebounce(searchAdAccountId, 300);
@@ -317,7 +317,7 @@ function AdsAccountList() {
           );
         case 'BACK':
           return (
-            <span className="inline-block px-2 py-0.5 text-xs font-medium text-blue-600 border border-blue-600 rounded-md bg-white whitespace-nowrap">
+            <span className="inline-block px-2 py-0.5 text-xs font-medium text-gray-600 border border-gray-600 rounded-md bg-white whitespace-nowrap">
               BACK
             </span>
           );
@@ -325,6 +325,12 @@ function AdsAccountList() {
           return (
             <span className="inline-block px-2 py-0.5 text-xs font-medium text-red-600 border border-red-600 rounded-md bg-white whitespace-nowrap">
               DIE
+            </span>
+          );
+        case 'UNPAID':
+          return (
+            <span className="inline-block px-2 py-0.5 text-xs font-medium text-red-600 border border-red-600 rounded-md bg-white whitespace-nowrap">
+              UNPAID
             </span>
           );
         default:
@@ -453,6 +459,7 @@ function AdsAccountList() {
                   <option value="HOLD">HOLD</option>
                   <option value="BACK">BACK</option>
                   <option value="DIE">DIE</option>
+                  <option value="UNPAID">UNPAID</option>
                 </select>
               </div>
             </div>

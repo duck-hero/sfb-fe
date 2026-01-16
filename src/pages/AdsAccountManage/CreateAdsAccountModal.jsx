@@ -147,6 +147,7 @@ export default function CreateAdsAccountModal({
                       <option value="HOLD">HOLD</option>
                       <option value="BACK">BACK</option>
                       <option value="DIE">DIE</option>
+                      <option value="UNPAID">UNPAID</option>
                     </select>
                   </div>
 

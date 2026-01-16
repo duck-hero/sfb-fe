@@ -27,7 +27,7 @@ const useDebounce = (value, delay) => {
 function BmSourceList() {
   const [bmSources, setBmSources] = useState([]);
   const [pageNumber, setPageNumber] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(15);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
 
@@ -309,9 +309,9 @@ function BmSourceList() {
                         onChange={handlePageSizeChange}
                         className="border border-gray-300 rounded px-1.5 py-0.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
                       >
-                        <option value={5}>5</option>
-                        <option value={10}>10</option>
                         <option value={15}>15</option>
+                        <option value={30}>30</option>
+                        <option value={50}>50</option>
                       </select>
                     </div>
 

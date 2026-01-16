@@ -245,6 +245,7 @@ export default function DetailBankCardModal({
                                     case 'HOLD': return 'border-l-4 border-l-orange-500';
                                     case 'BACK': return 'border-l-4 border-l-blue-500';
                                     case 'DIE': return 'border-l-4 border-l-red-500';
+                                    case 'UNPAID': return 'border-l-4 border-l-red-500';
                                     default: return 'border-l-4 border-l-gray-300';
                                   }
                                 })()}`}
@@ -261,6 +262,7 @@ export default function DetailBankCardModal({
                                         case 'HOLD': return <span className="text-[10px] text-orange-600 font-bold" title="HOLD">HOLD</span>;
                                         case 'BACK': return <span className="text-[10px] text-blue-600 font-bold" title="BACK">BACK</span>;
                                         case 'DIE': return <span className="text-[10px] text-red-600 font-bold" title="DIE">DIE</span>;
+                                        case 'UNPAID': return <span className="text-[10px] text-red-600 font-bold" title="UNPAID">UNPAID</span>;
                                         default: return null;
                                       }
                                     })()}

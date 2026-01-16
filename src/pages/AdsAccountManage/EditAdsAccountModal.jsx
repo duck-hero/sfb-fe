@@ -190,6 +190,7 @@ export default function EditAdsAccountModal({
                           <option value="HOLD">HOLD</option>
                           <option value="BACK">BACK</option>
                           <option value="DIE">DIE</option>
+                          <option value="UNPAID">UNPAID</option>
                         </select>
                       </div>
                     </div>

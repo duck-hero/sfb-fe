@@ -6,6 +6,7 @@ export const BM_WORKING_MAP = {
   4: 'LUCKY5',
   5: 'PHÚ XUÂN ',
   6: 'VN',
+  7: 'Thương Lê'
 };
 
 // Helper function để lấy display text từ value

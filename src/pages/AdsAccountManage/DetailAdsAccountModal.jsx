@@ -263,14 +263,20 @@ export default function DetailAdsAccountModal({
                                       );
                                     case 'BACK':
                                       return (
-                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                                          ↩ BACK
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-300 text-gray-800">
+                                          BACK
                                         </span>
                                       );
                                     case 'DIE':
                                       return (
                                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
                                           🔒 DIE
+                                        </span>
+                                      );
+                                    case 'UNPAID':
+                                      return (
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                          UNPAID
                                         </span>
                                       );
                                     default:
