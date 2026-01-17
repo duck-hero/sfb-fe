@@ -49,7 +49,9 @@ function AdsAccountList() {
   const [searchTerm, setSearchTerm] = useState(""); // Input - real-time typing
   const [filterBmAccountId, setFilterBmAccountId] = useState(""); // Select
   const [filterBmWorking, setFilterBmWorking] = useState(""); // Select (Integer: "", "1", "2", ...)
+
   const [filterStatus, setFilterStatus] = useState(""); // Select ('LIVE', 'HOLD', 'BACK', 'DIE', 'UNPAID')
+  const [filterTotalAddBankCards, setFilterTotalAddBankCards] = useState(""); // Select (1-10)
 
   // Debounced search text (500ms delay)
   const debouncedSearchText = useDebounce(searchTerm, 500);
@@ -116,7 +118,8 @@ function AdsAccountList() {
         debouncedSearchText.trim(),
         statusParam,
         filterBmAccountId,
-        bmWorkingParam // Thêm param bmWorking
+        bmWorkingParam,
+        filterTotalAddBankCards // Thêm param totalAddBankCards
       );
 
       setAdsAccounts(res?.data || []);
@@ -132,7 +135,7 @@ function AdsAccountList() {
   useEffect(() => {
     fetchAdsAccounts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageNumber, pageSize, debouncedSearchText, filterBmAccountId, filterBmWorking, filterStatus]);
+  }, [pageNumber, pageSize, debouncedSearchText, filterBmAccountId, filterBmWorking, filterStatus, filterTotalAddBankCards]);
 
   // --- 2. FETCH DROPDOWN DATA (BM Account) ---
   useEffect(() => {
@@ -151,7 +154,7 @@ function AdsAccountList() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setPageNumber(1);
-  }, [debouncedSearchText, filterBmAccountId, filterBmWorking, filterStatus]);
+  }, [debouncedSearchText, filterBmAccountId, filterBmWorking, filterStatus, filterTotalAddBankCards]);
 
   // --- PAGINATION HELPERS ---
   // const handlePrev = () => pageNumber > 1 && setPageNumber(pageNumber - 1);
@@ -408,8 +411,8 @@ function AdsAccountList() {
           </div>
 
           {/* Right Side: Search Filters */}
-          <div className="flex-1 lg:max-w-2xl">
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+          <div className="flex-1 lg:max-w-6xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
               {/* Input 1: Ad Account ID Number (Search) */}
               <div className="flex items-center px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100 hover:shadow-md">
                 <input
@@ -466,6 +469,23 @@ function AdsAccountList() {
                   <option value="BACK">BACK</option>
                   <option value="DIE">DIE</option>
                   <option value="UNPAID">UNPAID</option>
+                </select>
+              </div>
+
+
+              {/* Input 5: Total Add Bank Cards (Filter) */}
+              <div className="flex items-center px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100 hover:shadow-md">
+                <select
+                  value={filterTotalAddBankCards}
+                  onChange={(e) => setFilterTotalAddBankCards(e.target.value)}
+                  className="w-full text-gray-800 bg-transparent text-sm focus:outline-none"
+                >
+                  <option value="">-- Số thẻ Add --</option>
+                  {[...Array(10)].map((_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      {i + 1}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
