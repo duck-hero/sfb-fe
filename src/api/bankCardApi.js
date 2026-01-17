@@ -75,6 +75,24 @@ createBankCard: async (cardNumber, cardHolderName, cvvCode, expirationDate, bank
 },
 
 
+  // Import thẻ ngân hàng từ Excel
+  importBankCards: async (formData) => {
+    try {
+      const response = await axiosInstance.post(
+        `${api}/BankCard/ImportBankCard`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
 };
 
 export default bankCardApi;

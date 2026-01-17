@@ -11,7 +11,7 @@ const DetailField = ({ label, value, className = "" }) => (
     </label>
     {/* Chiều cao h-10 và rounded-lg */}
     <div className="w-full h-10 flex items-center bg-gray-50 border border-gray-300 rounded-lg px-3 text-sm text-gray-800 truncate">
-      {value || "N/A"}
+      {value || "-"}
     </div>
   </div>
 );

@@ -9,6 +9,7 @@ import CreateBankCardModal from "./CreateBankCardModal";
 import bankAccountApi from "../../api/bankAccountApi";
 import EditBankCardModal from "./EditBankCardModal";
 import DetailBankCardModal from "./DetailBankCardModal";
+import ImportBankCardModal from "./ImportBankCardModal";
 import SecurityHelper from "../../utils/crypto";
 
 // Custom debounce hook
@@ -66,6 +67,7 @@ function BankCardList() {
   });
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   // Delete
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
@@ -465,7 +467,7 @@ function BankCardList() {
                       <div className="hidden md:block flex-shrink-0 w-40">
                         <p className="text-xs text-gray-500 mb-0.5">Vận hành</p>
                         <p className="text-sm text-gray-700 truncate">
-                          {card.assignedUserName || 'N/A'}
+                          {card.assignedUserName || '-'}
                         </p>
                       </div>
 
@@ -604,6 +606,15 @@ function BankCardList() {
         refreshData={() => openDetailModal(detailData?.id)} // Refresh current modal data
       />
 
+      <ImportBankCardModal
+        open={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onSuccess={() => {
+          fetchCards();
+          setIsImportModalOpen(false);
+        }}
+      />
+
       <DeleteConfirmModal
         open={openDeleteModal}
         onClose={() => setOpenDeleteModal(false)}
@@ -622,6 +633,7 @@ function BankCardList() {
         saving={saving}
         userList={userList}
         bankAccounts={bankAccounts}
+        onImportClick={() => setIsImportModalOpen(true)}
       />
 
       <EditBankCardModal

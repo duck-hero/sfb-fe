@@ -1,6 +1,7 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { ClipLoader } from "react-spinners";
+import { Upload } from "lucide-react";
 // import SecurityHelper from "../../utils/crypto";
 
 
@@ -13,6 +14,7 @@ export default function CreateBankCardModal({
   saving,
   userList = [],
   bankAccounts = [],
+  onImportClick,
 }) {
   return (
     <Transition appear show={open} as={Fragment}>
@@ -162,6 +164,17 @@ export default function CreateBankCardModal({
                       ))}
                     </select>
                   </div>
+                </div>
+
+                {/* Import Button */}
+                <div className="mt-8 pt-6 border-t border-gray-100">
+                  <button
+                    onClick={onImportClick}
+                    disabled={saving}
+                    className="w-full py-2.5 rounded-xl bg-green-600 text-white hover:bg-green-700 transition flex items-center justify-center text-sm font-semibold shadow-sm"
+                  >
+                    <Upload className="h-4 w-4 mr-2" /> Import Thẻ (Excel)
+                  </button>
                 </div>
 
                 {/* Footer Buttons - Style giống EditModal */}
