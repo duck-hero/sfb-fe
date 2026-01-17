@@ -3,12 +3,12 @@ import axiosInstance from "./axiosInstance";
 
 const bankCardApi = {
   // Lấy danh sách tài khoản ngân hàng (có phân trang)
-getBankCardList: async (pageNumber = 1, pageSize = 10, cardNumber, cardHolderName, assignedToUserId) => {
+getBankCardList: async (pageNumber = 1, pageSize = 10, searchTerm, assignedToUserId, status) => {
   try {
     const params = { PageNumber: pageNumber, PageSize: pageSize };
-    if (cardNumber) params.CardNumber = cardNumber;
-    if (cardHolderName) params.CardHolderName = cardHolderName;
+    if (searchTerm) params.SearchTerm = searchTerm;
     if (assignedToUserId) params.AssignedToUserId = assignedToUserId; // filter UserId
+    if (status) params.Status = status;
 
 
     const response = await axiosInstance.get(

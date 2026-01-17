@@ -33,7 +33,7 @@ function BmAccountList() {
   // --- STATE QUẢN LÝ DỮ LIỆU ---
   const [bmAccounts, setBmAccounts] = useState([]);
   const [pageNumber, setPageNumber] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);

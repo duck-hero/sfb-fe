@@ -46,13 +46,13 @@ function AdsAccountList() {
   const [loading, setLoading] = useState(false);
 
   // --- SEARCH & FILTER STATES ---
-  const [searchAdAccountId, setSearchAdAccountId] = useState(""); // Input - real-time typing
+  const [searchTerm, setSearchTerm] = useState(""); // Input - real-time typing
   const [filterBmAccountId, setFilterBmAccountId] = useState(""); // Select
   const [filterBmWorking, setFilterBmWorking] = useState(""); // Select (Integer: "", "1", "2", ...)
   const [filterStatus, setFilterStatus] = useState(""); // Select ('LIVE', 'HOLD', 'BACK', 'DIE', 'UNPAID')
 
-  // Debounced search text (300ms delay)
-  const debouncedSearchText = useDebounce(searchAdAccountId, 300);
+  // Debounced search text (500ms delay)
+  const debouncedSearchText = useDebounce(searchTerm, 500);
 
 
   // Dropdown Data
@@ -414,9 +414,9 @@ function AdsAccountList() {
               <div className="flex items-center px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100 hover:shadow-md">
                 <input
                   type="text"
-                  placeholder="ID tài khoản FB..."
-                  value={searchAdAccountId}
-                  onChange={(e) => setSearchAdAccountId(e.target.value)}
+                  placeholder="ID tài khoản, tên..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-sm focus:outline-none"
                 />
               </div>

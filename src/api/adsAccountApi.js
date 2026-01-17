@@ -3,10 +3,10 @@ import axiosInstance from "./axiosInstance";
 
 const adsAccountApi = {
   // Lấy danh sách tài khoản (có phân trang)
-  getAdsAccountList: async (pageNumber = 1, pageSize = 10, adAccountIdNumber, status, bmAccountId, bmWorking) => {
+  getAdsAccountList: async (pageNumber = 1, pageSize = 10, searchTerm, status, bmAccountId, bmWorking) => {
     try {
       const params = { PageNumber: pageNumber, PageSize: pageSize };
-      if (adAccountIdNumber) params.AdAccountIdNumber = adAccountIdNumber;
+      if (searchTerm) params.SearchTerm = searchTerm;
       if (status) params.Status = status;
       if (bmAccountId) params.BmAccountId = bmAccountId;
       if (bmWorking !== null && bmWorking !== undefined) params.BmWorking = bmWorking;

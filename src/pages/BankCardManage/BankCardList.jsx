@@ -38,13 +38,12 @@ function BankCardList() {
   const [loading, setLoading] = useState(false);
 
   // Search fields with debounce
-  const [searchCardNumber, setSearchCardNumber] = useState("");
-  const [searchHolderName, setSearchHolderName] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [searchAssignedTo, setSearchAssignedTo] = useState("");
+  const [searchStatus, setSearchStatus] = useState("");
 
-  // Debounced search values (300ms delay)
-  const debouncedCardNumber = useDebounce(searchCardNumber, 300);
-  const debouncedHolderName = useDebounce(searchHolderName, 300);
+  // Debounced search values (500ms delay)
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const [userList, setUserList] = useState([]);
 
@@ -109,9 +108,9 @@ function BankCardList() {
       const res = await bankCardApi.getBankCardList(
         pageNumber,
         pageSize,
-        debouncedCardNumber.trim(),
-        debouncedHolderName.trim(),
-        searchAssignedTo
+        debouncedSearchTerm.trim(),
+        searchAssignedTo,
+        searchStatus
       );
 
       setBankCards(res?.data || []);
@@ -126,12 +125,12 @@ function BankCardList() {
 
   useEffect(() => {
     fetchCards();
-  }, [pageNumber, pageSize, debouncedCardNumber, debouncedHolderName, searchAssignedTo]);
+  }, [pageNumber, pageSize, debouncedSearchTerm, searchAssignedTo, searchStatus]);
 
   // Reset page when search changes
   useEffect(() => {
     setPageNumber(1);
-  }, [debouncedCardNumber, debouncedHolderName, searchAssignedTo]);
+  }, [debouncedSearchTerm, searchAssignedTo, searchStatus]);
 
   // Fetch Users
   useEffect(() => {
@@ -368,26 +367,15 @@ function BankCardList() {
           </div>
 
           {/* Right Side: Search Filters */}
-          <div className="flex-1 lg:max-w-2xl">
+          <div className="flex-1 lg:max-w-3xl">
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-              {/* Input: Card Number */}
+              {/* Input: Search Term (Card Number / Holder Name) */}
               <div className="flex items-center px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100 hover:shadow-md">
                 <input
                   type="text"
-                  placeholder="Số thẻ..."
-                  value={searchCardNumber}
-                  onChange={(e) => setSearchCardNumber(e.target.value)}
-                  className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-sm focus:outline-none"
-                />
-              </div>
-
-              {/* Input: Holder Name */}
-              <div className="flex items-center px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100 hover:shadow-md">
-                <input
-                  type="text"
-                  placeholder="Tên chủ thẻ..."
-                  value={searchHolderName}
-                  onChange={(e) => setSearchHolderName(e.target.value)}
+                  placeholder="Tìm kiếm theo số thẻ, tên chủ thẻ..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full text-gray-800 placeholder-gray-500 bg-transparent text-sm focus:outline-none"
                 />
               </div>
@@ -405,6 +393,19 @@ function BankCardList() {
                       {u.userName}
                     </option>
                   ))}
+                </select>
+              </div>
+
+              {/* Select: Status */}
+              <div className="flex items-center px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-300 ease-in-out focus-within:border-primary-darkest focus-within:ring-2 focus-within:ring-blue-100 hover:shadow-md">
+                <select
+                  value={searchStatus}
+                  onChange={(e) => setSearchStatus(e.target.value)}
+                  className="w-full text-gray-800 placeholder-primary-darkest bg-transparent text-sm focus:outline-none"
+                >
+                  <option value="">-- Trạng thái --</option>
+                  <option value="ACTIVE">Hoạt động</option>
+                  <option value="INACTIVE">Khóa</option>
                 </select>
               </div>
             </div>
