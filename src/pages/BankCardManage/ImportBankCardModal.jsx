@@ -65,8 +65,8 @@ export default function ImportBankCardModal({
     try {
       // Create a temporary link to download template
       const link = document.createElement('a');
-      link.href = '/templates/bank-card-template.xlsx'; // Path to template file
-      link.download = 'bank-card-template.xlsx';
+      link.href = '/templates/The AGC.xlsx'; // Path to template file
+      link.download = 'The AGC.xlsx';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

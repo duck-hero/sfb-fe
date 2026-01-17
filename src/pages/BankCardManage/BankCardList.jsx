@@ -466,7 +466,7 @@ function BankCardList() {
                       {/* Assigned User - Hidden on mobile */}
                       <div className="hidden md:block flex-shrink-0 w-40">
                         <p className="text-xs text-gray-500 mb-0.5">Vận hành</p>
-                        <p className="text-sm text-gray-700 truncate">
+                        <p className="text-sm text-blue-600 truncate">
                           {card.assignedUserName || '-'}
                         </p>
                       </div>
