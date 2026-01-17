@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
 import { Plus, SquarePen, Trash, RefreshCcw, DollarSign, Zap, Coins } from "lucide-react";
 import DeleteConfirmModal from "../../components/Modal/DeleteConfirmModal";
@@ -34,6 +35,9 @@ const useDebounce = (value, delay) => {
 };
 
 function AdsAccountList() {
+  const { hasRole } = useAuth();
+  const canAction = hasRole("Admin") || hasRole("Vận Hành");
+
   const [adsAccounts, setAdsAccounts] = useState([]);
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(15); // Mặc định 15 cho dễ nhìn
@@ -393,12 +397,14 @@ function AdsAccountList() {
           <div className="flex flex-col sm:flex-row gap-3">
 
             {/* Button: Create New */}
-            <button
-              className="px-4 py-2.5 rounded-lg font-semibold text-sm transition bg-primary-dark text-white hover:bg-primary-darkest focus:outline-none focus:ring-2 focus:ring-primary-dark focus:ring-offset-2 active:bg-primary-darkest flex items-center justify-center"
-              onClick={openCreateModal}
-            >
-              <Plus className="h-4 w-4 mr-2" /> Tạo mới
-            </button>
+            {canAction && (
+              <button
+                className="px-4 py-2.5 rounded-lg font-semibold text-sm transition bg-primary-dark text-white hover:bg-primary-darkest focus:outline-none focus:ring-2 focus:ring-primary-dark focus:ring-offset-2 active:bg-primary-darkest flex items-center justify-center"
+                onClick={openCreateModal}
+              >
+                <Plus className="h-4 w-4 mr-2" /> Tạo mới
+              </button>
+            )}
           </div>
 
           {/* Right Side: Search Filters */}
@@ -574,34 +580,38 @@ function AdsAccountList() {
                     </div>
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500 flex justify-center items-center gap-1.5">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedAdAccount(x);
-                        setIsThresholdModalOpen(true);
-                      }}
-                      title="Cắn ngưỡng TK"
-                    >
-                      <Coins className="h-4 w-4 text-primary-dark cursor-pointer hover:text-primary-darkest transition-colors" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openEditModal(x.id);
-                      }}
-                      title="Chỉnh sửa"
-                    >
-                      <SquarePen className="h-4 w-4 text-warning cursor-pointer" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpenDelete(x);
-                      }}
-                      title="Xóa"
-                    >
-                      <Trash className="h-4 w-4 text-error cursor-pointer" />
-                    </button>
+                    {canAction && (
+                      <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedAdAccount(x);
+                            setIsThresholdModalOpen(true);
+                          }}
+                          title="Cắn ngưỡng TK"
+                        >
+                          <Coins className="h-4 w-4 text-primary-dark cursor-pointer hover:text-primary-darkest transition-colors" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditModal(x.id);
+                          }}
+                          title="Chỉnh sửa"
+                        >
+                          <SquarePen className="h-4 w-4 text-warning cursor-pointer" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenDelete(x);
+                          }}
+                          title="Xóa"
+                        >
+                          <Trash className="h-4 w-4 text-error cursor-pointer" />
+                        </button>
+                      </>
+                    )}
                   </td>
                 </tr>
               ))}
