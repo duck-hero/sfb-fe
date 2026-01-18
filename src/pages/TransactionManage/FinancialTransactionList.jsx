@@ -501,7 +501,7 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
               <option value="">Tất cả tài khoản</option>
               {bankList.map((bank) => (
                 <option key={bank.id} value={bank.id}>
-                  {bank.accountBankNumber || bank.accountNumber}
+                  {bank.accountBankNumber || bank.accountNumber} - {bank.accountBankHolderName || 'Unknown'} - {bank.bankCode}
                 </option>
               ))}
             </select>
@@ -909,7 +909,7 @@ export default function FinancialTransactionList({ bankAccountType = 2 }) {
                   <option value="">Chọn tài khoản...</option>
                   {bankList.map((bank, index) => (
                     <option key={bank.id || bank.accountBankNumber || index} value={index}>
-                      {bank.accountBankNumber || bank.accountNumber} - {bank.accountBankHolderName || 'Unknown'}
+                      {bank.accountBankNumber || bank.accountNumber} - {bank.accountBankHolderName || 'Unknown'} - {bank.bankCode}
                     </option>
                   ))}
                 </select>

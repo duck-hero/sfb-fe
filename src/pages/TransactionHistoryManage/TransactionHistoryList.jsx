@@ -307,7 +307,7 @@ const TransactionHistoryList = () => {
               setDataList(res.data || []);
               break;
             case "BANK":
-              res = await bankAccountApi.getBankList(1, 15, searchTerm || null);
+              res = await bankAccountApi.getBankList(1, 15, searchTerm || null, undefined, undefined, 1);
               setDataList(res.data || []);
               break;
             case "NV":
@@ -520,7 +520,7 @@ const TransactionHistoryList = () => {
     const fetchDependencies = async () => {
       try {
         // Fetch Bank List (Existing)
-        const bankRes = await bankAccountApi.getBankList();
+        const bankRes = await bankAccountApi.getBankList(1, 999, undefined, undefined, undefined, 1);
         // Use real data if available, else mock (as per your extensive use of mock in original code)
         // But here trying to be consistent with your existing logic
         setBankList((bankRes.data && bankRes.data.length > 0) ? bankRes.data : []);
@@ -1087,7 +1087,7 @@ const TransactionHistoryList = () => {
             <option value="">Chọn tài khoản...</option>
             {bankList.map((bank, index) => (
               <option key={bank.id || bank.accountBankNumber || index} value={index}>
-                {bank.accountBankNumber || bank.accountNumber} - {bank.accountBankHolderName || 'Unknown'}
+                {bank.accountBankNumber || bank.accountNumber} - {bank.accountBankHolderName || 'Unknown'} - {bank.bankCode}
               </option>
             ))}
           </select>
@@ -1160,11 +1160,10 @@ const TransactionHistoryList = () => {
             fetchCounts();
           }}
           disabled={isLoading || isLoadingCounts}
-          className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 ${
-            isLoading || isLoadingCounts
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
-          }`}
+          className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 ${isLoading || isLoadingCounts
+            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            : 'bg-blue-600 text-white hover:bg-blue-700'
+            }`}
         >
           {isLoading || isLoadingCounts ? (
             <>
@@ -1424,7 +1423,7 @@ const TransactionHistoryList = () => {
               <option value="">Tất cả tài khoản</option>
               {bankList.map((bank) => (
                 <option key={bank.id} value={bank.id}>
-                  {bank.accountBankNumber || bank.accountNumber}
+                  {bank.accountBankNumber || bank.accountNumber} - {bank.accountBankHolderName || 'Unknown'} - {bank.bankCode}
                 </option>
               ))}
             </select>
@@ -1665,7 +1664,7 @@ const TransactionHistoryList = () => {
                 <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{ width: '70px' }}>Thẻ</th>
                 <th className="px-2 py-2 text-left text-[10px] font-bold text-gray-600 uppercase" style={{ width: '100px' }}>STK Bank</th>
 
-                <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{width: '90px'}}>Đối tượng hạch toán</th>
+                <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{ width: '90px' }}>Đối tượng hạch toán</th>
                 <th className="px-2 py-2 text-center text-[10px] font-bold text-gray-600 uppercase" style={{ width: '70px' }}>Thao tác</th>
               </tr>
             </thead>
