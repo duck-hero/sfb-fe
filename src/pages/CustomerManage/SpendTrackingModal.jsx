@@ -1,10 +1,11 @@
 import { Fragment, useEffect, useState, useRef, useMemo } from "react";
 import { Dialog, Transition, Menu } from "@headlessui/react";
-import { X, ChevronLeft, ChevronRight, Save, RotateCw, Plus, Trash2, ChevronDown, Eye, FileSpreadsheet, History, User, Clock, ArrowRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Save, RotateCw, Plus, Trash2, ChevronDown, Eye, FileSpreadsheet, History, User, Clock, ArrowRight, Upload } from "lucide-react";
 import dailySpendApi from "../../api/dailySpendApi";
 import invoiceApi from "../../api/invoiceApi";
 import customerApi from "../../api/customerApi";
 import InvoiceDetailModal from "./InvoiceDetailModal";
+import ImportSpendModal from "./ImportSpendModal";
 import { toast } from "react-toastify";
 
 const SpendTrackingModal = ({ open, customer, onClose }) => {
@@ -30,6 +31,10 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
 
     // History Sidebar State
     const [showHistorySidebar, setShowHistorySidebar] = useState(false);
+    
+    // Import Modal State
+    const [showImportModal, setShowImportModal] = useState(false);
+
     const [auditData, setAuditData] = useState([]);
     const [loadingAudit, setLoadingAudit] = useState(false);
     const [selectedAuditCell, setSelectedAuditCell] = useState(null); // { accountName, date, customerAdsAccountId }
@@ -374,9 +379,16 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
     }, [data]);
 
     return (
-        <Transition appear show={open} as={Fragment}>
-            <Dialog as="div" className="relative z-50" onClose={onClose}>
-                <Transition.Child
+        <Fragment>
+            <ImportSpendModal
+                open={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                customerId={customerId}
+                onSuccess={() => fetchGrid(currentDate)}
+            />
+            <Transition appear show={open} as={Fragment}>
+                <Dialog as="div" className="relative z-50" onClose={onClose}>
+                    <Transition.Child
                     as={Fragment}
                     enter="ease-out duration-300"
                     enterFrom="opacity-0"
@@ -431,6 +443,18 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
                                         </div>
 
                                         <div className="flex items-center gap-2">
+                                            {/* Divider */}
+                                            <div className="h-6 w-px bg-gray-200 mx-1"></div>
+
+                                            <button
+                                                onClick={() => setShowImportModal(true)}
+                                                className="p-1.5 hover:bg-blue-50 hover:text-blue-600 rounded-md text-blue-500 transition flex items-center gap-1"
+                                                title="Import Excel"
+                                            >
+                                                <Upload className="w-5 h-5" />
+                                            </button>
+
+                                            {/* Divider */}
                                             <div className="h-6 w-px bg-gray-200 mx-1"></div>
 
                                             <div className="flex items-center gap-0">
@@ -1100,6 +1124,7 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
                 onConfirmSuccess={() => fetchGrid(currentDate)}
             />
         </Transition>
+        </Fragment>
     );
 };
 

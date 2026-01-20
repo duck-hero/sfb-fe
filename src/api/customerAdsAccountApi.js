@@ -35,6 +35,20 @@ const customerAdsAccountApi = {
       throw handleApiError(error);
     }
   },
+
+  // Import chi tiêu từ file Excel
+  importCustomerAdsAccountSpend: async (formData) => {
+    try {
+      const response = await axiosInstance.post(`${api}/CustomerAdsAccount/ImportCustomerAdsAccountSpend`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 };
 
 export default customerAdsAccountApi;
