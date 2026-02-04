@@ -578,14 +578,14 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
                                                                     <span className="text-[9px] text-gray-400 uppercase font-medium leading-tight">Tự động</span>
                                                                     <span className={`text-sm font-bold text-green-700 underline decoration-dotted decoration-green-300 underline-offset-4 ${!data?.customerGroupId && 'group-hover:text-blue-700 transition-all'
                                                                         }`}>
-                                                                        {formatCurrency(data.balancePanel.paidInMonth)}
+                                                                        {formatCurrency((data?.transactions || []).reduce((acc, tx) => acc + (tx.transactionType === "IN" ? tx.amount : -tx.amount), 0))}
                                                                     </span>
                                                                 </div>
                                                                 <div className="flex flex-col border-l-2 border-teal-200 pl-1.5">
                                                                     <span className="text-[9px] text-gray-400 uppercase font-medium leading-tight">Thủ công</span>
                                                                     <span className={`text-sm font-bold text-teal-700 underline decoration-dotted decoration-teal-300 underline-offset-4 ${!data?.customerGroupId && 'group-hover:text-blue-700 transition-all'
                                                                         }`}>
-                                                                        {formatCurrency(data.balancePanel.paidInMonthManual || 0)}
+                                                                        {formatCurrency(manualPayments.reduce((acc, curr) => acc + curr.amount, 0))}
                                                                     </span>
                                                                 </div>
                                                             </div>

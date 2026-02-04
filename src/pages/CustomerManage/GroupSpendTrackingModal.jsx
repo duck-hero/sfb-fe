@@ -314,7 +314,7 @@ const GroupSpendTrackingModal = ({ open, group, onClose }) => {
                                                                 <div className="flex flex-col border-l-2 border-green-200 pl-1.5">
                                                                     <span className="text-[9px] text-gray-400 uppercase font-medium leading-tight">Bank</span>
                                                                     <span className="text-sm font-bold text-green-700 underline decoration-dotted decoration-green-300 underline-offset-4 group-hover:text-blue-700 transition-all">
-                                                                        {formatCurrency(data.balancePanel.paidInMonth)}
+                                                                        {formatCurrency((data?.transactions || []).reduce((acc, tx) => acc + (tx.transactionType === "IN" ? tx.amount : -tx.amount), 0))}
                                                                     </span>
                                                                 </div>
                                                                 <div className="flex flex-col border-l-2 border-teal-200 pl-1.5">
