@@ -585,7 +585,7 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
                                                                     <span className="text-[9px] text-gray-400 uppercase font-medium leading-tight">Thủ công</span>
                                                                     <span className={`text-sm font-bold text-teal-700 underline decoration-dotted decoration-teal-300 underline-offset-4 ${!data?.customerGroupId && 'group-hover:text-blue-700 transition-all'
                                                                         }`}>
-                                                                        {formatCurrency(manualPayments.reduce((acc, curr) => acc + curr.amount, 0))}
+                                                                        {formatCurrency(data.balancePanel.paidInMonthManual || 0)}
                                                                     </span>
                                                                 </div>
                                                             </div>
