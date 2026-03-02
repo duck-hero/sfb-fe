@@ -83,6 +83,11 @@ export default function DetailAdsAccountModal({
   const [feePercent, setFeePercent] = useState("");
   const [paymentMode, setPaymentMode] = useState(2); // Default 2: AgencyPays
 
+  // Status Update State
+  const [updatingStatus, setUpdatingStatus] = useState({});
+  const [deactivateModal, setDeactivateModal] = useState({ open: false, customerAdsAccountId: null });
+  const [endAt, setEndAt] = useState(getTodayString());
+
   useEffect(() => {
     if (open) {
       fetchRenters();
@@ -164,6 +169,49 @@ export default function DetailAdsAccountModal({
       toast.error(typeof error === 'string' ? error : "Thêm thất bại");
     } finally {
       setAdding(false);
+    }
+  };
+
+  const handleRenterStatusChange = async (customerAdsAccountId, newStatus) => {
+    if (newStatus === 'INACTIVE') {
+      setEndAt(getTodayString());
+      setDeactivateModal({ open: true, customerAdsAccountId });
+      return;
+    }
+    setUpdatingStatus(prev => ({ ...prev, [customerAdsAccountId]: true }));
+    try {
+      await customerAdsAccountApi.updateCustomerAdsAccount({
+        id: customerAdsAccountId,
+        status: newStatus,
+        endAt: null
+      });
+      toast.success("Cập nhật trạng thái thành công");
+      fetchRenters();
+      if (refreshData) refreshData();
+    } catch (error) {
+      toast.error(typeof error === 'string' ? error : "Cập nhật thất bại");
+    } finally {
+      setUpdatingStatus(prev => ({ ...prev, [customerAdsAccountId]: false }));
+    }
+  };
+
+  const handleConfirmDeactivate = async () => {
+    const { customerAdsAccountId } = deactivateModal;
+    setUpdatingStatus(prev => ({ ...prev, [customerAdsAccountId]: true }));
+    setDeactivateModal({ open: false, customerAdsAccountId: null });
+    try {
+      await customerAdsAccountApi.updateCustomerAdsAccount({
+        id: customerAdsAccountId,
+        status: 'INACTIVE',
+        endAt: new Date(endAt).toISOString()
+      });
+      toast.success("Cập nhật trạng thái thành công");
+      fetchRenters();
+      if (refreshData) refreshData();
+    } catch (error) {
+      toast.error(typeof error === 'string' ? error : "Cập nhật thất bại");
+    } finally {
+      setUpdatingStatus(prev => ({ ...prev, [customerAdsAccountId]: false }));
     }
   };
 
@@ -476,9 +524,19 @@ export default function DetailAdsAccountModal({
                                 <div className="flex flex-col gap-0.5 text-[10px] text-gray-500">
                                   <div className="flex justify-between items-center">
                                     <span>Trạng thái:</span>
-                                    <span className={renter.status === 'ACTIVE' ? 'text-green-600 font-semibold' : 'text-gray-500'}>
-                                      {renter.status === 'ACTIVE' ? 'Đang thuê' : 'Đã ngừng thuê'}
-                                    </span>
+                                    <select
+                                      value={renter.status || 'ACTIVE'}
+                                      onChange={(e) => {
+                                        e.stopPropagation();
+                                        handleRenterStatusChange(renter.customerAdsAccountId, e.target.value);
+                                      }}
+                                      onClick={(e) => e.stopPropagation()}
+                                      disabled={updatingStatus[renter.customerAdsAccountId]}
+                                      className={`text-[10px] font-bold border rounded px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50 transition-colors cursor-pointer ${renter.status === 'ACTIVE' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-50 text-gray-500 border-gray-200'}`}
+                                    >
+                                      <option value="ACTIVE">Đang Thuê</option>
+                                      <option value="INACTIVE">Ngừng Thuê</option>
+                                    </select>
                                   </div>
                                   <div className="flex justify-between">
                                     <span>Ngày thuê:</span>
@@ -518,6 +576,42 @@ export default function DetailAdsAccountModal({
           </div>
         </div>
       </Dialog>
+
+      {/* Deactivate Confirmation Modal */}
+      {deactivateModal.open && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col">
+            <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h3 className="text-sm font-bold text-gray-700">Xác nhận ngừng phiên thuê</h3>
+              <button onClick={() => setDeactivateModal({ open: false, customerAdsAccountId: null })} className="text-gray-400 hover:text-gray-600">
+                <Plus className="w-5 h-5 rotate-45" />
+              </button>
+            </div>
+            <div className="p-4 space-y-4">
+              <p className="text-xs text-gray-600">Chọn ngày ngừng phiên thuê cho khách hàng này:</p>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-500 uppercase">Ngày ngừng phiên thuê</label>
+                <input
+                  type="date"
+                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs"
+                  value={endAt}
+                  onChange={(e) => setEndAt(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="p-4 bg-gray-50 border-t border-gray-100 flex gap-3">
+              <button onClick={() => setDeactivateModal({ open: false, customerAdsAccountId: null })} className="flex-1 py-2 rounded-lg text-xs font-bold text-gray-500 hover:bg-gray-200 transition-colors">Hủy</button>
+              <button
+                onClick={handleConfirmDeactivate}
+                disabled={!endAt}
+                className="flex-1 py-2 rounded-lg text-xs font-bold bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
+              >
+                Xác nhận ngừng phiên thuê
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Internal Modal for Adding Rental */}
       <Transition appear show={isAddRentalOpen} as={Fragment}>

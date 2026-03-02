@@ -95,6 +95,8 @@ const CustomerDetailView = ({ id }) => {
 
   // Status Update State
   const [updatingStatus, setUpdatingStatus] = useState({});
+  const [deactivateModal, setDeactivateModal] = useState({ open: false, customerAdsAccountId: null });
+  const [endAt, setEndAt] = useState(getTodayString());
 
   const fetchDetail = async () => {
     if (!id) return;
@@ -179,11 +181,36 @@ const CustomerDetailView = ({ id }) => {
   };
 
   const handleStatusChange = async (customerAdsAccountId, newStatus) => {
+    if (newStatus === 'INACTIVE') {
+      setEndAt(getTodayString());
+      setDeactivateModal({ open: true, customerAdsAccountId });
+      return;
+    }
     setUpdatingStatus(prev => ({ ...prev, [customerAdsAccountId]: true }));
     try {
       await customerAdsAccountApi.updateCustomerAdsAccount({
         id: customerAdsAccountId,
-        status: newStatus
+        status: newStatus,
+        endAt: null
+      });
+      toast.success("Cập nhật trạng thái thành công");
+      fetchDetail();
+    } catch (error) {
+      toast.error(typeof error === 'string' ? error : "Cập nhật thất bại");
+    } finally {
+      setUpdatingStatus(prev => ({ ...prev, [customerAdsAccountId]: false }));
+    }
+  };
+
+  const handleConfirmDeactivate = async () => {
+    const { customerAdsAccountId } = deactivateModal;
+    setUpdatingStatus(prev => ({ ...prev, [customerAdsAccountId]: true }));
+    setDeactivateModal({ open: false, customerAdsAccountId: null });
+    try {
+      await customerAdsAccountApi.updateCustomerAdsAccount({
+        id: customerAdsAccountId,
+        status: 'INACTIVE',
+        endAt: new Date(endAt).toISOString()
       });
       toast.success("Cập nhật trạng thái thành công");
       fetchDetail();
@@ -442,6 +469,42 @@ const CustomerDetailView = ({ id }) => {
                 className="flex-1 py-2 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
               >
                 {adding ? "Đang xử lý..." : "Xác nhận"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Deactivate Confirmation Modal */}
+      {deactivateModal.open && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col">
+            <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h3 className="text-sm font-bold text-gray-700">Xác nhận ngừng phiên thuê</h3>
+              <button onClick={() => setDeactivateModal({ open: false, customerAdsAccountId: null })} className="text-gray-400 hover:text-gray-600">
+                <Plus className="w-5 h-5 rotate-45" />
+              </button>
+            </div>
+            <div className="p-4 space-y-4">
+              <p className="text-xs text-gray-600">Chọn ngày ngừng phiên thuê cho tài khoản này:</p>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-500 uppercase">Ngày ngừng phiên thuê</label>
+                <input
+                  type="date"
+                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs"
+                  value={endAt}
+                  onChange={(e) => setEndAt(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="p-4 bg-gray-50 border-t border-gray-100 flex gap-3">
+              <button onClick={() => setDeactivateModal({ open: false, customerAdsAccountId: null })} className="flex-1 py-2 rounded-lg text-xs font-bold text-gray-500 hover:bg-gray-200 transition-colors">Hủy</button>
+              <button
+                onClick={handleConfirmDeactivate}
+                disabled={!endAt}
+                className="flex-1 py-2 rounded-lg text-xs font-bold bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
+              >
+                Xác nhận ngừng phiên thuê
               </button>
             </div>
           </div>
