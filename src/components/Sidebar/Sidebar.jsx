@@ -164,6 +164,7 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
                 <LayoutList size={14} />
                 <span>Nguồn (Đầu tổng)</span>
               </Link>
+              {hasRole('Admin') && (
               <Link
                 to="/statistics/source-debt"
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-gray-100 transition-all ${pathname === "/statistics/source-debt" && active}`}
@@ -171,11 +172,13 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
                 <Receipt size={14} />
                 <span>Công nợ Đầu tổng</span>
               </Link>
+              )}
             </div>
           )}
         </div>
 
-        {/* Doanh thu & lợi nhuận - Submenu */}
+        {/* Doanh thu & lợi nhuận - Submenu (Admin only) */}
+        {hasRole('Admin') && (
         <div>
           <button
             onClick={() => !isCollapsed && setIsRevenueExpanded(!isRevenueExpanded)}
@@ -220,6 +223,7 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
             </div>
           )}
         </div>
+        )}
 
         {/* Quản lý FB - Submenu */}
         <div>
@@ -334,7 +338,8 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
           )}
         </div>
 
-        {/* Nhân viên - Submenu */}
+        {/* Nhân viên - Submenu (Admin only) */}
+        {hasRole('Admin') && (
         <div>
           <button
             onClick={() => !isCollapsed && setIsEmployeeExpanded(!isEmployeeExpanded)}
@@ -383,6 +388,7 @@ const Sidebar = ({ onToggle, isCollapsed }) => {
             </div>
           )}
         </div>
+        )}
       </nav>
     </div>
   );
