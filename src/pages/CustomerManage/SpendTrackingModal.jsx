@@ -908,6 +908,18 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
                                                                     <span className="text-[10px] text-gray-500 font-mono tracking-tighter leading-none">{row.adAccountIdNumber || row.adAccountId}</span>
 
                                                                     <div className="flex items-center gap-1 mt-0.5">
+                                                                        {/* Ad Account Status Badge */}
+                                                                        {row.adAccountStatus && (
+                                                                           <span className={`text-[9px] px-1.5 py-0.5 rounded border font-medium whitespace-nowrap ${
+                                                                              row.adAccountStatus === 'LIVE' ? 'bg-green-50 text-green-600 border-green-200' :
+                                                                              row.adAccountStatus === 'HOLD' ? 'bg-orange-50 text-orange-600 border-orange-200' :
+                                                                              (row.adAccountStatus === 'DIE' || row.adAccountStatus === 'UNPAID') ? 'bg-red-50 text-red-600 border-red-200' :
+                                                                              'bg-gray-50 text-gray-600 border-gray-200'
+                                                                           }`}>
+                                                                              {row.adAccountStatus}
+                                                                           </span>
+                                                                        )}
+
                                                                         {/* Payment Mode Badge */}
                                                                         {row.paymentMode === 1 && (
                                                                             <span className="text-[9px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded border border-purple-200 font-medium whitespace-nowrap">
@@ -929,6 +941,7 @@ const SpendTrackingModal = ({ open, customer, onClose }) => {
                                                                         <span className="text-[9px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-100 font-medium">
                                                                             {(row.feePercent * 100).toFixed(1)}%
                                                                         </span>
+
                                                                     </div>
                                                                 </div>
                                                             </td>
