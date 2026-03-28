@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { Plus, RotateCw, Trash2, Search, LineChart } from "lucide-react";
+import { Plus, RotateCw, Search, LineChart } from "lucide-react";
 import customerApi from "../../api/customerApi";
 import adsAccountApi from "../../api/adsAccountApi";
 import customerAdsAccountApi from "../../api/customerAdsAccountApi";
@@ -88,7 +88,7 @@ const CustomerDetailView = ({ id }) => {
   const debouncedSearchAccount = useDebounce(searchAccount, 500);
 
   // New Rental Fields
-  const getTodayString = () => new Date().toISOString().split('T')[0];
+  const getTodayString = () => new Date().toISOString().split("T")[0];
   const [startAt, setStartAt] = useState(getTodayString());
   const [feePercent, setFeePercent] = useState("");
   const [paymentMode, setPaymentMode] = useState(2); // Default 2: AgencyPays
@@ -104,7 +104,7 @@ const CustomerDetailView = ({ id }) => {
     try {
       const res = await customerApi.getCustomerById(id);
       setData(res.data || res);
-    } catch (error) {
+    } catch {
       toast.error("Không tải được chi tiết khách hàng");
     } finally {
       setLoading(false);
@@ -114,11 +114,12 @@ const CustomerDetailView = ({ id }) => {
   useEffect(() => {
     fetchDetail();
     setActiveTab("ACTIVE");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const allAccounts = useMemo(() => data?.adsAccountDtos || [], [data]);
-  const activeAccounts = useMemo(() => allAccounts.filter(acc => acc.status === 'ACTIVE'), [allAccounts]);
-  const displayAccounts = activeTab === 'ACTIVE' ? activeAccounts : allAccounts;
+  const activeAccounts = useMemo(() => allAccounts.filter((acc) => acc.status === "ACTIVE"), [allAccounts]);
+  const displayAccounts = activeTab === "ACTIVE" ? activeAccounts : allAccounts;
 
   const handleOpenAddRental = async () => {
     setIsAddRentalOpen(true);
@@ -142,13 +143,13 @@ const CustomerDetailView = ({ id }) => {
   // Effect to handle search
   useEffect(() => {
     if (!isAddRentalOpen) return;
-    
+
     const searchAccounts = async () => {
       setLoadingAccounts(true);
       try {
         const res = await adsAccountApi.getAdsAccountList(1, 20, debouncedSearchAccount);
         setAvailableAccounts(res.data || res.items || []);
-      } catch (error) {
+      } catch {
         // toast.error("Tìm kiếm thất bại");
       } finally {
         setLoadingAccounts(false);
@@ -168,25 +169,25 @@ const CustomerDetailView = ({ id }) => {
         customerId: id,
         startAt: new Date(startAt).toISOString(),
         feePercent: fee,
-        paymentMode: parseInt(paymentMode)
+        paymentMode: parseInt(paymentMode, 10)
       });
       toast.success("Thêm tài khoản thuê thành công");
       setIsAddRentalOpen(false);
       fetchDetail();
     } catch (error) {
-      toast.error(typeof error === 'string' ? error : "Thêm thất bại");
+      toast.error(typeof error === "string" ? error : "Thêm thất bại");
     } finally {
       setAdding(false);
     }
   };
 
   const handleStatusChange = async (customerAdsAccountId, newStatus) => {
-    if (newStatus === 'INACTIVE') {
+    if (newStatus === "INACTIVE") {
       setEndAt(getTodayString());
       setDeactivateModal({ open: true, customerAdsAccountId });
       return;
     }
-    setUpdatingStatus(prev => ({ ...prev, [customerAdsAccountId]: true }));
+    setUpdatingStatus((prev) => ({ ...prev, [customerAdsAccountId]: true }));
     try {
       await customerAdsAccountApi.updateCustomerAdsAccount({
         id: customerAdsAccountId,
@@ -196,28 +197,28 @@ const CustomerDetailView = ({ id }) => {
       toast.success("Cập nhật trạng thái thành công");
       fetchDetail();
     } catch (error) {
-      toast.error(typeof error === 'string' ? error : "Cập nhật thất bại");
+      toast.error(typeof error === "string" ? error : "Cập nhật thất bại");
     } finally {
-      setUpdatingStatus(prev => ({ ...prev, [customerAdsAccountId]: false }));
+      setUpdatingStatus((prev) => ({ ...prev, [customerAdsAccountId]: false }));
     }
   };
 
   const handleConfirmDeactivate = async () => {
     const { customerAdsAccountId } = deactivateModal;
-    setUpdatingStatus(prev => ({ ...prev, [customerAdsAccountId]: true }));
+    setUpdatingStatus((prev) => ({ ...prev, [customerAdsAccountId]: true }));
     setDeactivateModal({ open: false, customerAdsAccountId: null });
     try {
       await customerAdsAccountApi.updateCustomerAdsAccount({
         id: customerAdsAccountId,
-        status: 'INACTIVE',
+        status: "INACTIVE",
         endAt: new Date(endAt).toISOString()
       });
       toast.success("Cập nhật trạng thái thành công");
       fetchDetail();
     } catch (error) {
-      toast.error(typeof error === 'string' ? error : "Cập nhật thất bại");
+      toast.error(typeof error === "string" ? error : "Cập nhật thất bại");
     } finally {
-      setUpdatingStatus(prev => ({ ...prev, [customerAdsAccountId]: false }));
+      setUpdatingStatus((prev) => ({ ...prev, [customerAdsAccountId]: false }));
     }
   };
 
@@ -266,13 +267,13 @@ const CustomerDetailView = ({ id }) => {
         <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
           <button
             onClick={() => setActiveTab("ACTIVE")}
-            className={`px-3 py-1.5 rounded-md text-[11px] font-bold transition-all ${activeTab === 'ACTIVE' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`px-3 py-1.5 rounded-md text-[11px] font-bold transition-all ${activeTab === "ACTIVE" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
           >
             ĐANG THUÊ ({activeAccounts.length})
           </button>
           <button
             onClick={() => setActiveTab("HISTORY")}
-            className={`px-3 py-1.5 rounded-md text-[11px] font-bold transition-all ${activeTab === 'HISTORY' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`px-3 py-1.5 rounded-md text-[11px] font-bold transition-all ${activeTab === "HISTORY" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
           >
             LỊCH SỬ ({allAccounts.length})
           </button>
@@ -337,16 +338,16 @@ const CustomerDetailView = ({ id }) => {
                     <div className="flex flex-col gap-1">
                       {(() => {
                         switch (acc.statusAdsAccount) {
-                          case 'LIVE':
+                          case "LIVE":
                             return <span className="w-fit px-1.5 py-0.5 text-[8px] font-black bg-green-100 text-green-700 rounded-full border border-green-200">LIVE</span>;
-                          case 'HOLD':
+                          case "HOLD":
                             return <span className="w-fit px-1.5 py-0.5 text-[8px] font-black bg-orange-100 text-orange-700 rounded-full border border-orange-200">HOLD</span>;
-                          case 'BACK':
+                          case "BACK":
                             return <span className="text-blue-500 font-bold" title="BACK">BACK</span>;
-                          case 'DIE':
+                          case "DIE":
                             return <span className="w-fit px-1.5 py-0.5 text-[8px] font-black bg-red-100 text-red-700 rounded-full border border-red-200">DIE</span>;
                           default:
-                            return <span className="w-fit px-1.5 py-0.5 text-[8px] font-black bg-gray-100 text-gray-700 rounded-full border border-gray-200">{acc.statusAdsAccount || 'N/A'}</span>;
+                            return <span className="w-fit px-1.5 py-0.5 text-[8px] font-black bg-gray-100 text-gray-700 rounded-full border border-gray-200">{acc.statusAdsAccount || "N/A"}</span>;
                         }
                       })()}
                       <span className="text-[9px] text-gray-400">{formatDate(acc.rentalDate)}</span>
@@ -355,10 +356,10 @@ const CustomerDetailView = ({ id }) => {
                   </td>
                   <td className="px-1 py-2 text-right">
                     <select
-                      value={acc.status || 'ACTIVE'}
+                      value={acc.status || "ACTIVE"}
                       onChange={(e) => handleStatusChange(acc.customerAdsAccountId, e.target.value)}
                       disabled={updatingStatus[acc.customerAdsAccountId]}
-                      className={`text-[10px] font-bold border rounded px-2 py-1 outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50 transition-colors ${acc.status === 'ACTIVE' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-50 text-gray-500 border-gray-200'}`}
+                      className={`text-[10px] font-bold border rounded px-2 py-1 outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50 transition-colors ${acc.status === "ACTIVE" ? "bg-green-50 text-green-700 border-green-200" : "bg-gray-50 text-gray-500 border-gray-200"}`}
                     >
                       <option value="ACTIVE">Đang Thuê</option>
                       <option value="INACTIVE">Ngừng Thuê</option>
@@ -370,14 +371,14 @@ const CustomerDetailView = ({ id }) => {
           </table>
         ) : (
           <div className="py-20 text-center text-gray-400 text-xs italic">
-            {activeTab === 'ACTIVE' ? "Không có tài khoản đang thuê" : "Không có lịch sử thuê"}
+            {activeTab === "ACTIVE" ? "Không có tài khoản đang thuê" : "Không có lịch sử thuê"}
           </div>
         )}
       </div>
 
       {/* Add Rental Modal Internal */}
       {isAddRentalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
             <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-gray-50">
               <h3 className="text-sm font-bold text-gray-700">Tạo phiên thuê</h3>
@@ -402,21 +403,26 @@ const CustomerDetailView = ({ id }) => {
               <div className="max-h-48 overflow-y-auto border border-blue-500 rounded-lg divide-y divide-gray-50">
                 {loadingAccounts ? (
                   <div className="p-4 flex justify-center"><RotateCw className="w-5 h-5 animate-spin text-blue-500" /></div>
-                ) : availableAccounts.map(acc => (
+                ) : availableAccounts.map((acc) => (
                   <div
                     key={acc.id}
                     onClick={() => setSelectedAccountId(acc.id)}
-                    className={`p-3 cursor-pointer transition-colors ${selectedAccountId === acc.id ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
+                    className={`p-3 cursor-pointer transition-colors ${selectedAccountId === acc.id ? "bg-blue-50" : "hover:bg-gray-50"}`}
                   >
                     <div className="flex justify-between items-center mb-1">
                       <div className="text-xs font-bold text-gray-800">{acc.adAccountIdNumber}</div>
                       {(() => {
                         switch (acc.status) {
-                          case 'LIVE': return <span className="px-1.5 py-0.5 text-[8px] font-bold bg-green-100 text-green-700 rounded border border-green-200">LIVE</span>;
-                          case 'HOLD': return <span className="px-1.5 py-0.5 text-[8px] font-bold bg-orange-100 text-orange-700 rounded border border-orange-200">HOLD</span>;
-                          case 'DIE': return <span className="px-1.5 py-0.5 text-[8px] font-bold bg-red-100 text-red-700 rounded border border-red-200">DIE</span>;
-                          case 'BACK': return <span className="px-1.5 py-0.5 text-[8px] font-bold bg-gray-100 text-gray-700 rounded border border-gray-200">BACK</span>;
-                          default: return <span className="px-1.5 py-0.5 text-[8px] font-bold bg-gray-100 text-gray-700 rounded border border-gray-200">{acc.status || 'N/A'}</span>;
+                          case "LIVE":
+                            return <span className="px-1.5 py-0.5 text-[8px] font-bold bg-green-100 text-green-700 rounded border border-green-200">LIVE</span>;
+                          case "HOLD":
+                            return <span className="px-1.5 py-0.5 text-[8px] font-bold bg-orange-100 text-orange-700 rounded border border-orange-200">HOLD</span>;
+                          case "DIE":
+                            return <span className="px-1.5 py-0.5 text-[8px] font-bold bg-red-100 text-red-700 rounded border border-red-200">DIE</span>;
+                          case "BACK":
+                            return <span className="px-1.5 py-0.5 text-[8px] font-bold bg-gray-100 text-gray-700 rounded border border-gray-200">BACK</span>;
+                          default:
+                            return <span className="px-1.5 py-0.5 text-[8px] font-bold bg-gray-100 text-gray-700 rounded border border-gray-200">{acc.status || "N/A"}</span>;
                         }
                       })()}
                     </div>
@@ -477,7 +483,7 @@ const CustomerDetailView = ({ id }) => {
 
       {/* Deactivate Confirmation Modal */}
       {deactivateModal.open && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col">
             <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-gray-50">
               <h3 className="text-sm font-bold text-gray-700">Xác nhận ngừng phiên thuê</h3>

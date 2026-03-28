@@ -1,6 +1,17 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Search, Plus, Trash, SquarePen, LineChart, RotateCw } from "lucide-react";
+import {
+    Search,
+    Plus,
+    Trash,
+    SquarePen,
+    LineChart,
+    RotateCw,
+    LayoutList,
+    Filter,
+    ChevronLeft,
+    ChevronRight
+} from "lucide-react";
 import { toast } from "react-toastify";
 import customerApi from "../../api/customerApi";
 import customerGroupApi from "../../api/customerGroupApi";
@@ -29,7 +40,6 @@ function CustomerList() {
     const [totalItems, setTotalItems] = useState(0);
 
     // Filter
-    const [searchKeyword, setSearchKeyword] = useState("");
     const [searchCode, setSearchCode] = useState("");
     const [selectedGroupId, setSelectedGroupId] = useState("");
     const [selectedOperatorId, setSelectedOperatorId] = useState("");
@@ -116,8 +126,9 @@ function CustomerList() {
             setTotalPages(res.totalPages || Math.ceil(total / size) || 1);
             setPageNumber(page); // Sync state
 
-            // Auto select first customer if none selected and items exist
-            if (items.length > 0 && !inlineDetailId) {
+            if (items.length === 0) {
+                setInlineDetailId(null);
+            } else if (!items.some((customer) => customer.id === inlineDetailId)) {
                 setInlineDetailId(items[0].id);
             }
 
@@ -149,8 +160,21 @@ function CustomerList() {
 
     // Handlers
     const handleSearch = () => {
+        const normalizedKeyword = searchCode.trim();
         setPageNumber(1);
-        fetchCustomers(1, pageSize, searchCode, selectedGroupId, selectedOperatorId);
+        fetchCustomers(1, pageSize, normalizedKeyword, selectedGroupId, selectedOperatorId);
+    };
+
+    const handleRefresh = () => {
+        fetchCustomers(pageNumber, pageSize, searchCode.trim(), selectedGroupId, selectedOperatorId);
+    };
+
+    const handleClearFilters = () => {
+        setSearchCode("");
+        setSelectedGroupId("");
+        setSelectedOperatorId("");
+        setPageNumber(1);
+        fetchCustomers(1, pageSize, null, null, null);
     };
 
     // Pagination Handlers
@@ -233,7 +257,7 @@ function CustomerList() {
                 // Convert API decimal to UI percentage (0.01 -> 1)
                 collaboratorRate: detailData.collaboratorRate ? (detailData.collaboratorRate * 100) : 0
             });
-        } catch (error) {
+        } catch {
             toast.error("Không tải được dữ liệu khách hàng");
             setFormData({
                 ...item,
@@ -302,226 +326,284 @@ function CustomerList() {
         setIsSpendModalOpen(true);
     }
 
-    return (
-        <div className="">
+    const activeFilterCount = [searchCode, selectedGroupId, selectedOperatorId].filter(Boolean).length;
+    const selectedGroupLabel = groups.find((group) => String(group.id) === String(selectedGroupId))?.name;
+    const selectedOperatorLabel = users.find((user) => String(user.id) === String(selectedOperatorId))?.fullName
+        || users.find((user) => String(user.id) === String(selectedOperatorId))?.userName;
 
-            <div className="grid grid-cols-10 gap-4 mt-4 min-h-[600px]">
-                {/* Left Column: List (7/10) */}
-                <div className="col-span-7 flex flex-col gap-3 h-full">
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full">
-                        {/* Integrated Toolbar */}
-                        <div className="p-3 border-b border-gray-100 bg-gray-50/30 flex flex-col gap-2">
-                            <div className="flex items-center gap-2">
-                                <div className="flex-1 relative group">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+    return (
+        <div className="space-y-4 isolate">
+            
+
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(360px,0.95fr)]">
+                <div className="flex min-h-[620px] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                    <div className="border-b border-gray-200 bg-gray-50/80 px-4 py-4">
+                        <div className="flex flex-col gap-3">
+                            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                                <div className="relative flex-1">
+                                    <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
                                     <input
                                         type="text"
-                                        placeholder="Tìm kiếm..."
+                                        placeholder="Tìm theo tên khách, mã khách, mã agency hoặc code tổng..."
                                         value={searchCode}
                                         onChange={(e) => setSearchCode(e.target.value)}
                                         onKeyDown={(e) => {
                                             if (e.key === "Enter") handleSearch();
                                         }}
-                                        className="w-full pl-9 pr-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                                        className="w-full rounded-lg border border-gray-200 bg-white py-1.5 pl-8 pr-2.5 text-xs text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                                     />
                                 </div>
-                                <button
-                                    onClick={handleOpenCreate}
-                                    className="p-1.5 rounded-lg bg-primary-dark text-white hover:bg-primary-darkest transition-colors shadow-sm"
-                                    title="Tạo mới"
-                                >
-                                    <Plus className="h-4 w-4" />
-                                </button>
+
+                                <div className="flex items-center gap-2 self-end lg:self-auto">
+                                    <button
+                                        onClick={handleRefresh}
+                                        className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-600 transition hover:border-gray-300 hover:bg-gray-100"
+                                    >
+                                        <RotateCw className="h-3.5 w-3.5" />
+                                        Làm mới
+                                    </button>
+                                    <button
+                                        onClick={handleOpenCreate}
+                                        className="inline-flex items-center gap-1.5 rounded-lg bg-primary-dark px-2.5 py-1.5 text-xs font-semibold text-white transition hover:bg-primary-darkest"
+                                    >
+                                        <Plus className="h-3.5 w-3.5" />
+                                        Tạo khách hàng
+                                    </button>
+                                </div>
                             </div>
 
-                            <div className="flex items-center gap-2">
+                            <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto]">
                                 <select
                                     value={selectedGroupId}
                                     onChange={(e) => setSelectedGroupId(e.target.value)}
-                                    className="text-[11px] border border-gray-200 rounded-lg px-2 py-1.5 bg-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium min-w-[140px]"
+                                    className="rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                                 >
-                                    <option value="">Tất cả nhóm</option>
-                                    {groups.map(g => (
-                                        <option key={g.id} value={g.id}>{g.name}</option>
+                                    <option value="">Tất cả nhóm khách</option>
+                                    {groups.map((group) => (
+                                        <option key={group.id} value={group.id}>{group.name}</option>
                                     ))}
                                 </select>
 
                                 <select
                                     value={selectedOperatorId}
                                     onChange={(e) => setSelectedOperatorId(e.target.value)}
-                                    className="text-[11px] border border-gray-200 rounded-lg px-2 py-1.5 bg-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium min-w-[140px]"
+                                    className="rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                                 >
-                                    <option value="">Tất cả NV phụ trách</option>
-                                    {users.map(u => (
-                                        <option key={u.id} value={u.id}>{u.fullName || u.userName}</option>
+                                    <option value="">Tất cả nhân viên phụ trách</option>
+                                    {users.map((user) => (
+                                        <option key={user.id} value={user.id}>{user.fullName || user.userName}</option>
                                     ))}
                                 </select>
 
                                 <button
                                     onClick={handleSearch}
-                                    className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-[11px] font-bold hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap"
+                                    className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700"
                                 >
+                                        <Filter className="h-3.5 w-3.5" />
                                     Lọc dữ liệu
                                 </button>
+
+                                <button
+                                    onClick={handleClearFilters}
+                                    className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 transition hover:border-gray-300 hover:bg-gray-100"
+                                >
+                                    Xóa lọc
+                                </button>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                                <span className="rounded-full bg-blue-50 px-3 py-1 font-medium text-blue-700">
+                                    {totalItems} khách hàng
+                                </span>
+                                <span className="rounded-full bg-gray-100 px-3 py-1 font-medium text-gray-600">
+                                    {activeFilterCount} bộ lọc đang áp dụng
+                                </span>
+                                {selectedGroupLabel && (
+                                    <span className="rounded-full bg-emerald-50 px-3 py-1 font-medium text-emerald-700">
+                                        Nhóm: {selectedGroupLabel}
+                                    </span>
+                                )}
+                                {selectedOperatorLabel && (
+                                    <span className="rounded-full bg-amber-50 px-3 py-1 font-medium text-amber-700">
+                                        Phụ trách: {selectedOperatorLabel}
+                                    </span>
+                                )}
                             </div>
                         </div>
+                    </div>
 
-                        {loading ? (
-                            <div className="p-10 flex justify-center"><RotateCw className="w-8 h-8 animate-spin text-blue-500" /></div>
-                        ) : (
-                            <>
-                                <div className="overflow-x-auto flex-1">
-                                    <table className="w-full divide-y divide-gray-100">
-                                        <thead className="bg-gray-50/50">
+                    {loading ? (
+                        <div className="flex flex-1 items-center justify-center p-10">
+                            <RotateCw className="h-8 w-8 animate-spin text-blue-500" />
+                        </div>
+                    ) : (
+                        <>
+                            <div className="flex-1 overflow-auto">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="sticky top-0 z-[1] bg-white/95 backdrop-blur-sm">
+                                        <tr>
+                                            <th scope="col" className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500">
+                                                Tên khách
+                                            </th>
+                                            <th scope="col" className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500">
+                                                Mã khách
+                                            </th>
+                                            <th scope="col" className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500">
+                                                Mã agency
+                                            </th>
+                                            <th scope="col" className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500">
+                                                Code Khách
+                                            </th>
+                                            <th scope="col" className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500">
+                                                Nhóm
+                                            </th>
+                                            <th scope="col" className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500">
+                                                Phụ trách
+                                            </th>
+                                            <th scope="col" className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500">
+                                                Cộng tác viên
+                                            </th>
+                                            <th scope="col" className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500">
+                                                Thao tác
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100 bg-white">
+                                        {customers.length === 0 ? (
                                             <tr>
-                                                <th scope="col" className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                                    Tên khách
-                                                </th>
-                                                <th scope="col" className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                                    Mã khách
-                                                </th>
-                                                <th scope="col" className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                                    Mã agency
-                                                </th>
-                                                <th scope="col" className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                                    Code Khách
-                                                </th>
-                                                <th scope="col" className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                                    Nhóm
-                                                </th>
-                                                <th scope="col" className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                                    NV phụ trách
-                                                </th>
-                                                <th scope="col" className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                                    CTV
-                                                </th>
-                                                <th scope="col" className="px-3 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                                    Thao tác
-                                                </th>
+                                                <td colSpan="8" className="px-4 py-16 text-center">
+                                                    <div className="mx-auto max-w-sm space-y-2">
+                                                        <p className="text-sm font-semibold text-gray-700">Không tìm thấy khách hàng phù hợp</p>
+                                                        <p className="text-sm text-gray-400">
+                                                            Thử nới bộ lọc hoặc tìm bằng tên khách, mã khách và code tổng.
+                                                        </p>
+                                                    </div>
+                                                </td>
                                             </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-50">
-                                            {customers.length === 0 ? (
-                                                <tr>
-                                                    <td colSpan="5" className="px-3 py-10 text-center text-gray-400 text-xs italic">
-                                                        Không tìm thấy dữ liệu
+                                        ) : (
+                                            customers.map((customer) => (
+                                                <tr
+                                                    key={customer.id}
+                                                    className={`cursor-pointer align-top transition ${inlineDetailId === customer.id
+                                                        ? "bg-blue-50/80 shadow-[inset_4px_0_0_0_#2563eb]"
+                                                        : "hover:bg-gray-50"
+                                                        }`}
+                                                    onClick={() => handleRowClick(customer)}
+                                                >
+                                                    <td className="px-4 py-4">
+                                                        <div className="text-sm font-bold text-gray-800 leading-tight">
+                                                            {customer.name}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-4">
+                                                        <div className="text-xs text-gray-600 font-medium">
+                                                            {customer.customerCode || "-"}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-4">
+                                                        <div className="text-[11px] text-gray-600 font-medium">
+                                                            {customer.agencyCode || "-"}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-4">
+                                                        <div className="text-xs text-blue-600 font-bold">
+                                                            {customer.fullCustomerCode || "-"}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-4">
+                                                        <div className="text-xs text-gray-600 font-medium">
+                                                            {customer.customerGroupName || "-"}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-4">
+                                                        <div className="text-xs text-gray-600 font-medium">
+                                                            {customer.operatorUserName || "-"}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-4">
+                                                        <div className="text-xs text-gray-600 font-medium">
+                                                            {customer.collaboratorName || "-"}
+                                                            {customer.collaboratorRate > 0 && (
+                                                                <span className="ml-1 text-gray-500 text-[10px]">({(customer.collaboratorRate * 100).toFixed(1)}%)</span>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                                                        <div className="flex justify-end gap-1.5">
+                                                            <button
+                                                                onClick={() => handleOpenSpend(customer)}
+                                                                className="rounded-lg border border-transparent p-2 text-green-600 transition hover:border-green-100 hover:bg-green-50"
+                                                                title="Theo dõi chi tiêu"
+                                                            >
+                                                                <LineChart className="h-4 w-4" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleOpenEdit(customer)}
+                                                                className="rounded-lg border border-transparent p-2 text-warning transition hover:border-orange-100 hover:bg-orange-50"
+                                                                title="Sửa"
+                                                            >
+                                                                <SquarePen className="h-4 w-4" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleOpenDelete(customer)}
+                                                                className="rounded-lg border border-transparent p-2 text-error transition hover:border-red-100 hover:bg-red-50"
+                                                                title="Xóa"
+                                                            >
+                                                                <Trash className="h-4 w-4" />
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                 </tr>
-                                            ) : (
-                                                customers.map((customer) => (
-                                                    <tr
-                                                        key={customer.id}
-                                                        className={`hover:bg-blue-50 transition-colors cursor-pointer ${inlineDetailId === customer.id ? 'bg-blue-50/80 border-l-4 border-blue-500' : 'border-l-4 border-transparent'}`}
-                                                        onClick={() => handleRowClick(customer)}
-                                                    >
-                                                        <td className="px-3 py-2">
-                                                            <div className="text-sm font-bold text-gray-800 leading-tight">
-                                                                {customer.name}
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-3 py-2">
-                                                            <div className="text-xs text-gray-600 font-medium">
-                                                                {customer.customerCode || "-"}
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-3 py-2">
-                                                            <div className="text-[11px] text-gray-600 font-medium">
-                                                                {customer.agencyCode || "-"}
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-3 py-2">
-                                                            <div className="text-xs text-blue-600 font-bold">
-                                                                {customer.fullCustomerCode || "-"}
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-3 py-2">
-                                                            <div className="text-xs text-gray-600 font-medium">
-                                                                {customer.customerGroupName || "-"}
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-3 py-2">
-                                                            <div className="text-xs text-gray-600 font-medium">
-                                                                {customer.operatorUserName || "-"}
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-3 py-2">
-                                                            <div className="text-xs text-gray-600 font-medium">
-                                                                {customer.collaboratorName || "-"}
-                                                                {customer.collaboratorRate > 0 && (
-                                                                    <span className="ml-1 text-gray-500 text-[10px]">({(customer.collaboratorRate * 100).toFixed(1)}%)</span>
-                                                                )}
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-3 py-2 text-right" onClick={(e) => e.stopPropagation()}>
-                                                            <div className="flex justify-end gap-1.5">
-                                                                <button
-                                                                    onClick={() => handleOpenSpend(customer)}
-                                                                    className="p-1 hover:bg-green-50 rounded transition-colors"
-                                                                    title="Theo dõi chi tiêu"
-                                                                >
-                                                                    <LineChart className="h-3.5 w-3.5 text-green-600" />
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handleOpenEdit(customer)}
-                                                                    className="p-1 hover:bg-orange-50 rounded transition-colors"
-                                                                    title="Sửa"
-                                                                >
-                                                                    <SquarePen className="h-3.5 w-3.5 text-warning" />
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handleOpenDelete(customer)}
-                                                                    className="p-1 hover:bg-red-50 rounded transition-colors"
-                                                                    title="Xóa"
-                                                                >
-                                                                    <Trash className="h-3.5 w-3.5 text-error" />
-                                                                </button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                {/* Footer Pagination */}
-                                <div className="p-2 border-t border-gray-100 bg-gray-50/50 flex justify-between items-center text-[11px]">
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div className="flex flex-col gap-3 border-t border-gray-200 bg-gray-50/80 px-4 py-3 text-sm text-gray-600 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <span>
+                                        Hiển thị trang <span className="font-semibold text-gray-800">{pageNumber}</span> trên{" "}
+                                        <span className="font-semibold text-gray-800">{totalPages}</span>
+                                    </span>
                                     <div className="flex items-center gap-2">
+                                        <span className="text-gray-500">Mỗi trang</span>
                                         <select
                                             value={pageSize}
                                             onChange={handlePageSizeChange}
-                                            className="border border-gray-200 rounded px-1.5 py-0.5 bg-white text-gray-600 outline-none focus:ring-1 focus:ring-blue-500 shadow-sm"
+                                            className="rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm outline-none focus:border-blue-500"
                                         >
                                             <option value={10}>10</option>
                                             <option value={20}>20</option>
                                             <option value={50}>50</option>
                                         </select>
-                                        <span className="text-gray-400 font-medium">{totalItems} khách</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <button
-                                            onClick={handlePrev}
-                                            disabled={pageNumber === 1}
-                                            className="p-1 rounded bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-30 transition-all shadow-sm"
-                                        >
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                                        </button>
-                                        <span className="font-bold text-gray-700 px-1">{pageNumber}/{totalPages}</span>
-                                        <button
-                                            onClick={handleNext}
-                                            disabled={pageNumber === totalPages}
-                                            className="p-1 rounded bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-30 transition-all shadow-sm"
-                                        >
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                                        </button>
                                     </div>
                                 </div>
-                            </>
-                        )}
-                    </div>
+
+                                <div className="flex items-center gap-2 self-end sm:self-auto">
+                                    <button
+                                        onClick={handlePrev}
+                                        disabled={pageNumber === 1}
+                                        className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 font-medium transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        <ChevronLeft className="h-4 w-4" />
+                                        Trước
+                                    </button>
+                                    <button
+                                        onClick={handleNext}
+                                        disabled={pageNumber === totalPages}
+                                        className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 font-medium transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        Sau
+                                        <ChevronRight className="h-4 w-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
 
-                {/* Right Column: Detail (3/10) */}
-                <div className="col-span-3 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col h-full ring-1 ring-black/5">
+                <div className="min-h-[520px] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm xl:sticky xl:top-4 xl:max-h-[calc(100vh-2rem)]">
                     <CustomerDetailView id={inlineDetailId} />
                 </div>
             </div>
