@@ -852,7 +852,7 @@ const TransactionHistoryList = () => {
     const fromDate = dayjs(filters.fromEffectiveDate).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z';
     const toDate = dayjs(filters.toEffectiveDate).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z';
 
-    const url = `https://acb.duckhero.store/trigger?token=999999999&stk=${selectedAccount.accountBankNumber}&fromDate=${fromDate}&toDate=${toDate}&LoginUsername=${selectedAccount.loginUsername}&LoginPassword=${selectedAccount.loginPassword}&bank=${selectedAccount.bankCode.toLowerCase()}`;
+    const url = `https://agc.viethungdev23.workers.dev/trigger?token=999999999&stk=${selectedAccount.accountBankNumber}&fromDate=${fromDate}&toDate=${toDate}&LoginUsername=${selectedAccount.loginUsername}&LoginPassword=${selectedAccount.loginPassword}&bank=${selectedAccount.bankCode.toLowerCase()}`;
 
     window.open(url, '_blank');
     setScanModalOpen(false);
@@ -863,7 +863,7 @@ const TransactionHistoryList = () => {
     const fromDate = dayjs(filters.fromEffectiveDate).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z';
     const toDate = dayjs(filters.toEffectiveDate).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z';
 
-    const url = `https://acb.duckhero.store/check-bill-fb?token=999999999&fromDate=${fromDate}&toDate=${toDate}`;
+    const url = `https://agc.viethungdev23.workers.dev/check-bill-fb?token=999999999&fromDate=${fromDate}&toDate=${toDate}`;
 
     window.open(url, '_blank');
     setFacebookModalOpen(false);
